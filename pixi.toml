@@ -28,6 +28,14 @@ ipykernel = "*"
 ruff = "*"
 black = "*"
 
+[feature.doc.dependencies]
+jupyter-book = "*"
+
+[feature.doc.tasks]
+convert-to-notebooks = { cmd = "jupytext --to notebook --execute python_files/*.py" }
+build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
+
 [environments]
 lint = ["lint"]
-dev = ["dev", "lint"]
+doc = ["doc"]
+dev = ["dev", "doc", "lint"]
