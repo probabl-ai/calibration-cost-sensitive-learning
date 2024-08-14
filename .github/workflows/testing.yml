@@ -26,3 +26,4 @@ jobs:
         run: |
             pixi run generate-predictions
             pixi run check-generated-predictions
+            pixi run build-calibration-curve
