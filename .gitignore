@@ -76,3 +76,6 @@ jupyterlite_contents
 # pixi environments
 .pixi
 *.egg-info
+
+# generate predictions
+python_files/predictions
