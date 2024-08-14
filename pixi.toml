@@ -1,7 +1,7 @@
 [project]
 name = "calibration-cost-sensitive-learning"
 version = "0.1.0"
-description = "Repository for a course on calibration and cost-sensitive learning"
+description = "Probabilistic calibration of cost-sensitive learning"
 authors = ["Guillaume Lemaitre <guillaume@probabl.ai>", "Olivier Grisel <olivier@probabl.ai>"]
 channels = ["conda-forge"]
 platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
