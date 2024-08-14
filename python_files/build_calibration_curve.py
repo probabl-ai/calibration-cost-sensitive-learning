@@ -186,4 +186,3 @@ _ = ax.set(
     aspect="equal",
     title="Calibration curve",
 )
-# %%
