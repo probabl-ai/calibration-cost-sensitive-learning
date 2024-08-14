@@ -1,0 +1,19 @@
+name: 'publish_book'
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  publish_book:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: prefix-dev/setup-pixi@v0.8.1
+        with:
+          pixi-version: v0.27.1
+          environments: doc
+
+      - name: Build and publish the book
+        run: pixi run -e doc publish-book
