@@ -91,17 +91,16 @@ _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
 # 1. Bin the predicted probabilities (i.e. `y_prob`) into 10 bins. You can use the
 #    `pd.cut` function from the `pandas` library. It will return a `Categorical`
 #    object where we get the bin identifier for each sample.
-# 2. Create a DataFrame with the true labels, predicted probabilities, and bin
-#    identifier.
-# 3. Group the DataFrame by the bin identifier and calculate the mean of the true
-#    labels and the predicted probabilities.
-# 4. Plot the calibration curve by plotting the average predicted probabilities
-#    against the fraction of positive samples.
 
 # %%
 import pandas as pd
 
 bin_identifier = pd.cut(y_prob, bins=n_bins)
+
+# %% [markdown]
+#
+# 2. Create a DataFrame with the true labels, predicted probabilities, and bin
+#    identifier.
 
 # %%
 predictions = pd.DataFrame(
@@ -113,6 +112,11 @@ predictions = pd.DataFrame(
 )
 predictions
 
+# %% [markdown]
+#
+# 3. Group the DataFrame by the bin identifier and calculate the mean of the true
+#    labels and the predicted probabilities.
+
 # %%
 avg_predicted_probabilities = predictions.groupby(
     "bin_identifier", observed=True
@@ -120,6 +124,11 @@ avg_predicted_probabilities = predictions.groupby(
 fraction_positive_samples = predictions.groupby(
     "bin_identifier", observed=True
 ).y_true.mean()
+
+# %% [markdown]
+#
+# 4. Plot the calibration curve by plotting the average predicted probabilities
+#    against the fraction of positive samples.
 
 # %%
 import matplotlib.pyplot as plt
