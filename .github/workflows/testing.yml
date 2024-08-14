@@ -28,3 +28,7 @@ jobs:
             pixi run check-generated-predictions
             pixi run build-calibration-curve
             pixi run different-calibration-curves
+
+      - name: Test if we can build the documentation
+        if: matrix.os == 'ubuntu-latest'
+        run: pixi run -e doc build-book

@@ -79,3 +79,7 @@ jupyterlite_contents
 
 # generate predictions
 python_files/predictions
+
+# jupyter-book build
+book/_build
+python_files/*.ipynb
