@@ -8,6 +8,7 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
 generate-predictions = { cmd = "python _generate_predictions.py", cwd = "python_files" }
+build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "python_files" }
 check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
 
 [dependencies]
@@ -17,6 +18,7 @@ scipy = ">=1.14.0,<2"
 scikit-learn = ">=1.5.1,<2"
 pandas = ">=2.2.2,<3"
 matplotlib = ">=3.9.1,<4"
+jupytext = ">=1.16.4,<2"
 
 [feature.dev.dependencies]
 ipykernel = "*"
