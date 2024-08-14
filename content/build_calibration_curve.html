@@ -492,12 +492,6 @@ following these steps:</p>
 <li><p>Bin the predicted probabilities (i.e. <code class="docutils literal notranslate"><span class="pre">y_prob</span></code>) into 10 bins. You can use the
 <code class="docutils literal notranslate"><span class="pre">pd.cut</span></code> function from the <code class="docutils literal notranslate"><span class="pre">pandas</span></code> library. It will return a <code class="docutils literal notranslate"><span class="pre">Categorical</span></code>
 object where we get the bin identifier for each sample.</p></li>
-<li><p>Create a DataFrame with the true labels, predicted probabilities, and bin
-identifier.</p></li>
-<li><p>Group the DataFrame by the bin identifier and calculate the mean of the true
-labels and the predicted probabilities.</p></li>
-<li><p>Plot the calibration curve by plotting the average predicted probabilities
-against the fraction of positive samples.</p></li>
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -508,6 +502,10 @@ against the fraction of positive samples.</p></li>
 </div>
 </div>
 </div>
+<ol class="arabic simple" start="2">
+<li><p>Create a DataFrame with the true labels, predicted probabilities, and bin
+identifier.</p></li>
+</ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
@@ -617,6 +615,10 @@ against the fraction of positive samples.</p></li>
 <p>50000 rows × 3 columns</p>
 </div></div></div>
 </div>
+<ol class="arabic simple" start="3">
+<li><p>Group the DataFrame by the bin identifier and calculate the mean of the true
+labels and the predicted probabilities.</p></li>
+</ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">avg_predicted_probabilities</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
@@ -629,6 +631,10 @@ against the fraction of positive samples.</p></li>
 </div>
 </div>
 </div>
+<ol class="arabic simple" start="4">
+<li><p>Plot the calibration curve by plotting the average predicted probabilities
+against the fraction of positive samples.</p></li>
+</ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
