@@ -55,3 +55,32 @@ _ = disp.ax_.set(
 )
 
 # %%
+y_proba = np.load("./predictions/y_prob_2.npy")
+disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+_ = disp.ax_.set(
+    title="Uncalibrated model",
+    xlim=(0, 1),
+    ylim=(0, 1),
+    aspect="equal",
+)
+
+# %%
+y_proba = np.load("./predictions/y_prob_3.npy")
+disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+_ = disp.ax_.set(
+    title="Uncalibrated model",
+    xlim=(0, 1),
+    ylim=(0, 1),
+    aspect="equal",
+)
+
+# %%
+y_proba = np.load("./predictions/y_prob_4.npy")
+disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+_ = disp.ax_.set(
+    title="Uncalibrated model",
+    xlim=(0, 1),
+    ylim=(0, 1),
+    aspect="equal",
+)
+# %%
