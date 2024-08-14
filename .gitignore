@@ -75,3 +75,6 @@ jupyterlite_contents
 
 # Pixi folder
 .pixi/
+# pixi environments
+.pixi
+*.egg-info
