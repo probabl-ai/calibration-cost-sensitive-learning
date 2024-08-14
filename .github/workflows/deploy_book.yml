@@ -21,14 +21,11 @@ jobs:
       - name: Build and publish the book
         run: pixi run -e doc build-book
 
-      # Upload the book's HTML as an artifact
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Update the main gh-page website
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: peaceiris/actions-gh-pages@v3.6.1
         with:
-          path: "book/_build/html"
-
-      # Deploy the book's HTML to GitHub Pages
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book/_build/html
+          commit_message: "[ci skip] ${{ github.event.head_commit.message }}"
 
