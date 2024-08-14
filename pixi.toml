@@ -8,6 +8,7 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
 generate-predictions = { cmd = "python _generate_predictions.py", cwd = "python_files" }
+check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
 
 [dependencies]
 jupyterlab = ">=4.2.4,<5"
