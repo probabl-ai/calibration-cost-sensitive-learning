@@ -15,8 +15,8 @@
 # predicted probability estimates of several models into the `predictions` folder.
 
 # %%
-# equivalent to the magic command "%run _generate_predictions.py" but it can be executed
-# as a Python script
+# Equivalent to the magic command "%run _generate_predictions.py" but it allows this
+# file to be executed as a Python script.
 from IPython import get_ipython
 
 ipython = get_ipython()
