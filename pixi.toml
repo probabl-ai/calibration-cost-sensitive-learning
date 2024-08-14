@@ -30,12 +30,10 @@ black = "*"
 
 [feature.doc.dependencies]
 jupyter-book = "*"
-ghp-import = ">=2.1.0,<3"
 
 [feature.doc.tasks]
 convert-to-notebooks = { cmd = "jupytext --to notebook --execute python_files/*.py" }
 build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
-publish-book = { cmd = "ghp-import -n -p -f book/_build/html", depends-on = ["build-book"] }
 
 [environments]
 lint = ["lint"]
