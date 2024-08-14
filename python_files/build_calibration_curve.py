@@ -70,7 +70,23 @@ print(f"ROC AUC: {roc_auc_score(y_true, y_prob):.2f}")
 # probabilities and to calculate the proportion of positive samples in each bin and
 # compare it to the average predicted probability in the bin.
 #
-# So let's create a calibration curve following the steps below:
+# Scikit-learn provide a utility to plot this graphical representation. It is available
+# through the class `sklearn.calibration.CalibrationDisplay`.
+
+# %%
+from sklearn.calibration import CalibrationDisplay
+
+n_bins = 10
+disp = CalibrationDisplay.from_predictions(
+    y_true, y_prob, n_bins=n_bins, strategy="uniform"
+)
+_ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
+
+# %% [markdown]
+#
+# As a pedagogical exercise, we will build the calibration curve from scratch. This
+# will help us understand the underlying process. The calibration curve is built by
+# following these steps:
 #
 # 1. Bin the predicted probabilities (i.e. `y_prob`) into 10 bins. You can use the
 #    `pd.cut` function from the `pandas` library. It will return a `Categorical`
@@ -85,7 +101,6 @@ print(f"ROC AUC: {roc_auc_score(y_true, y_prob):.2f}")
 # %%
 import pandas as pd
 
-n_bins = 10
 bin_identifier = pd.cut(y_prob, bins=n_bins)
 
 # %%
@@ -110,7 +125,9 @@ fraction_positive_samples = predictions.groupby(
 import matplotlib.pyplot as plt
 
 _, ax = plt.subplots()
-ax.plot(avg_predicted_probabilities, fraction_positive_samples, "o-")
+ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
+ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
+ax.legend()
 _ = ax.set(
     xlim=(0, 1),
     ylim=(0, 1),
@@ -122,14 +139,51 @@ _ = ax.set(
 
 # %% [markdown]
 #
-# Scikit-learn provides a utility to plot the calibration curve. This utility is
-# available in the class `sklearn.calibration.CalibrationDisplay`. It provides a couple
-# of more options such as different strategies to bin the predicted probabilities.
+# Scikit-learn also provides a parameter `strategy` that is the strategy to adopt to
+# create the bins. By default, we used the `"uniform"` strategy. However, it can happen
+# that only few samples are present in some bins, leading to a noisy calibration curve.
+#
+# The strategy `"quantile"` ensures that each bin has the same number of samples. We
+# can show it on our previous example:
+
 
 # %%
-from sklearn.calibration import CalibrationDisplay
-
 disp = CalibrationDisplay.from_predictions(
     y_true, y_prob, n_bins=n_bins, strategy="quantile"
 )
 _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
+
+# %% [markdown]
+#
+# Modify your previous implementation such that `pd.cut` uses quantiles to create the
+# bins instead of the default uniform behaviour. Specifically, look at the `bins`
+# parameter and the function `np.quantile`.
+
+# %%
+bin_identifier = pd.cut(y_prob, bins=np.quantile(y_prob, np.linspace(0, 1, n_bins)))
+predictions = pd.DataFrame(
+    {
+        "y_true": y_true,
+        "y_prob": y_prob,
+        "bin_identifier": bin_identifier,
+    }
+)
+avg_predicted_probabilities = predictions.groupby(
+    "bin_identifier", observed=True
+).y_prob.mean()
+fraction_positive_samples = predictions.groupby(
+    "bin_identifier", observed=True
+).y_true.mean()
+_, ax = plt.subplots()
+ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
+ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
+ax.legend()
+_ = ax.set(
+    xlim=(0, 1),
+    ylim=(0, 1),
+    xlabel="Average predicted probability",
+    ylabel="Fraction of positive samples",
+    aspect="equal",
+    title="Calibration curve",
+)
+# %%
