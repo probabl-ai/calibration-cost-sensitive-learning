@@ -30,6 +30,7 @@ black = "*"
 
 [feature.doc.dependencies]
 jupyter-book = "*"
+ghp-import = ">=2.1.0,<3"
 
 [feature.doc.tasks]
 convert-to-notebooks = { cmd = "jupytext --to notebook --execute python_files/*.py" }

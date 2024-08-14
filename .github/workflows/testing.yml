@@ -28,4 +28,4 @@ jobs:
             pixi run check-generated-predictions
             pixi run build-calibration-curve
             pixi run different-calibration-curves
-            pixi run build-book
+            pixi run -e doc build-book
