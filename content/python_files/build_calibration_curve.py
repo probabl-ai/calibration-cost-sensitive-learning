@@ -20,7 +20,7 @@
 from IPython import get_ipython
 
 ipython = get_ipython()
-ipython.run_line_magic("run", "_generate_predictions.py")
+ipython.run_line_magic("run", "../python_files/_generate_predictions.py")
 
 # %% [markdown]
 #
