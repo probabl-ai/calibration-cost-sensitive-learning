@@ -6,4 +6,4 @@ root: intro
 chapters:
 - file: content/notebooks/build_calibration_curve
 - file: content/notebooks/different_calibration_curves
-- file: content/notebooks/cause_miscalibration
+- file: content/notebooks/causes_miscalibration

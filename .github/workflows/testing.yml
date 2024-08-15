@@ -28,7 +28,7 @@ jobs:
             pixi run check-generated-predictions
             pixi run build-calibration-curve
             pixi run different-calibration-curves
-            pixi run cause-miscalibration
+            pixi run causes-miscalibration
 
       - name: Test if we can build the documentation
         if: matrix.os == 'ubuntu-latest'
