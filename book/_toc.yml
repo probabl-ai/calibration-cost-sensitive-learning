@@ -4,5 +4,5 @@
 format: jb-book
 root: intro
 chapters:
-- file: content/build_calibration_curve
-- file: content/different_calibration_curves
+- file: content/notebooks/build_calibration_curve
+- file: content/notebooks/different_calibration_curves

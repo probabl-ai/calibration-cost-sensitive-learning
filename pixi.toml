@@ -7,10 +7,10 @@ channels = ["conda-forge"]
 platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
-generate-predictions = { cmd = "python _generate_predictions.py", cwd = "python_files" }
-build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "python_files" }
+generate-predictions = { cmd = "python _generate_predictions.py", cwd = "content/python_files" }
+build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "content/python_files" }
 check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
-different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "python_files" }
+different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "content/python_files" }
 
 [dependencies]
 jupyterlab = ">=4.2.4,<5"
@@ -32,7 +32,7 @@ black = "*"
 jupyter-book = "*"
 
 [feature.doc.tasks]
-convert-to-notebooks = { cmd = "jupytext --to notebook --execute python_files/*.py" }
+convert-to-notebooks = { cmd = "jupytext --to notebook --execute ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
 build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
 
 [environments]
