@@ -25,7 +25,7 @@ ipython.run_line_magic("run", "_generate_predictions.py")
 # %%
 import numpy as np
 
-y_true = np.load("./predictions/y_true.npy")
+y_true = np.load("../predictions/y_true.npy")
 y_true
 
 # %% [markdown]
@@ -34,7 +34,7 @@ y_true
 # sets of predictions of probabilities estimated by different models.
 
 # %%
-y_proba = np.load("./predictions/y_prob_1.npy")
+y_proba = np.load("../predictions/y_prob_1.npy")
 y_proba
 
 # %% [markdown]
@@ -76,7 +76,7 @@ print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
 # We now repeat the same analysis for the other sets of predictions.
 
 # %%
-y_proba = np.load("./predictions/y_prob_2.npy")
+y_proba = np.load("../predictions/y_prob_2.npy")
 disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
 _ = disp.ax_.set(
     title="Uncalibrated model",
@@ -119,7 +119,7 @@ _ = disp.ax_.set(
 # Let's use the same approach to analyze some other typical calibration curves.
 
 # %%
-y_proba = np.load("./predictions/y_prob_3.npy")
+y_proba = np.load("../predictions/y_prob_3.npy")
 disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
 disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
 disp.ax_.legend()
@@ -147,7 +147,7 @@ print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
 # Let's check the last set of predictions.
 
 # %%
-y_proba = np.load("./predictions/y_prob_4.npy")
+y_proba = np.load("../predictions/y_prob_4.npy")
 disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
 disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
 disp.ax_.legend()

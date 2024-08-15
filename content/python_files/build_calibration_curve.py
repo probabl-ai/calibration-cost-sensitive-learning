@@ -29,8 +29,8 @@ ipython.run_line_magic("run", "_generate_predictions.py")
 # %%
 import numpy as np
 
-y_true = np.load("./predictions/y_true.npy")
-y_prob = np.load("./predictions/y_prob_2.npy")
+y_true = np.load("../predictions/y_true.npy")
+y_prob = np.load("../predictions/y_prob_2.npy")
 
 # %%
 y_true

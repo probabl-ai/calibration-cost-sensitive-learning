@@ -78,8 +78,8 @@ jupyterlite_contents
 *.egg-info
 
 # generate predictions
-python_files/predictions
+content/predictions
 
 # jupyter-book build
 book/_build
-python_files/*.ipynb
+content/notebooks
