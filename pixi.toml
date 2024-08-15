@@ -9,6 +9,7 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 [tasks]
 generate-predictions = { cmd = "python _generate_predictions.py", cwd = "content/python_files" }
 build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "content/python_files" }
+cause-miscalibration = { cmd = "ipython cause_miscalibration.py", cwd = "content/python_files" }
 check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
 different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "content/python_files" }
 
