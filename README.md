@@ -19,6 +19,14 @@ The Python environment and necessary packages will be automatically installed fo
 
 ### Opening lecture notes
 
-The lecture notes are available in the `python_files` directory. To open the Python
+The lecture notes are available in the `content/python_files` directory. To open the Python
 file as notebook, you need to right click on the file and select
 `Open with` -> `Notebook`.
+
+Alternatively, you can generate notebooks as well:
+
+```bash
+pixi run -e doc convert-to-notebooks
+```
+
+This will convert the Python files into notebooks in the folder `content/notebooks`.
