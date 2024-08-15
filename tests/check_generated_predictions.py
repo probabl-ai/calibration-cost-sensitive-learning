@@ -1,7 +1,7 @@
 # %%
 from pathlib import Path
 
-path_to_predictions = Path(Path.cwd() / ".." / "python_files" / "predictions")
+path_to_predictions = Path(Path.cwd() / ".." / "content" / "predictions")
 assert path_to_predictions.exists()
 
 # %%
