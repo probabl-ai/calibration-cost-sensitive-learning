@@ -33,7 +33,7 @@ import matplotlib.pyplot as plt
 
 X_train, y_train = xor_generator(seed=0)
 _, ax = plt.subplots()
-ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", alpha=0.5)
+ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", edgecolors="black", alpha=0.5)
 _ = ax.set(
     xlim=(-3, 3),
     ylim=(-3, 3),
@@ -75,7 +75,7 @@ params = {
     "vmax": 1,
 }
 disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
-ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], alpha=0.5)
+ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], edgecolors="black", alpha=0.5)
 fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
 _ = ax.set(
     xlim=(-3, 3),
@@ -102,7 +102,11 @@ from sklearn.preprocessing import SplineTransformer, PolynomialFeatures
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
-model = make_pipeline(SplineTransformer(), PolynomialFeatures(), LogisticRegression())
+model = make_pipeline(
+    SplineTransformer(),
+    PolynomialFeatures(),
+    LogisticRegression(),
+)
 model.fit(X_train, y_train)
 
 # %% [markdown]
@@ -112,7 +116,7 @@ model.fit(X_train, y_train)
 # %%
 fig, ax = plt.subplots()
 disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
-ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], alpha=0.5)
+ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], edgecolors="black", alpha=0.5)
 fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
 _ = ax.set(
     xlim=(-3, 3),
@@ -133,13 +137,14 @@ _ = ax.set(
 # %%
 from sklearn.calibration import CalibrationDisplay
 
-CalibrationDisplay.from_estimator(
+disp = CalibrationDisplay.from_estimator(
     model,
     X_test,
     y_test,
     strategy="quantile",
     n_bins=10,
 )
+_ = disp.ax_.set(aspect="equal")
 
 # %% [markdown]
 #
@@ -160,40 +165,53 @@ CalibrationDisplay.from_estimator(
 import pprint
 from sklearn.model_selection import ParameterGrid
 
-param_grid = ParameterGrid({
-    "splinetransformer__n_knots": [5, 10, 20],
-    "polynomialfeatures__degree": [2, 5, 10],
-    "polynomialfeatures__interaction_only": [True, False],
-    "logisticregression__C": np.logspace(-3, 3, 10),
-})
+param_grid = list(
+    ParameterGrid(
+        {
+            "logisticregression__C": np.logspace(-3, 3, 7),
+            "splinetransformer__n_knots": [5, 10],
+            "polynomialfeatures__degree": [2, 3],
+            "polynomialfeatures__interaction_only": [True, False],
+        }
+    )
+)
 
-pp = pprint.PrettyPrinter(indent=4, width=1)
-for model_params in param_grid:
-    # Fit a model
+boundary_figure, boundary_axes = plt.subplots(
+    nrows=8, ncols=7, figsize=(50, 60), sharex=True, sharey=True
+)
+calibration_figure, calibration_axes = plt.subplots(
+    nrows=8, ncols=7, figsize=(50, 60), sharex=True, sharey=True
+)
+params["plot_method"] = "contourf"
+
+pp = pprint.PrettyPrinter(indent=1, width=1)
+for idx, (model_params, ax_boundary, ax_calibration) in enumerate(zip(
+    param_grid, boundary_axes.ravel(), calibration_axes.ravel()
+)):
     model.set_params(**model_params).fit(X_train, y_train)
     # Display the results
-    fig, (ax_1, ax_2) = plt.subplots(ncols=2, figsize=(10, 8))
-    disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax_1, **params)
-    ax_1.scatter(*X_test.T, c=y_test, cmap=params["cmap"], edgecolor="black", alpha=0.5)
-    ax_1.set(
+    disp = DecisionBoundaryDisplay.from_estimator(
+        model, X_test, ax=ax_boundary, **params
+    )
+    ax_boundary.scatter(
+        *X_test.T, c=y_test, cmap=params["cmap"], edgecolor="black", alpha=0.5
+    )
+    ax_boundary.set(
         xlim=(-3, 3),
         ylim=(-3, 3),
-        xlabel="Feature 1",
-        ylabel="Feature 2",
         aspect="equal",
+        title=f"{pp.pformat(model_params)}",
     )
+
     CalibrationDisplay.from_estimator(
         model,
         X_test,
         y_test,
         strategy="quantile",
         n_bins=10,
-        ax=ax_2,
+        ax=ax_calibration,
     )
-    ax_2.set(aspect="equal")
-    fig.suptitle(f"Parameters:\n {pp.pformat(model_params)}", y=0.85)
-
-
+    ax_calibration.set(aspect="equal", title=f"{pp.pformat(model_params)}")
 
 # %%
 #
