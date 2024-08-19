@@ -146,6 +146,54 @@ CalibrationDisplay.from_estimator(
 #
 # We observe that the calibration of the model is not perfect. So is there a way to
 # improve the calibration of our model?
+#
+# As an exercise, you could try to:
+# - modify the parameter `n_knots` of the `SplineTransformer`,
+# - modify the parameter `degree` of the `PolynomialFeatures`,
+# - modify the parameter `interaction_only` of the `PolynomialFeatures`,
+# - modify the parameter `C` of the `LogisticRegression`.
+#
+# The idea is to observe the effect in terms of under-/over-fitting by looking at the
+# decision boundary display and the effect on the model calibration on the calibration
+# curve.
+
+# %%
+import pprint
+from sklearn.model_selection import ParameterGrid
+
+param_grid = ParameterGrid({
+    "splinetransformer__n_knots": [5, 10, 20],
+    "polynomialfeatures__degree": [2, 5, 10],
+    "polynomialfeatures__interaction_only": [True, False],
+    "logisticregression__C": np.logspace(-3, 3, 10),
+})
+
+pp = pprint.PrettyPrinter(indent=4, width=1)
+for model_params in param_grid:
+    # Fit a model
+    model.set_params(**model_params).fit(X_train, y_train)
+    # Display the results
+    fig, (ax_1, ax_2) = plt.subplots(ncols=2, figsize=(10, 8))
+    disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax_1, **params)
+    ax_1.scatter(*X_test.T, c=y_test, cmap=params["cmap"], edgecolor="black", alpha=0.5)
+    ax_1.set(
+        xlim=(-3, 3),
+        ylim=(-3, 3),
+        xlabel="Feature 1",
+        ylabel="Feature 2",
+        aspect="equal",
+    )
+    CalibrationDisplay.from_estimator(
+        model,
+        X_test,
+        y_test,
+        strategy="quantile",
+        n_bins=10,
+        ax=ax_2,
+    )
+    ax_2.set(aspect="equal")
+    fig.suptitle(f"Parameters:\n {pp.pformat(model_params)}", y=0.85)
+
 
 
 # %%
