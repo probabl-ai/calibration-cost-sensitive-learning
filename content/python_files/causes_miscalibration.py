@@ -139,7 +139,6 @@ CalibrationDisplay.from_estimator(
     y_test,
     strategy="quantile",
     n_bins=10,
-    estimator="LogisticRegression",
 )
 
 # %% [markdown]
