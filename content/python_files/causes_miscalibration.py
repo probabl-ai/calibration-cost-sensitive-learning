@@ -1,21 +1,40 @@
+# %% [markdown]
+#
+# # The causes of miscalibration
+#
+# ## Effect of under-fitting and over-fitting on model calibration
+#
+# In this section, we look at the effect of under-fitting and over-fitting on the
+# calibration of a model.
+#
+# Let's start by defining our classification problem: we use the so-called XOR problem.
+# The function `xor_generator` generates a dataset with two features and the target
+# variable following the XOR logic. We add some noise to the generative process.
+
 # %%
 import numpy as np
 
 
-def xor_generator(n_samples=1_000, seed=0):
+def xor_generator(n_samples=1_000, seed=None):
     rng = np.random.default_rng(seed)
     X = rng.uniform(low=-3, high=3, size=(n_samples, 2))
-    y = np.logical_xor(X[:, 0] > 0, X[:, 1] > 0)
+    unobserved = rng.normal(loc=0, scale=0.5, size=(n_samples, 2))
+    y = np.logical_xor(X[:, 0] + unobserved[:, 0] > 0, X[:, 1] + unobserved[:, 1] > 0)
     return X, y
+
+
+# %% [markdown]
+#
+# We can now generate a dataset and visualize it.
 
 
 # %%
 import matplotlib.pyplot as plt
 
-X, y = xor_generator(seed=0)
+X_train, y_train = xor_generator(seed=0)
 _, ax = plt.subplots()
-ax.scatter(*X.T, c=y, cmap="coolwarm", alpha=0.5)
-ax.set(
+ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", alpha=0.5)
+_ = ax.set(
     xlim=(-3, 3),
     ylim=(-3, 3),
     xlabel="Feature 1",
@@ -23,40 +42,115 @@ ax.set(
     title="XOR problem",
     aspect="equal",
 )
+
+# %% [markdown]
+#
+# The XOR problem exhibits a non-linear decision link between the features and the
+# the target variable. Therefore, a linear model will not be able to separate the
+# classes correctly. Let's confirm this intuition by fitting a logistic regression
+# model to such dataset.
+
+# %%
+from sklearn.linear_model import LogisticRegression
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# %% [markdown]
+#
+# To check the decision boundary of the model, we will use an independent test set.
+
+# %%
+from sklearn.inspection import DecisionBoundaryDisplay
+
+X_test, y_test = xor_generator(n_samples=1_000, seed=1)
+
+fig, ax = plt.subplots()
+params = {
+    "cmap": "coolwarm",
+    "response_method": "predict_proba",
+    "plot_method": "pcolormesh",
+    # make sure to have a range of 0 to 1 for the probability
+    "vmin": 0,
+    "vmax": 1,
+}
+disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
+ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], alpha=0.5)
+fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
+_ = ax.set(
+    xlim=(-3, 3),
+    ylim=(-3, 3),
+    xlabel="Feature 1",
+    ylabel="Feature 2",
+    title="Soft decision boundary of a logistic regression",
+    aspect="equal",
+)
+
+# %% [markdown]
+#
+# We see that the probability estimates is almost constant and the model is really
+# uncertain with an estimated probability of 0.5 for all samples in the test set.
+#
+# We therefore need a more expressive model to capture the non-linear relationship
+# between the features and the target variable. Crafting a pre-processing step to
+# transform the features into a higher-dimensional space could help. We create a
+# pipeline that includes a spline transformation and a polynomial transformation before
+# to train our logistic regression model.
 
 # %%
 from sklearn.preprocessing import SplineTransformer, PolynomialFeatures
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
-model = make_pipeline(
-    SplineTransformer(n_knots=20),
-    PolynomialFeatures(degree=2, interaction_only=True),
-    LogisticRegression(),
-)
-model.fit(X, y)
+model = make_pipeline(SplineTransformer(), PolynomialFeatures(), LogisticRegression())
+model.fit(X_train, y_train)
+
+# %% [markdown]
+#
+# Let's check the decision boundary of the model on the test set.
 
 # %%
-from sklearn.inspection import DecisionBoundaryDisplay
-
-_, ax = plt.subplots()
-DecisionBoundaryDisplay.from_estimator(
-    model, X, ax=ax, cmap="coolwarm", response_method="predict_proba"
-)
-ax.scatter(*X.T, c=y, cmap="coolwarm", alpha=0.5)
-ax.set(
+fig, ax = plt.subplots()
+disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
+ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], alpha=0.5)
+fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
+_ = ax.set(
     xlim=(-3, 3),
     ylim=(-3, 3),
     xlabel="Feature 1",
     ylabel="Feature 2",
-    title="XOR problem",
+    title="Soft decision boundary of a logistic regression\n with pre-processing",
     aspect="equal",
 )
+
+# %% [markdown]
+#
+# We see that our model is capable of capturing the non-linear relationship between
+# the features and the target variable. The probability estimates are now varying
+# across the samples. We could check the calibration of our model using the calibration
+# curve.
 
 # %%
 from sklearn.calibration import CalibrationDisplay
 
-CalibrationDisplay.from_estimator(model, X, y, strategy="quantile", n_bins=10)
+CalibrationDisplay.from_estimator(
+    model,
+    X_test,
+    y_test,
+    strategy="quantile",
+    n_bins=10,
+    estimator="LogisticRegression",
+)
+
+# %% [markdown]
+#
+# We observe that the calibration of the model is not perfect. So is there a way to
+# improve the calibration of our model?
+
+
+# %%
+#
+# ## Effect of resampling on model calibration
 
 # %%
 from sklearn.datasets import make_classification
