@@ -321,6 +321,67 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
+# TODO: add discussion regarding the HGBDT model.
+
+# %%
+from sklearn.ensemble import HistGradientBoostingClassifier
+
+model = HistGradientBoostingClassifier()
+
+param_grid = list(
+    ParameterGrid(
+        {"max_leaf_nodes": [5, 10, 30, 50], "learning_rate": [0.01, 0.1, 1]}
+    )
+)
+
+fig_params = {
+    "nrows": 3,
+    "ncols": 4,
+    "figsize": (20, 16),
+    "sharex": True,
+    "sharey": True,
+}
+boundary_figure, boundary_axes = plt.subplots(**fig_params)
+calibration_figure, calibration_axes = plt.subplots(**fig_params)
+
+for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
+    zip(param_grid, boundary_axes.ravel(), calibration_axes.ravel())
+):
+    model.set_params(**model_params).fit(X_train, y_train)
+    # Create a title
+    title = f"Maximum number of leaf nodes: {model_params['max_leaf_nodes']}"
+    # Display the results
+    disp = DecisionBoundaryDisplay.from_estimator(
+        model, X_test, ax=ax_boundary, **params
+    )
+    ax_boundary.scatter(
+        *X_train.T, c=y_train, cmap=params["cmap"], edgecolor="black", alpha=0.5
+    )
+    ax_boundary.set(
+        xlim=(-3, 3),
+        ylim=(-3, 3),
+        aspect="equal",
+        title=title,
+    )
+
+    CalibrationDisplay.from_estimator(
+        model,
+        X_test,
+        y_test,
+        strategy="quantile",
+        n_bins=10,
+        ax=ax_calibration,
+    )
+    ax_calibration.set(aspect="equal", title=title)
+
+    if idx % fig_params["ncols"] == 0:
+        for ax in (ax_boundary, ax_calibration):
+            ylabel = f"Learning rate: {model_params['learning_rate']}"
+            ylabel += f"\n\n\n{ax.get_ylabel()}" if ax.get_ylabel() else ""
+            ax.set(ylabel=ylabel)
+
+# %% [markdown]
+#
 # ### Hyperparameter tuning while considering calibration
 #
 # TODO: Add a section on how to tune the hyperparameters using a proper scoring rule.
