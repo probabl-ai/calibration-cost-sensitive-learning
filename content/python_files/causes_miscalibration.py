@@ -63,19 +63,19 @@ model.fit(X_train, y_train)
 # %%
 from sklearn.inspection import DecisionBoundaryDisplay
 
-X_test, y_test = xor_generator(n_samples=1_000, seed=1)
+X_test, y_test = xor_generator(n_samples=10_000, seed=1)
 
 fig, ax = plt.subplots()
 params = {
     "cmap": "coolwarm",
     "response_method": "predict_proba",
-    "plot_method": "pcolormesh",
+    "plot_method": "contourf",
     # make sure to have a range of 0 to 1 for the probability
     "vmin": 0,
     "vmax": 1,
 }
 disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
-ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], edgecolors="black", alpha=0.5)
+ax.scatter(*X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5)
 fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
 _ = ax.set(
     xlim=(-3, 3),
@@ -104,8 +104,10 @@ from sklearn.pipeline import make_pipeline
 
 model = make_pipeline(
     SplineTransformer(),
-    PolynomialFeatures(),
-    LogisticRegression(),
+    # Only add interaction terms to avoid blowing up the number of features
+    PolynomialFeatures(interaction_only=True),
+    # Increase the number of iterations to ensure convergence
+    LogisticRegression(max_iter=10_000),
 )
 model.fit(X_train, y_train)
 
@@ -116,7 +118,7 @@ model.fit(X_train, y_train)
 # %%
 fig, ax = plt.subplots()
 disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
-ax.scatter(*X_test.T, c=y_test, cmap=params["cmap"], edgecolors="black", alpha=0.5)
+ax.scatter(*X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5)
 fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
 _ = ax.set(
     xlim=(-3, 3),
@@ -151,6 +153,61 @@ _ = disp.ax_.set(aspect="equal")
 # We observe that the calibration of the model is not perfect. So is there a way to
 # improve the calibration of our model?
 #
+# As an exercise, let's try to three different hyperparameters configurations:
+# - one configuration with 5 knots (i.e. `n_knots`) for the spline transformation and a
+#   regularization parameter `C` of 1e-4 for the logistic regression,
+# - one configuration with 7 knots for the spline transformation and a regularization
+#   parameter `C` of 1e1 for the logistic regression,
+# - one configuration with 15 knots for the spline transformation and a regularization
+#   parameter `C` of 1e4 for the logistic regression.
+#
+# For each configuration, plot the decision boundary and the calibration curve. What
+# can you observe in terms of under-/over-fitting and calibration?
+
+# %%
+
+param_configs = [
+    {"splinetransformer__n_knots": 5, "logisticregression__C": 1e-4},
+    {"splinetransformer__n_knots": 7, "logisticregression__C": 1e1},
+    {"splinetransformer__n_knots": 15, "logisticregression__C": 1e4},
+]
+
+for model_params in param_configs:
+    model.set_params(**model_params)
+    model.fit(X_train, y_train)
+
+    fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+
+    disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax[0], **params)
+    ax[0].scatter(
+        *X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5
+    )
+
+    _ = ax[0].set(
+        xlim=(-3, 3),
+        ylim=(-3, 3),
+        xlabel="Feature 1",
+        ylabel="Feature 2",
+        aspect="equal",
+    )
+
+    CalibrationDisplay.from_estimator(
+        model,
+        X_test,
+        y_test,
+        strategy="quantile",
+        n_bins=10,
+        ax=ax[1],
+    )
+    _ = ax[1].set(aspect="equal")
+
+    fig.suptitle(
+        f"Number of knots: {model_params['splinetransformer__n_knots']}, "
+        f"Regularization 'C': {model_params['logisticregression__C']}"
+    )
+
+# %%
+#
 # As an exercise, you could try to:
 # - modify the parameter `n_knots` of the `SplineTransformer`,
 # - modify the parameter `degree` of the `PolynomialFeatures`,
@@ -162,45 +219,47 @@ _ = disp.ax_.set(aspect="equal")
 # curve.
 
 # %%
-import pprint
 from sklearn.model_selection import ParameterGrid
 
 param_grid = list(
     ParameterGrid(
         {
-            "logisticregression__C": np.logspace(-3, 3, 7),
-            "splinetransformer__n_knots": [5, 10],
-            "polynomialfeatures__degree": [2, 3],
-            "polynomialfeatures__interaction_only": [True, False],
+            "logisticregression__C": np.logspace(-1, 3, 5),
+            "splinetransformer__n_knots": [5, 10, 15],
+            "polynomialfeatures": [None, PolynomialFeatures(interaction_only=True)],
         }
     )
 )
 
 boundary_figure, boundary_axes = plt.subplots(
-    nrows=8, ncols=7, figsize=(50, 60), sharex=True, sharey=True
+    nrows=5, ncols=6, figsize=(40, 35), sharex=True, sharey=True
 )
 calibration_figure, calibration_axes = plt.subplots(
-    nrows=8, ncols=7, figsize=(50, 60), sharex=True, sharey=True
+    nrows=5, ncols=6, figsize=(40, 35), sharex=True, sharey=True
 )
-params["plot_method"] = "contourf"
 
-pp = pprint.PrettyPrinter(indent=1, width=1)
-for idx, (model_params, ax_boundary, ax_calibration) in enumerate(zip(
-    param_grid, boundary_axes.ravel(), calibration_axes.ravel()
-)):
+for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
+    zip(param_grid, boundary_axes.ravel(), calibration_axes.ravel())
+):
     model.set_params(**model_params).fit(X_train, y_train)
+    # Create a title
+    title = (
+        f"Number of knots: {model_params['splinetransformer__n_knots']},\n"
+        f"With interaction: {model_params['polynomialfeatures'] is not None},\n"
+        f"Regularization 'C': {model_params['logisticregression__C']}"
+    )
     # Display the results
     disp = DecisionBoundaryDisplay.from_estimator(
         model, X_test, ax=ax_boundary, **params
     )
     ax_boundary.scatter(
-        *X_test.T, c=y_test, cmap=params["cmap"], edgecolor="black", alpha=0.5
+        *X_train.T, c=y_train, cmap=params["cmap"], edgecolor="black", alpha=0.5
     )
     ax_boundary.set(
         xlim=(-3, 3),
         ylim=(-3, 3),
         aspect="equal",
-        title=f"{pp.pformat(model_params)}",
+        title=title,
     )
 
     CalibrationDisplay.from_estimator(
@@ -211,7 +270,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(zip(
         n_bins=10,
         ax=ax_calibration,
     )
-    ax_calibration.set(aspect="equal", title=f"{pp.pformat(model_params)}")
+    ax_calibration.set(aspect="equal", title=title)
 
 # %%
 #
@@ -225,7 +284,7 @@ X, y = make_classification(
     n_samples=20_000,
     n_features=2,
     n_redundant=0,
-    weights=[0.1, 0.9],
+    weights=[0.9, 0.1],
     class_sep=1,
     random_state=1,
 )
@@ -285,5 +344,12 @@ disp = CalibrationDisplay.from_estimator(
 CalibrationDisplay.from_estimator(
     model_reweighted, X_test, y_test, strategy="quantile", ax=disp.ax_
 )
+
+# %%
+from sklearn.metrics import RocCurveDisplay
+
+fig, ax = plt.subplots()
+roc_display = RocCurveDisplay.from_estimator(model_vanilla, X_test, y_test, ax=ax)
+roc_display.plot(ax=roc_display.ax_)
 
 # %%
