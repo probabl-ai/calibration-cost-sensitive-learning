@@ -206,19 +206,32 @@ for model_params in param_configs:
         f"Regularization 'C': {model_params['logisticregression__C']}"
     )
 
-# %%
+# %% [markdown]
 #
-# As an exercise, you could try to:
-# - modify the parameter `n_knots` of the `SplineTransformer`,
-# - modify the parameter `degree` of the `PolynomialFeatures`,
-# - modify the parameter `interaction_only` of the `PolynomialFeatures`,
-# - modify the parameter `C` of the `LogisticRegression`.
+# From the previous exercise, we observe that whether we have an under-fitting or
+# over-fitting model impact its calibration. With a high regularization (i.e. `C=1e-4`),
+# we see that the model undefits since it does not discriminate between the two classes.
+# It translates into obtaining a vertical calibration curve meaning that our model
+# predicts the same probability for all fraction of positive samples.
 #
-# The idea is to observe the effect in terms of under-/over-fitting by looking at the
-# decision boundary display and the effect on the model calibration on the calibration
-# curve.
+# On the other hand, if we have a low regularization (i.e. `C=1e4`), and allows the
+# the model to be flexible by having a large number of knots, we see that the model
+# overfits since it is able to isolate noisy samples in the feature space. It translates
+# into a calibration curve where we observe that our model is over-confident.
+#
+# Finally, there is a sweet spot where the model does not underfit nor overfit. In this
+# case, we also get a calibrated model.
+#
+# We can push the analysis further by looking at a wider range of hyperparameters:
+#
+# - the impact of `n_knots` of the `SplineTransformer`,
+# - whether or not to compute interaction terms using a `PolynomialFeatures`,
+# - the impact of the parameter `C` of the `LogisticRegression`.
+#
+# We can plot the full grid of hyperparameters to see the effect on the decision
+# boundary and the calibration curve.
 
-# %%
+## %%
 from sklearn.model_selection import ParameterGrid
 
 param_grid = list(
@@ -231,23 +244,24 @@ param_grid = list(
     )
 )
 
-boundary_figure, boundary_axes = plt.subplots(
-    nrows=5, ncols=6, figsize=(40, 35), sharex=True, sharey=True
-)
-calibration_figure, calibration_axes = plt.subplots(
-    nrows=5, ncols=6, figsize=(40, 35), sharex=True, sharey=True
-)
+fig_params = {
+    "nrows": 5,
+    "ncols": 6,
+    "figsize": (40, 35),
+    "sharex": True,
+    "sharey": True,
+}
+boundary_figure, boundary_axes = plt.subplots(**fig_params)
+calibration_figure, calibration_axes = plt.subplots(**fig_params)
 
 for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
     zip(param_grid, boundary_axes.ravel(), calibration_axes.ravel())
 ):
     model.set_params(**model_params).fit(X_train, y_train)
     # Create a title
-    title = (
-        f"Number of knots: {model_params['splinetransformer__n_knots']},\n"
-        f"With interaction: {model_params['polynomialfeatures'] is not None},\n"
-        f"Regularization 'C': {model_params['logisticregression__C']}"
-    )
+    title = f"{model_params['splinetransformer__n_knots']} knots"
+    title += " with " if model_params["polynomialfeatures"] else " without "
+    title += "interaction terms"
     # Display the results
     disp = DecisionBoundaryDisplay.from_estimator(
         model, X_test, ax=ax_boundary, **params
@@ -271,6 +285,45 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
         ax=ax_calibration,
     )
     ax_calibration.set(aspect="equal", title=title)
+
+    if idx % fig_params["ncols"] == 0:
+        for ax in (ax_boundary, ax_calibration):
+            ylabel = f"Regularization 'C': {model_params['logisticregression__C']}"
+            ylabel += f"\n\n\n{ax.get_ylabel()}" if ax.get_ylabel() else ""
+            ax.set(ylabel=ylabel)
+
+# %% [markdown]
+#
+# An obvious observation is that without explicitly creating the interaction terms,
+# our model is mis-specified and the model cannot capture the non-linear relationship,
+# whatever the other hyperparameters values.
+#
+# A larger number of knots in the spline transformation increases the flexibility of the
+# decision boundary since it can vary at more locations into the feature space.
+# Therefore, if we use a too large number of knots, then the model is able isolate noisy
+# samples in this feature space, depending of the subsequent regularization parameter
+# `C`.
+#
+# Indeed, the parameter `C` controls the loss function that is minimized during the
+# training: a small value of `C` enforces to minimize the norm of the model coefficients
+# and thus discard, more or less, the training error (i.e. the mean squared error). A
+# large value of `C` enforces to prioritize minimizing the training error without
+# constraining, more or less, the norm of the coefficients.
+#
+# Understanding the previous principles, it allows us to understand that we have an
+# interaction between the number of knots and the regularization parameter `C`. Since a
+# model with a larger number of knots is more flexible and thus more prone to
+# overfitting, the value of the parameter `C` should be smaller (i.e. more
+# regularization) than a model with a smaller number of knots.
+#
+# For instance, setting `C=100` with `n_knots=5` leads to a model with a similar
+# calibration curve as setting `C=10` with `n_knots=15`.
+
+# %% [markdown]
+#
+# ### Hyperparameter tuning while considering calibration
+#
+# TODO: Add a section on how to tune the hyperparameters using a proper scoring rule.
 
 # %%
 #
