@@ -467,6 +467,66 @@ for metric_name, ax in zip(["neg_log_loss", "roc_auc", "accuracy"], axes):
 # Lastly, the proper scoring rule is the metric showing the least variance across the
 # different splits near of the optimal value. It therefore makes it a more robust metric
 # to select the best model.
+#
+# We therefore recommend to always use a proper scoring rule when tuning the
+# hyperparemeters. Below, we show the methodology to pursue when using a proper scoring
+# together with a `RandomizedSearchCV`. We therefore needs to set specifically
+# `scoring` to `neg_log_loss` in the `RandomizedSearchCV`.
+
+# %%
+from scipy.stats import loguniform
+from sklearn.model_selection import RandomizedSearchCV
+
+param_distributions = {
+    "splinetransformer__n_knots": [5, 10, 15],
+    "logisticregression__C": loguniform(1e-6, 1e6),
+}
+
+tuned_model = RandomizedSearchCV(
+    model,
+    param_distributions=param_distributions,
+    n_iter=50,
+    scoring="neg_log_loss",
+    cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=0),
+    random_state=0,
+)
+tuned_model.fit(X_train, y_train)
+
+# %% [markdown]
+#
+# Now that we train the model, we check if it is well-calibrated on the left-out
+# test set.
+
+# %%
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+
+disp = DecisionBoundaryDisplay.from_estimator(tuned_model, X_test, ax=ax[0], **params)
+ax[0].scatter(
+    *X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5
+)
+
+_ = ax[0].set(
+    xlim=(-3, 3),
+    ylim=(-3, 3),
+    xlabel="Feature 1",
+    ylabel="Feature 2",
+    aspect="equal",
+)
+
+CalibrationDisplay.from_estimator(
+    tuned_model,
+    X_test,
+    y_test,
+    strategy="quantile",
+    n_bins=10,
+    ax=ax[1],
+)
+_ = ax[1].set(aspect="equal")
+
+fig.suptitle(
+    f"Number of knots: {tuned_model.best_params_['splinetransformer__n_knots']}, "
+    f"Regularization 'C': {tuned_model.best_params_['logisticregression__C']}"
+)
 
 # %%
 #
