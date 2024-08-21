@@ -1,6 +1,9 @@
 # %% [markdown]
 #
-# # Classification metrics exercise
+# # Classification metrics
+#
+# This notebook illustrate the impact of transforming predicted probabilities
+# on the different metrics used to evaluate classification models.
 #
 # ## Ranking metrics are not impacted by monotonic transformations
 #
@@ -133,6 +136,8 @@ compare_metrics(brier_score_loss, monotonic_function, y_observed, y_predicted_pr
 # by ROC-AUC). As a result, the proper scoring losses are degraded.
 
 # %% [markdown]
+#
+# ## Hard classification metrics only depends on the value of the threshold
 #
 # ### Question:
 #
