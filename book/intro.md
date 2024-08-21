@@ -23,5 +23,11 @@ file as notebook, you need to right click on the file and select
 
 ## Table of contents
 
+### Slides
+
+[Introductionary concepts](https://docs.google.com/presentation/d/1EW3alaVuUKzk8aCWONxpBQQ1LqCmFHNixIwbnfgjuSA/edit?usp=sharing)
+
+### Notebooks
+
 ```{tableofcontents}
 ```
