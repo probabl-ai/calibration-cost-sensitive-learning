@@ -321,7 +321,14 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
-# TODO: add discussion regarding the HGBDT model.
+# ### Is it true for other models?
+#
+# In this section, we want to show that the previous findings are not specific to the
+# a linear model that relies on a pre-processing step. Here, we use a gradient-boosting
+# model that naturally captures non-linear relationships of the XOR problem.
+#
+# We check that the calibration of the model by changing the hyperparameters
+# `max_leaf_nodes` and `learning_rate` that are known to impact the model complexity.
 
 # %%
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -330,14 +337,14 @@ model = HistGradientBoostingClassifier()
 
 param_grid = list(
     ParameterGrid(
-        {"max_leaf_nodes": [5, 10, 30, 50], "learning_rate": [0.01, 0.1, 1]}
+        {"max_leaf_nodes": [5, 10, 30], "learning_rate": [0.01, 0.1, 1]}
     )
 )
 
 fig_params = {
     "nrows": 3,
-    "ncols": 4,
-    "figsize": (20, 16),
+    "ncols": 3,
+    "figsize": (16, 16),
     "sharex": True,
     "sharey": True,
 }
@@ -382,9 +389,84 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
+# From the boundary decision plots, we observe that the model, whatever the
+# hyperparameters, is capable of capturing the link between the features and the target.
+# However, if we look at the probability estimates, we still observe the same effect of
+# under-fitting and over-fitting as for the logistic regression model. It also means
+# that tuning the parameter `max_leaf_nodes` on this specific dataset is not worth it
+# since for a single decision tree, the perfect decision boundary is achieved with
+# 4 leaf nodes.
+#
+# However, the learning rate is the parameter that controls the model to under-fit or
+# over-fit. A too low learning rate leads to an under-fitting model and the model is
+# under-confident with probability estimates that are too low. On the other hand, a too
+# high learning rate leads to an over-fitting model and the model is over-confident with
+# probability estimates that are too high.
+
+# %% [markdown]
+#
 # ### Hyperparameter tuning while considering calibration
 #
-# TODO: Add a section on how to tune the hyperparameters using a proper scoring rule.
+# From the previous sections, we saw that the hyperparameters of a model while impacting
+# its complexity also impact its calibration. It therefore becomes crucial to tune the
+# hyperparameters of a model while considering if its calibration. While scikit-learn
+# offers tools to tune hyperparameters such as `GridSearchCV` or `RandomizedSearchCV`,
+# there is a caveat: the default metric used to select the best model is not necessarily
+# the one leading to a well-calibrated model.
+#
+# To illustrate this point, we use the previous logistic regression model with the
+# preprocessing step. From the previous experiment, we draw the conclusion that we
+# need to have some regularization to avoid overfitting induced by the number of knots.
+# Therefore, we plot the validate curve for different values of the regularization
+# parameter `C`. In addition, since we want to see the impact of the metric used to
+# tuned the hyperparameters, we plot different validation curves for different metrics:
+# - the negative log-likelihood that is a proper scoring rule,
+# - the ROC AUC that is a ranking metric,
+# - the accuracy that is a thresholded metric.
+
+# %%
+from sklearn.model_selection import ShuffleSplit, ValidationCurveDisplay
+
+model = make_pipeline(
+    SplineTransformer(n_knots=15),
+    PolynomialFeatures(interaction_only=True),
+    LogisticRegression(max_iter=10_000),
+)
+
+_, axes = plt.subplots(ncols=3, figsize=(15, 5))
+for metric_name, ax in zip(["neg_log_loss", "roc_auc", "accuracy"], axes):
+    disp = ValidationCurveDisplay.from_estimator(
+        model,
+        X_train,
+        y_train,
+        param_name="logisticregression__C",
+        param_range=np.logspace(-6, 6, 25),
+        scoring=metric_name,
+        ax=ax,
+        cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=0)
+    )
+    ax.set(
+        xlabel="Regularization C",
+        xscale="log",
+        title=f"Validation curve on {disp.ax_.get_ylabel()}",
+    )
+
+# %% [markdown]
+#
+# From the previous plots, there are three important observations.
+#
+# First, the proper scoring rule (i.e. the negative log-likelihood) depicts a more
+# distinct bump in comparison to the ranking metric (i.e. the ROC AUC) and the
+# thresholded metric (i.e. the accuracy). The bump is still present for the ROC AUC but
+# it is less pronounced. The accuracy does not show any bump.
+#
+# Then, the proper scoring rule is the only one showing a significant decrease when
+# the regularization is too low. The intuition is that the model becomes over-confident
+# and thus not well-calibrated while the hard predictions will not be impacted.
+#
+# Lastly, the proper scoring rule is the metric showing the least variance across the
+# different splits near of the optimal value. It therefore makes it a more robust metric
+# to select the best model.
 
 # %%
 #
