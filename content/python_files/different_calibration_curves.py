@@ -11,6 +11,11 @@
 # predicted probability estimates of several models into the `predictions` folder.
 
 # %%
+# Make sure to have scikit-learn >= 1.5
+import sklearn
+sklearn.__version__
+
+# %%
 # Equivalent to the magic command "%run _generate_predictions.py" but it allows this
 # file to be executed as a Python script.
 from IPython import get_ipython
@@ -43,6 +48,7 @@ y_proba
 # the calibration curve.
 
 # %%
+import matplotlib.pyplot as plt  # noqa: F401
 from sklearn.calibration import CalibrationDisplay
 
 params = {"n_bins": 10, "strategy": "quantile"}

@@ -15,6 +15,11 @@
 # predicted probability estimates of several models into the `predictions` folder.
 
 # %%
+# Make sure to have scikit-learn >= 1.5
+import sklearn
+sklearn.__version__
+
+# %%
 # Equivalent to the magic command "%run _generate_predictions.py" but it allows this
 # file to be executed as a Python script.
 from IPython import get_ipython
@@ -74,6 +79,7 @@ print(f"ROC AUC: {roc_auc_score(y_true, y_prob):.2f}")
 # through the class `sklearn.calibration.CalibrationDisplay`.
 
 # %%
+import matplotlib.pyplot as plt
 from sklearn.calibration import CalibrationDisplay
 
 n_bins = 10
@@ -131,8 +137,6 @@ fraction_positive_samples = predictions.groupby(
 #    against the fraction of positive samples.
 
 # %%
-import matplotlib.pyplot as plt
-
 _, ax = plt.subplots()
 ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
 ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
