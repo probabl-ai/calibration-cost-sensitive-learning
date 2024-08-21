@@ -231,7 +231,7 @@ for model_params in param_configs:
 # We can plot the full grid of hyperparameters to see the effect on the decision
 # boundary and the calibration curve.
 
-## %%
+# %%
 from sklearn.model_selection import ParameterGrid
 
 param_grid = list(
