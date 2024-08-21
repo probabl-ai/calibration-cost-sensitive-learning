@@ -46,7 +46,7 @@ _ = ax.set(
 # %% [markdown]
 #
 # The XOR problem exhibits a non-linear decision link between the features and the
-# the target variable. Therefore, a linear model will not be able to separate the
+# the target variable. Therefore, a linear model is not be able to separate the
 # classes correctly. Let's confirm this intuition by fitting a logistic regression
 # model to such dataset.
 
@@ -58,7 +58,7 @@ model.fit(X_train, y_train)
 
 # %% [markdown]
 #
-# To check the decision boundary of the model, we will use an independent test set.
+# To check the decision boundary of the model, we use an independent test set.
 
 # %%
 from sklearn.inspection import DecisionBoundaryDisplay
@@ -462,7 +462,7 @@ for metric_name, ax in zip(["neg_log_loss", "roc_auc", "accuracy"], axes):
 #
 # Then, the proper scoring rule is the only one showing a significant decrease when
 # the regularization is too low. The intuition is that the model becomes over-confident
-# and thus not well-calibrated while the hard predictions will not be impacted.
+# and thus not well-calibrated while the hard predictions are not be impacted.
 #
 # Lastly, the proper scoring rule is the metric showing the least variance across the
 # different splits near of the optimal value. It therefore makes it a more robust metric
