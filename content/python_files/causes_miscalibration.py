@@ -12,6 +12,11 @@
 # variable following the XOR logic. We add some noise to the generative process.
 
 # %%
+# Make sure to have scikit-learn >= 1.5
+import sklearn
+sklearn.__version__
+
+# %%
 import numpy as np
 
 
