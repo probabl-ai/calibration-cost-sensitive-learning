@@ -584,7 +584,7 @@ DecisionBoundaryDisplay.from_estimator(
     ax=ax,
     cmap="coolwarm",
     response_method="predict",
-    alpha=0.8,
+    plot_method="contour"
 )
 ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", edgecolors="black")
 _ = ax.set(xlabel="Feature 1", ylabel="Feature 2")
@@ -617,7 +617,7 @@ DecisionBoundaryDisplay.from_estimator(
     ax=ax,
     cmap="coolwarm",
     response_method="predict",
-    alpha=0.8,
+    plot_method="contour",
 )
 ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", edgecolors="black")
 _ = ax.set(xlabel="Feature 1", ylabel="Feature 2")
@@ -724,7 +724,7 @@ for ax, model, title in zip(
         ax=ax,
         cmap="coolwarm",
         response_method="predict",
-        alpha=0.8,
+        plot_method="contour",
     )
     ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", edgecolors="black")
     ax.set(xlabel="Feature 1", ylabel="Feature 2", title=title)
@@ -752,6 +752,14 @@ for ax, model, title in zip(
         cmap="coolwarm",
         response_method="predict_proba",
         alpha=0.8,
+    )
+    DecisionBoundaryDisplay.from_estimator(
+        model,
+        X_test,
+        ax=ax,
+        cmap="coolwarm",
+        response_method="predict",
+        plot_method="contour",
     )
     ax.scatter(*X_train.T, c=y_train, cmap="coolwarm", edgecolors="black")
     ax.set(xlabel="Feature 1", ylabel="Feature 2", title=title)
