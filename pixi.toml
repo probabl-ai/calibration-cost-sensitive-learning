@@ -13,7 +13,7 @@ check-generated-predictions = { cmd = "python check_generated_predictions.py", c
 different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "content/python_files" }
 miscalibration-under-over-fit = { cmd = "ipython miscalibration_under_over_fit.py", cwd = "content/python_files" }
 miscalibration-reweighting = { cmd = "ipython miscalibration_reweighting.py", cwd = "content/python_files" }
-
+cost-sensitive-learning = { cmd = "ipython cost_sensitive_learning.py", cwd = "content/python_files" }
 
 [dependencies]
 jupyterlab = ">=4.2.4,<5"

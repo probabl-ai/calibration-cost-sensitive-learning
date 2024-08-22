@@ -30,6 +30,7 @@ jobs:
             pixi run different-calibration-curves
             pixi run miscalibration-under-over-fit
             pixi run miscalibration-reweighting
+            pixi run cost-sensitive-learning
 
       - name: Test if we can build the documentation
         if: matrix.os == 'ubuntu-latest'
