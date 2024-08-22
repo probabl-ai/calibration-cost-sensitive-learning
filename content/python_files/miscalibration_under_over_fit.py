@@ -429,6 +429,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 # - the accuracy that is a thresholded metric.
 
 # %%
+from pathlib import Path
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from sklearn.model_selection import ShuffleSplit, validation_curve
 
@@ -438,19 +439,33 @@ model = make_pipeline(
     LogisticRegression(max_iter=10_000),
 )
 
+# Since the computation of the validation curve is expensive, we stored the results
+# and commit them in the repository. If the folder containing the results does not
+# exist, we compute the validation curve and store the results.
 
-n_splits, param_range = 50, np.logspace(-2, 4, 30)
+n_splits, param_range = 100, np.logspace(-2, 4, 30)
+test_scores = {}
 for metric_name in ["neg_log_loss", "roc_auc", "accuracy"]:
-    train_scores, test_scores = validation_curve(
-        model,
-        X_train,
-        y_train,
-        param_name="logisticregression__C",
-        param_range=param_range,
-        scoring=metric_name,
-        cv=ShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=0),
-        n_jobs=-1,
-    )
+    results_file_path = Path(f"../results/validation_curve_{metric_name}.npz")
+    if not results_file_path.is_file():
+        _, test_scores_metric = validation_curve(
+            model,
+            X_train,
+            y_train,
+            param_name="logisticregression__C",
+            param_range=param_range,
+            scoring=metric_name,
+            cv=ShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=0),
+            n_jobs=-1,
+        )
+        parent_folder = results_file_path.parent
+        if not parent_folder.is_dir():
+            parent_folder.mkdir(parents=True)
+        np.savez(results_file_path, test_scores=test_scores_metric)
+        test_scores[metric_name] = test_scores_metric
+    else:
+        with np.load(results_file_path) as data:
+            test_scores[metric_name] = data["test_scores"]
 
 # %%
 fig, axes = plt.subplots(ncols=3, figsize=(15, 5))
@@ -468,7 +483,7 @@ for idx, (metric_name, ax) in enumerate(
     all_best_param_values = []
     for _ in range(200):
         selected_fold_idx = rng.choice(n_splits, size=bootstrap_size, replace=False)
-        mean_test_score = test_scores[:, selected_fold_idx].mean(axis=1)
+        mean_test_score = test_scores[metric_name][:, selected_fold_idx].mean(axis=1)
         ax.plot(
             param_range,
             mean_test_score,
@@ -481,7 +496,7 @@ for idx, (metric_name, ax) in enumerate(
         best_test_score = mean_test_score[best_param_idx]
         ax.vlines(
             best_param_value,
-            ymin=test_scores.min(),
+            ymin=test_scores[metric_name].min(),
             ymax=best_test_score,
             linewidth=0.3,
             color="tab:orange",
