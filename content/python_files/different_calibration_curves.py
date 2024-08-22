@@ -30,7 +30,7 @@ y_true
 
 # %% [markdown]
 #
-# We observed that we have a binary classification problem. Now, we load different
+# We observe that we have a binary classification problem. Now, we load different
 # sets of predictions of probabilities estimated by different models.
 
 # %%
@@ -39,8 +39,14 @@ y_proba
 
 # %% [markdown]
 #
-# We assess the calibration of the model that provide these predictions by plotting
-# the calibration curve.
+# We assess the calibration of the model that provide these predictions by
+# plotting the calibration curve:
+# 
+# - data points are first **grouped into bins of similar predicted
+#   probabilities**;
+# - then for each bin, we plot a point of the curve that represents the
+#   **fraction of observed positive labels in a bin** against the **mean
+#   predicted probability for the positive class in that bin**.
 
 # %%
 from sklearn.calibration import CalibrationDisplay
@@ -107,14 +113,28 @@ _ = disp.ax_.set(
 
 # %% [markdown]
 #
-# We added a vertical line at a 0.5 threshold for the mean predicted probability. Let's
-# first focus on the left part of the curve. The calibration curve is above the diagonal
-# it means that the fraction of positive samples is higher than the predicted
-# probabilities. Therefore, our model is too conservative at predicting the positive
-# class and is therefore under-confident. On the right part of the curve, the
-# calibration curve is below the diagonal. It means that the fraction of positive
-# samples is lower than the predicted probabilities. Our model is therefore
-# over-confident.
+# We added a vertical line at a 0.5 threshold for the mean predicted
+# probability.
+#
+# Let's first focus on the **right part of the curve**, that is when the models
+# predicts the positive class, assuming a decision threshold at 0.5. The
+# calibration curve is below the diagonal. It means that the fraction of
+# observed positive data points is lower than the predicted probabilities.
+# Therefore, our model over-estimates the probabilities of the positive class
+# when the predictions are higher than the default threshold: the model is
+# therefore **over-confident in predicting the positive class**.
+# 
+# Let's now focus on the **left part of the curve**, that is when the model
+# predicts the negative class. The curve is above the diagonal, meaning that
+# the fraction of observed positive data points is higher than the predicted
+# probabilities of the positive class. This also means that the fraction of
+# observed negatives is lower than the predicted probabilities of the negative
+# class. Therefore, our model is also **over-confident in predicting the
+# negative class**.
+#
+# In conclusion, our model is over-confident when predicting either classes:
+# the predicted probabilities are too close to 0 or 1 compared to the observed
+# fraction of positive data points in each bin.
 #
 # Let's use the same approach to analyze some other typical calibration curves.
 
