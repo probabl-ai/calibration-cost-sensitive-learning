@@ -37,7 +37,7 @@ jupyter-book = "*"
 [feature.doc.tasks]
 convert-to-notebooks = { cmd = "jupytext --to notebook ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
 convert-to-executed-notebooks = { cmd = "jupytext --to notebook --execute ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
-build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-executed-notebooks"] }
+build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
 
 [environments]
 lint = ["lint"]
