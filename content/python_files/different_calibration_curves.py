@@ -1,14 +1,18 @@
 # %% [markdown]
 #
-# # Understanding calibration curves
+# # Reading calibration curves
 #
-# In this notebook, we explore calibration curves. We use different set of predictions
-# leading to different calibration curves from which we want to build insights and
-# understand the impact and meaning when it comes to our predictive models.
+# In this notebook, we explore calibration curves. We use different set of
+# predictions leading to different calibration curves from which we want to
+# build insights and understand the impact and meaning when it comes to our
+# predictive models.
 #
-# So let's first generate some predictions. The generative process is located in the
-# file `_generate_predictions.py`. This process stores the true labels and the
-# predicted probability estimates of several models into the `predictions` folder.
+# So let's first collect different prediction sets for the same classification
+# task. This is achieved by a script named `_generate_predictions.py`. This
+# script stores the true labels and the predicted probability estimates of
+# several models into the `predictions` folder. We don't need to understand
+# what model they correspond to, we just want to analyze the calibration of
+# these models.
 
 # %%
 # Equivalent to the magic command "%run _generate_predictions.py" but it allows this
@@ -28,14 +32,21 @@ import numpy as np
 y_true = np.load("../predictions/y_true.npy")
 y_true
 
+# %%
+unique_class_labels, counts = np.unique(y_true, return_counts=True)
+unique_class_labels
+
+# %%
+counts
+
 # %% [markdown]
 #
 # We observe that we have a binary classification problem. Now, we load different
 # sets of predictions of probabilities estimated by different models.
 
 # %%
-y_proba = np.load("../predictions/y_prob_1.npy")
-y_proba
+y_proba_1 = np.load("../predictions/y_prob_1.npy")
+y_proba_1
 
 # %% [markdown]
 #
@@ -52,9 +63,9 @@ y_proba
 from sklearn.calibration import CalibrationDisplay
 
 params = {"n_bins": 10, "strategy": "quantile"}
-disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+disp = CalibrationDisplay.from_predictions(y_true, y_proba_1, **params)
 _ = disp.ax_.set(
-    title="Calibrated model",
+    title="Model 1 - well calibrated",
     xlim=(0, 1),
     ylim=(0, 1),
     aspect="equal",
@@ -65,14 +76,6 @@ _ = disp.ax_.set(
 # We observe that the calibration curve is close to the diagonal that represents a
 # perfectly calibrated model. It means that relying on the predicted probabilities
 # will provide reliable estimates of the true probabilities.
-#
-# For further analysis, we also compute the ROC AUC score of the model. It recall that
-# this metric is only based on the ranking of the predicted probabilities.
-
-# %%
-from sklearn.metrics import roc_auc_score
-
-print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
 
 # %% [markdown]
 #
@@ -82,30 +85,15 @@ print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
 # We now repeat the same analysis for the other sets of predictions.
 
 # %%
-y_proba = np.load("../predictions/y_prob_2.npy")
-disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
-_ = disp.ax_.set(
-    title="Uncalibrated model",
-    xlim=(0, 1),
-    ylim=(0, 1),
-    aspect="equal",
-)
-print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
+y_proba_2 = np.load("../predictions/y_prob_2.npy")
 
-# %% [markdown]
-#
-# We see that the ROC AUC score is the same. It means that whatever transformation we
-# apply to the predicted probabilities, it did not change the ranking of the
-# predictions. However, the calibration curve is not following the diagonal anymore.
-#
-# Let's slightly modify the graphical representation to better interpret the results.
 
 # %%
-disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+disp = CalibrationDisplay.from_predictions(y_true, y_proba_2, **params)
 disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
 disp.ax_.legend()
 _ = disp.ax_.set(
-    title="Uncalibrated model",
+    title="Model 2 - over confident",
     xlim=(0, 1),
     ylim=(0, 1),
     aspect="equal",
@@ -139,45 +127,36 @@ _ = disp.ax_.set(
 # Let's use the same approach to analyze some other typical calibration curves.
 
 # %%
-y_proba = np.load("../predictions/y_prob_3.npy")
-disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+y_proba_3 = np.load("../predictions/y_prob_3.npy")
+disp = CalibrationDisplay.from_predictions(y_true, y_proba_3, **params)
 disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
 disp.ax_.legend()
 _ = disp.ax_.set(
-    title="Uncalibrated model",
+    title="Model 3 - under confident",
     xlim=(0, 1),
     ylim=(0, 1),
     aspect="equal",
 )
-print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
 
 # %% [markdown]
 #
-# As in the previous case, we observe that the transformation applied does not change
-# the ranking of the predictions since we obtain the same ROC AUC score. However, we
-# have a completely different calibration curve that is not following the diagonal as
-# well.
-#
-# First, we note that the curve does not span on the left side of the plot. It means
-# that our model never predicts probabilities lower than 0.5 even though there is
-# a small fraction of positive samples. On the right side of the curve, we are below
-# the diagonal meaning that our model is predicting higher probabilities estimates
-# than the fraction of positive samples. Our model is clearly over-confident.
+# Here, we observe the opposite behaviour compared to the previous case: our model
+# output probabilities that are too close to 0.5 compared to the empirical positive
+# class fraction. Therefore, this model is under-confident.
 #
 # Let's check the last set of predictions.
 
 # %%
-y_proba = np.load("../predictions/y_prob_4.npy")
-disp = CalibrationDisplay.from_predictions(y_true, y_proba, **params)
+y_proba_4 = np.load("../predictions/y_prob_4.npy")
+disp = CalibrationDisplay.from_predictions(y_true, y_proba_4, **params)
 disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
 disp.ax_.legend()
 _ = disp.ax_.set(
-    title="Uncalibrated model",
+    title="Model 4 - ",
     xlim=(0, 1),
     ylim=(0, 1),
     aspect="equal",
 )
-print(f"ROC AUC: {roc_auc_score(y_true, y_proba):.2f}")
 
 # %% [markdown]
 #

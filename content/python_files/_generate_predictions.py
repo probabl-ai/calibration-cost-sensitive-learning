@@ -21,33 +21,34 @@ model = LogisticRegression()
 model.fit(X_train, y_train)
 
 # %%
-y_pred = model.predict_proba(X_test)[:, 1]
+raw_y_pred = model.predict_proba(X_test)[:, 1]
 
 # %%
-np.save("../predictions/y_prob_1.npy", y_pred)
+np.save("../predictions/y_prob_1.npy", raw_y_pred)
 
 # %%
 from scipy.special import expit
 
-y_pred = model.predict_proba(X_test)[:, 1]
-y_pred = expit(10 * (y_pred - 0.5))
+y_pred = expit(10 * (raw_y_pred - 0.5))
 
-# %%
 np.save("../predictions/y_prob_2.npy", y_pred)
 
 
 # %%
-y_pred = model.predict_proba(X_test)[:, 1]
-y_pred = np.log(y_pred)
+from scipy.interpolate import interp1d
+
+# Mirror the previous sigmoid curve around the diagonal:
+y_pred = interp1d(y_pred, raw_y_pred, fill_value="extrapolate")(raw_y_pred)
 y_pred = (y_pred - y_pred.min()) / (y_pred.max() - y_pred.min())
 
-# %%
 np.save("../predictions/y_prob_3.npy", y_pred)
 
 # %%
-y_pred = model.predict_proba(X_test)[:, 1]
-y_pred = np.exp(y_pred * 5)
-y_pred = (y_pred - y_pred.min()) / (y_pred.max() - y_pred.min())
+# Equality reweighting the classes at training time.
 
-# %%
+p = raw_y_pred
+w = 0.1
+y_pred = (p / w) / (1 - p + p / w)
+
 np.save("../predictions/y_prob_4.npy", y_pred)
+
