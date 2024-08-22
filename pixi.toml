@@ -11,7 +11,8 @@ generate-predictions = { cmd = "python _generate_predictions.py", cwd = "content
 build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "content/python_files" }
 check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
 different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "content/python_files" }
-causes-miscalibration = { cmd = "ipython causes_miscalibration.py", cwd = "content/python_files" }
+miscalibration-under-over-fit = { cmd = "ipython miscalibration_under_over_fit.py", cwd = "content/python_files" }
+miscalibration-reweighting = { cmd = "ipython miscalibration_reweigthing.py", cwd = "content/python_files" }
 
 
 [dependencies]
