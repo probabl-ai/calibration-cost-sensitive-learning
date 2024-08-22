@@ -12,7 +12,7 @@ build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "c
 check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
 different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "content/python_files" }
 miscalibration-under-over-fit = { cmd = "ipython miscalibration_under_over_fit.py", cwd = "content/python_files" }
-miscalibration-reweighting = { cmd = "ipython miscalibration_reweighting.py.py", cwd = "content/python_files" }
+miscalibration-reweighting = { cmd = "ipython miscalibration_reweighting.py", cwd = "content/python_files" }
 
 
 [dependencies]
