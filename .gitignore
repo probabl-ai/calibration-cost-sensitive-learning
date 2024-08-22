@@ -77,8 +77,9 @@ jupyterlite_contents
 .pixi
 *.egg-info
 
-# generate predictions
+# generate predictions and results
 content/predictions
+content/results
 
 # jupyter-book build
 book/_build

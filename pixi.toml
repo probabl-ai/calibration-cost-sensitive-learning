@@ -11,6 +11,9 @@ generate-predictions = { cmd = "python _generate_predictions.py", cwd = "content
 build-calibration-curve = { cmd = "ipython build_calibration_curve.py", cwd = "content/python_files" }
 check-generated-predictions = { cmd = "python check_generated_predictions.py", cwd = "tests" }
 different-calibration-curves = { cmd = "ipython different_calibration_curves.py", cwd = "content/python_files" }
+miscalibration-under-over-fit = { cmd = "ipython miscalibration_under_over_fit.py", cwd = "content/python_files" }
+miscalibration-reweighting = { cmd = "ipython miscalibration_reweighting.py", cwd = "content/python_files" }
+
 
 [dependencies]
 jupyterlab = ">=4.2.4,<5"
@@ -34,7 +37,7 @@ jupyter-book = "*"
 [feature.doc.tasks]
 convert-to-notebooks = { cmd = "jupytext --to notebook ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
 convert-to-executed-notebooks = { cmd = "jupytext --to notebook --execute ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
-build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-executed-notebooks"] }
+build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
 
 [environments]
 lint = ["lint"]
