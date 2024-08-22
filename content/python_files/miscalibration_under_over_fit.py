@@ -14,6 +14,7 @@
 # %%
 # Make sure to have scikit-learn >= 1.5
 import sklearn
+
 sklearn.__version__
 
 # %%
@@ -428,7 +429,8 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 # - the accuracy that is a thresholded metric.
 
 # %%
-from sklearn.model_selection import ShuffleSplit, ValidationCurveDisplay
+from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+from sklearn.model_selection import ShuffleSplit, validation_curve
 
 model = make_pipeline(
     SplineTransformer(n_knots=15),
@@ -436,29 +438,67 @@ model = make_pipeline(
     LogisticRegression(max_iter=10_000),
 )
 
-_, axes = plt.subplots(ncols=3, figsize=(15, 5))
+
+n_splits, param_range = 50, np.logspace(-2, 4, 30)
+for metric_name in ["neg_log_loss", "roc_auc", "accuracy"]:
+    train_scores, test_scores = validation_curve(
+        model,
+        X_train,
+        y_train,
+        param_name="logisticregression__C",
+        param_range=param_range,
+        scoring=metric_name,
+        cv=ShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=0),
+        n_jobs=-1,
+    )
+
+# %%
+fig, axes = plt.subplots(ncols=3, figsize=(15, 5))
 full_metric_name = {
     "neg_log_loss": "negative log loss",
     "roc_auc": "ROC AUC",
     "accuracy": "accuracy",
 }
-for metric_name, ax in zip(["neg_log_loss", "roc_auc", "accuracy"], axes):
-    disp = ValidationCurveDisplay.from_estimator(
-        model,
-        X_train,
-        y_train,
-        param_name="logisticregression__C",
-        param_range=np.logspace(-6, 6, 13),
-        scoring=metric_name,
-        ax=ax,
-        cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=0),
-    )
+for idx, (metric_name, ax) in enumerate(
+    zip(["neg_log_loss", "roc_auc", "accuracy"], axes)
+):
+    rng = np.random.default_rng(0)
+    bootstrap_size = 5
+    ax_hist = make_axes_locatable(ax).append_axes("top", size="20%", pad=0.1, sharex=ax)
+    all_best_param_values = []
+    for _ in range(200):
+        selected_fold_idx = rng.choice(n_splits, size=bootstrap_size, replace=False)
+        mean_test_score = test_scores[:, selected_fold_idx].mean(axis=1)
+        ax.plot(
+            param_range,
+            mean_test_score,
+            color="tab:blue",
+            linewidth=0.1,
+            zorder=-1,
+        )
+        best_param_idx = mean_test_score.argmax()
+        best_param_value = param_range[best_param_idx]
+        best_test_score = mean_test_score[best_param_idx]
+        ax.vlines(
+            best_param_value,
+            ymin=test_scores.min(),
+            ymax=best_test_score,
+            linewidth=0.3,
+            color="tab:orange",
+        )
+        all_best_param_values.append(best_param_value)
     ax.set(
         xlabel="Regularization C",
         ylabel=full_metric_name[metric_name],
         xscale="log",
-        title=f"Validation curve on {full_metric_name[metric_name]}",
     )
+    bins = (param_range[:-1] + param_range[1:]) / 2
+    ax_hist.hist(
+        all_best_param_values, bins=bins, color="tab:orange", edgecolor="black"
+    )
+    ax_hist.xaxis.set_tick_params(labelleft=False, labelbottom=False)
+    ax_hist.yaxis.set_tick_params(labelleft=False, labelbottom=False)
+_ = fig.suptitle("Stability of parameter tuning based on different metrics")
 
 # %% [markdown]
 #
@@ -537,5 +577,5 @@ _ = fig.suptitle(
 )
 # %% [markdown]
 #
-# We see that our hyperparameter tuning procedure leads to a well-calibrated model since
+# We see that our hyperparameter tuning procedure leadsx§ to a well-calibrated model since
 # we used a proper scoring rule.
