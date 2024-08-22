@@ -327,7 +327,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
-# ### Is it true for other models?
+# ## Is it true for other models?
 #
 # In this section, we want to show that the previous findings are not specific to the
 # a linear model that relies on a pre-processing step. Here, we use a gradient-boosting
@@ -409,7 +409,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
-# ### Hyperparameter tuning while considering calibration
+# ## Hyperparameter tuning while considering calibration
 #
 # From the previous sections, we saw that the hyperparameters of a model while impacting
 # its complexity also impact its calibration. It therefore becomes crucial to tune the
