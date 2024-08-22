@@ -1,11 +1,11 @@
 # %% [markdown]
 #
-# # The causes of miscalibration
+# # Miscalibration due to inappropriate model hyperparameters
 #
-# ## Effect of under-fitting and over-fitting on model calibration
-#
-# In this section, we look at the effect of under-fitting and over-fitting on the
-# calibration of a model.
+# Models complexity are controlled via their hyperparameters. Depending on their values,
+# we can have models that are under-fitting or over-fitting. In this notebook, we
+# investigate the relationship between models hyperparameters, model complexity, and
+# their calibration.
 #
 # Let's start by defining our classification problem: we use the so-called XOR problem.
 # The function `xor_generator` generates a dataset with two features and the target
@@ -437,21 +437,27 @@ model = make_pipeline(
 )
 
 _, axes = plt.subplots(ncols=3, figsize=(15, 5))
+full_metric_name = {
+    "neg_log_loss": "negative log loss",
+    "roc_auc": "ROC AUC",
+    "accuracy": "accuracy",
+}
 for metric_name, ax in zip(["neg_log_loss", "roc_auc", "accuracy"], axes):
     disp = ValidationCurveDisplay.from_estimator(
         model,
         X_train,
         y_train,
         param_name="logisticregression__C",
-        param_range=np.logspace(-6, 6, 25),
+        param_range=np.logspace(-6, 6, 13),
         scoring=metric_name,
         ax=ax,
         cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=0),
     )
     ax.set(
         xlabel="Regularization C",
+        ylabel=full_metric_name[metric_name],
         xscale="log",
-        title=f"Validation curve on {disp.ax_.get_ylabel()}",
+        title=f"Validation curve on {full_metric_name[metric_name]}",
     )
 
 # %% [markdown]
@@ -488,7 +494,7 @@ param_distributions = {
 tuned_model = RandomizedSearchCV(
     model,
     param_distributions=param_distributions,
-    n_iter=50,
+    n_iter=25,
     scoring="neg_log_loss",
     cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=0),
     random_state=0,
@@ -521,6 +527,7 @@ CalibrationDisplay.from_estimator(
     strategy="quantile",
     n_bins=10,
     ax=ax[1],
+    name="Tuned logistic regression",
 )
 _ = ax[1].set(aspect="equal")
 
@@ -528,3 +535,7 @@ _ = fig.suptitle(
     f"Number of knots: {tuned_model.best_params_['splinetransformer__n_knots']}, "
     f"Regularization 'C': {tuned_model.best_params_['logisticregression__C']}"
 )
+# %% [markdown]
+#
+# We see that our hyperparameter tuning procedure leads to a well-calibrated model since
+# we used a proper scoring rule.
