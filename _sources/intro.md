@@ -14,7 +14,7 @@ and how to derive optimal decision policies for a user specified cost model.
 ```{tableofcontents}
 ```
 
-Browse the [notebooks with jupyterlite](/jupyterlite).
+Browse the [notebooks with jupyterlite](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite).
 
 ## Running the notebooks locally
 
