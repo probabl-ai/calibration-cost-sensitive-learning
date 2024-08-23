@@ -1,15 +1,20 @@
 # %% [markdown]
 #
-# # Miscalibration due to inappropriate model hyperparameters
+# # Miscalibration caused by inappropriate hyperparameters
 #
-# Models complexity are controlled via their hyperparameters. Depending on their values,
-# we can have models that are under-fitting or over-fitting. In this notebook, we
-# investigate the relationship between models hyperparameters, model complexity, and
-# their calibration.
+# Model complexity is controlled both by the choice of the model class, the
+# choice of preprocessing steps in the ML pipeline and by the choice of
+# hyperparameters at each step. Depending on those choices, we can obtain
+# pipelines that are under-fitting or over-fitting. In this notebook, we
+# investigate the relationship between models hyperparameters, model
+# complexity, and their calibration.
 #
-# Let's start by defining our classification problem: we use the so-called XOR problem.
-# The function `xor_generator` generates a dataset with two features and the target
-# variable following the XOR logic. We add some noise to the generative process.
+# Let's start by defining our classification problem: we use the so-called
+# (noisy) XOR problem. The function `xor_generator` generates a dataset with
+# two features and the target variable following the XOR logic. We add some
+# noise to the generative process to ensure that the target is not a fully
+# deterministic function of the features as this is never the case in real
+# applications of machine learning.
 
 # %%
 # Make sure to have scikit-learn >= 1.5
@@ -51,10 +56,10 @@ _ = ax.set(
 
 # %% [markdown]
 #
-# The XOR problem exhibits a non-linear decision link between the features and the
-# the target variable. Therefore, a linear model is not be able to separate the
-# classes correctly. Let's confirm this intuition by fitting a logistic regression
-# model to such dataset.
+# The XOR problem exhibits a non-linear decision link between the features and
+# the the target variable. Therefore, a linear classification model is not be
+# able to separate the classes correctly. Let's confirm this intuition by
+# fitting a logistic regression model to such a dataset.
 
 # %%
 from sklearn.linear_model import LogisticRegression
@@ -64,12 +69,10 @@ model.fit(X_train, y_train)
 
 # %% [markdown]
 #
-# To check the decision boundary of the model, we use an independent test set.
-
+# Let's visualize the decision boundary learned by the model:
 # %%
 from sklearn.inspection import DecisionBoundaryDisplay
 
-X_test, y_test = xor_generator(n_samples=10_000, seed=1)
 
 fig, ax = plt.subplots()
 params = {
@@ -80,7 +83,7 @@ params = {
     "vmin": 0,
     "vmax": 1,
 }
-disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
+disp = DecisionBoundaryDisplay.from_estimator(model, X_train, ax=ax, **params)
 ax.scatter(*X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5)
 fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
 _ = ax.set(
@@ -94,14 +97,18 @@ _ = ax.set(
 
 # %% [markdown]
 #
-# We see that the probability estimates is almost constant and the model is really
-# uncertain with an estimated probability of 0.5 for all samples in the test set.
+# We see that the probability estimate is almost constant (near 0.5) everywhere
+# in the feature space: the model is really uncertain.
 #
-# We therefore need a more expressive model to capture the non-linear relationship
-# between the features and the target variable. Crafting a pre-processing step to
-# transform the features into a higher-dimensional space could help. We create a
-# pipeline that includes a spline transformation and a polynomial transformation before
-# to train our logistic regression model.
+# We therefore need a more expressive model to capture the non-linear
+# relationship between the features and the target variable. Crafting a
+# pre-processing step to transform the features into a higher-dimensional space
+# could help.
+#
+# Here we choose to create a pipeline that includes a first spline expansion for
+# each feature followed a polynomial transformation to capture multiplicative
+# interaction across features before passing the result to a final logistic
+# regression model.
 
 # %%
 from sklearn.preprocessing import SplineTransformer, PolynomialFeatures
@@ -109,10 +116,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
 model = make_pipeline(
+    # Expand each feature marginally using splines:
     SplineTransformer(),
-    # Only add interaction terms to avoid blowing up the number of features
+    # Model multiplicative interactions across features:
     PolynomialFeatures(interaction_only=True),
-    # Increase the number of iterations to ensure convergence
+    # Increase the number of iterations to ensure convergence even with low
+    # regularization when tuning C later.
     LogisticRegression(max_iter=10_000),
 )
 model.fit(X_train, y_train)
@@ -123,7 +132,7 @@ model.fit(X_train, y_train)
 
 # %%
 fig, ax = plt.subplots()
-disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax, **params)
+disp = DecisionBoundaryDisplay.from_estimator(model, X_train, ax=ax, **params)
 ax.scatter(*X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5)
 fig.colorbar(disp.surface_, ax=ax, label="Probability estimate")
 _ = ax.set(
@@ -137,10 +146,20 @@ _ = ax.set(
 
 # %% [markdown]
 #
-# We see that our model is capable of capturing the non-linear relationship between
-# the features and the target variable. The probability estimates are now varying
-# across the samples. We could check the calibration of our model using the calibration
-# curve.
+# We see that our refined pipeline is capable of capturing the non-linear
+# relationship between the features and the target variable. The probability
+# estimates are now varying across the samples.
+#
+# To evaluate the calibration of the model, we plot the calibration curve on an
+# independent test set. Here we generate a test set with a large number of data
+# points to get a stable estimate of the quality of the model. Using large test
+# sets is a luxurary that we can typically not afford in practice, we only do
+# it here for educational reasons. The alternative would be to run the full
+# analysis multiple times via cross-validation but we refrain from doing this
+# here to keep the notebook simple.
+
+# %%
+X_test, y_test = xor_generator(n_samples=10_000, seed=1)
 
 # %%
 from sklearn.calibration import CalibrationDisplay
@@ -156,24 +175,40 @@ _ = disp.ax_.set(aspect="equal")
 
 # %% [markdown]
 #
-# We observe that the calibration of the model is not perfect. So is there a way to
-# improve the calibration of our model?
+# We observe that the calibration of the model is far from ideal. Is there a
+# way to improve the calibration of our model?
 #
 # As an exercise, let's try to three different hyperparameters configurations:
-# - one configuration with 5 knots (i.e. `n_knots`) for the spline transformation and a
-#   regularization parameter `C` of 1e-4 for the logistic regression,
-# - one configuration with 7 knots for the spline transformation and a regularization
-#   parameter `C` of 1e1 for the logistic regression,
-# - one configuration with 15 knots for the spline transformation and a regularization
-#   parameter `C` of 1e4 for the logistic regression.
+# - one configuration with 5 knots (i.e. `n_knots`) for the spline
+#   transformation and a regularization parameter `C` of 1e-1 for the logistic
+#   regression,
+# - one configuration with 7 knots for the spline transformation and a
+#   regularization parameter `C` of 1e1 for the logistic regression,
+# - one configuration with 15 knots for the spline transformation and a
+#   regularization parameter `C` of 1e4 for the logistic regression.
 #
-# For each configuration, plot the decision boundary and the calibration curve. What
-# can you observe in terms of under-/over-fitting and calibration?
+# For each configuration, plot the decision boundary and the calibration curve.
+# What can you observe in terms of under-/over-fitting and calibration?
 
 # %%
 
 param_configs = [
-    {"splinetransformer__n_knots": 5, "logisticregression__C": 1e-4},
+    {"splinetransformer__n_knots": 5, "logisticregression__C": 1e-1},
+    {"splinetransformer__n_knots": 7, "logisticregression__C": 1e1},
+    {"splinetransformer__n_knots": 15, "logisticregression__C": 1e4},
+]
+
+# TODO: write me!
+
+
+
+# %% [markdown]
+# ### Solution:
+
+# %%
+
+param_configs = [
+    {"splinetransformer__n_knots": 5, "logisticregression__C": 1e-1},
     {"splinetransformer__n_knots": 7, "logisticregression__C": 1e1},
     {"splinetransformer__n_knots": 15, "logisticregression__C": 1e4},
 ]
@@ -184,7 +219,7 @@ for model_params in param_configs:
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
-    disp = DecisionBoundaryDisplay.from_estimator(model, X_test, ax=ax[0], **params)
+    disp = DecisionBoundaryDisplay.from_estimator(model, X_train, ax=ax[0], **params)
     ax[0].scatter(
         *X_train.T, c=y_train, cmap=params["cmap"], edgecolors="black", alpha=0.5
     )
@@ -214,28 +249,33 @@ for model_params in param_configs:
 
 # %% [markdown]
 #
-# From the previous exercise, we observe that whether we have an under-fitting or
-# over-fitting model impact its calibration. With a high regularization (i.e. `C=1e-4`),
-# we see that the model undefits since it does not discriminate between the two classes.
-# It translates into obtaining a vertical calibration curve meaning that our model
-# predicts the same probability for all fraction of positive samples.
+# From the previous exercise, we observe that whether we have an under-fitting
+# or over-fitting model impact its calibration. With a high regularization
+# (i.e. `C=1e-1`), we see that the model undefits as it is too constrained to
+# be able to predict high enough probabilties in areas of the feature space
+# without any class ambiguity. It translates into obtaining a vertical-ish
+# calibration curve meaning that our model is underconfident.
 #
-# On the other hand, if we have a low regularization (i.e. `C=1e4`), and allows the
-# the model to be flexible by having a large number of knots, we see that the model
-# overfits since it is able to isolate noisy samples in the feature space. It translates
-# into a calibration curve where we observe that our model is over-confident.
+# On the other hand, if we have a low regularization (i.e. `C=1e4`), and allows
+# the the model to be flexible by having a large number of knots, we see that
+# the model overfits since it is able to isolate noisy samples in the feature
+# space. It translates into a calibration curve where we observe that our model
+# is overconfident.
 #
-# Finally, there is a sweet spot where the model does not underfit nor overfit. In this
-# case, we also get a calibrated model.
+# Finally, there is a sweet spot where the model between underfitting and
+# overfitting. In this case, we also get a well calibrated model.
 #
-# We can push the analysis further by looking at a wider range of hyperparameters:
+# We can push the analysis further by assessing the impact of wider range of
+# hyperparameters:
 #
-# - the impact of `n_knots` of the `SplineTransformer`,
-# - whether or not to compute interaction terms using a `PolynomialFeatures`,
-# - the impact of the parameter `C` of the `LogisticRegression`.
+# - varying `n_knots` of the `SplineTransformer` preprocessing step,
+# - choosing whether or not to model multiplicative feature interactions using
+#   a `PolynomialFeatures`,
+# - varying the regularization parameter `C` of the final `LogisticRegression`
+#   classifier.
 #
-# We can plot the full grid of hyperparameters to see the effect on the decision
-# boundary and the calibration curve.
+# We can plot the full grid of hyperparameters to see the effect on the
+# decision boundary and the calibration curve.
 
 # %%
 from sklearn.model_selection import ParameterGrid
@@ -267,7 +307,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
     # Create a title
     title = f"{model_params['splinetransformer__n_knots']} knots"
     title += " with " if model_params["polynomialfeatures"] else " without "
-    title += "interaction terms"
+    title += "interaction"
     # Display the results
     disp = DecisionBoundaryDisplay.from_estimator(
         model, X_test, ax=ax_boundary, **params
@@ -300,41 +340,44 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
-# An obvious observation is that without explicitly creating the interaction terms,
-# our model is mis-specified and the model cannot capture the non-linear relationship,
-# whatever the other hyperparameters values.
+# An obvious observation is that without explicitly creating the interaction
+# terms, our model is fundamentally mis-specified: model cannot represent the
+# non-linear relationship, whatever the other hyperparameters values.
 #
-# A larger number of knots in the spline transformation increases the flexibility of the
-# decision boundary since it can vary at more locations into the feature space.
-# Therefore, if we use a too large number of knots, then the model is able isolate noisy
-# samples in this feature space, depending of the subsequent regularization parameter
-# `C`.
+# A large enough number of knots in the spline transformation combined with
+# interactions increases the flexibility of the learning procedure: the
+# decision boundary can isolate more and more subregions of the feature space.
+# Therefore, if we use a too large number of knots, then the model is able
+# isolate noisy training data points when `C` allows.
 #
-# Indeed, the parameter `C` controls the loss function that is minimized during the
-# training: a small value of `C` enforces to minimize the norm of the model coefficients
-# and thus discard, more or less, the training error (i.e. the mean squared error). A
-# large value of `C` enforces to prioritize minimizing the training error without
-# constraining, more or less, the norm of the coefficients.
+# Indeed, the parameter `C` controls the loss function that is minimized during
+# the training: a small value of `C` enforces to minimize the norm of the model
+# coefficients and thus discard the influence of changes in feature values. A
+# large value of `C` enforces to prioritize minimizing the training error
+# without constraining, more or less, the norm of the coefficients.
 #
-# Understanding the previous principles, it allows us to understand that we have an
-# interaction between the number of knots and the regularization parameter `C`. Since a
-# model with a larger number of knots is more flexible and thus more prone to
-# overfitting, the value of the parameter `C` should be smaller (i.e. more
-# regularization) than a model with a smaller number of knots.
+# There therefore an interaction between the number of knots and the
+# regularization parameter `C`: a model with a larger number of knots is more
+# flexible and thus more prone to overfitting, the optimal value of the
+# parameter `C` should be smaller (i.e. more regularization) than a model with
+# a smaller number of knots.
 #
-# For instance, setting `C=100` with `n_knots=5` leads to a model with a similar
-# calibration curve as setting `C=10` with `n_knots=15`.
+# For instance, setting `C=100` with `n_knots=5` leads to a model with a
+# similar calibration curve as setting `C=10` with `n_knots=15`.
 
 # %% [markdown]
 #
 # ## Is it true for other models?
 #
-# In this section, we want to show that the previous findings are not specific to the
-# a linear model that relies on a pre-processing step. Here, we use a gradient-boosting
-# model that naturally captures non-linear relationships of the XOR problem.
+# In this section, we want to show that the previous findings are not specific
+# to the a linear model that relies on a pre-processing step. Here, we use a
+# gradient-boosting model that naturally captures non-linear relationships of
+# the XOR problem without any need for a pre-processing step.
 #
-# We check that the calibration of the model by changing the hyperparameters
-# `max_leaf_nodes` and `learning_rate` that are known to impact the model complexity.
+# We the impact of the choice for the `max_leaf_nodes` and `learning_rate`
+# hyperparameters on the calibration curves when holding the number of boosting
+# iteration fixed. Those hyperparameters are known to impact the model
+# complexity and therefore the under-fitting/over-fitting trade-off.
 
 # %%
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -363,7 +406,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
     title = f"Maximum number of leaf nodes: {model_params['max_leaf_nodes']}"
     # Display the results
     disp = DecisionBoundaryDisplay.from_estimator(
-        model, X_test, ax=ax_boundary, **params
+        model, X_train, ax=ax_boundary, **params
     )
     ax_boundary.scatter(
         *X_train.T, c=y_train, cmap=params["cmap"], edgecolor="black", alpha=0.5
@@ -393,40 +436,51 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 
 # %% [markdown]
 #
-# From the boundary decision plots, we observe that the model, whatever the
-# hyperparameters, is capable of capturing the link between the features and the target.
-# However, if we look at the probability estimates, we still observe the same effect of
-# under-fitting and over-fitting as for the logistic regression model. It also means
-# that tuning the parameter `max_leaf_nodes` on this specific dataset is not worth it
-# since for a single decision tree, the perfect decision boundary is achieved with
-# 4 leaf nodes.
-#
-# However, the learning rate is the parameter that controls the model to under-fit or
-# over-fit. A too low learning rate leads to an under-fitting model and the model is
-# under-confident with probability estimates that are too low. On the other hand, a too
-# high learning rate leads to an over-fitting model and the model is over-confident with
-# probability estimates that are too high.
+# From the boundary decision plots, we observe that all the explored models are
+# capable of capturing the link between the features and the target. However,
+# if we look at the probability estimates, we still observe the same effect of
+# under-fitting and over-fitting as for our polynomial classification pipeline.
+# It also means that tuning the parameter `max_leaf_nodes` on this simplistic
+# 2D dataset is not worth it since for a single decision tree, the perfect
+# decision boundary is achieved with only 4 leaf nodes. This would not be the
+# case on more complex datasets such as a noisy checkerboard classification
+# task for instance.
+# 
+# However, the learning rate is the parameter that controls if the model
+# under-fits or over-fits. A too low learning rate leads to an under-fitting
+# model and the model is underconfident with probability estimates that are too
+# close to 0.5, even in low ambiguity regions of the feature space. On the
+# other hand, a too high learning rate leads to an over-fitting model and the
+# model is over-confident with probability estimates that are too close to 0 or
+# 1.
 
 # %% [markdown]
 #
-# ## Hyperparameter tuning while considering calibration
+# ## Calibration-aware hyperparameter tuning
 #
-# From the previous sections, we saw that the hyperparameters of a model while impacting
-# its complexity also impact its calibration. It therefore becomes crucial to tune the
-# hyperparameters of a model while considering if its calibration. While scikit-learn
-# offers tools to tune hyperparameters such as `GridSearchCV` or `RandomizedSearchCV`,
-# there is a caveat: the default metric used to select the best model is not necessarily
-# the one leading to a well-calibrated model.
+# From the previous sections, we saw that the hyperparameters of a model while
+# impacting its complexity also impact its calibration. It therefore becomes
+# crucial to consider calibration when tuning the hyperparameters of a model.
+# While scikit-learn offers tools to tune hyperparameters such as
+# `GridSearchCV` or `RandomizedSearchCV`, there is a caveat: the default metric
+# used to select the best model is not necessarily the one leading to a
+# well-calibrated model.
 #
-# To illustrate this point, we use the previous logistic regression model with the
-# preprocessing step. From the previous experiment, we draw the conclusion that we
-# need to have some regularization to avoid overfitting induced by the number of knots.
-# Therefore, we plot the validate curve for different values of the regularization
-# parameter `C`. In addition, since we want to see the impact of the metric used to
-# tuned the hyperparameters, we plot different validation curves for different metrics:
+# To illustrate this point, we use the previous polynomial pipeline. From the
+# previous experiment, we draw the conclusion that we need to have some
+# regularization to avoid overfitting when the number of knots is large enough.
+# Therefore, we plot the validation curve for different values of the
+# regularization parameter `C`. In addition, since we want to see the impact of
+# the metric used to tuned the hyperparameters, we plot different validation
+# curves for different metrics:
 # - the negative log-likelihood that is a proper scoring rule,
 # - the ROC AUC that is a ranking metric,
 # - the accuracy that is a thresholded metric.
+#
+# Here we simulate 200 iterations of selecting the best value of C using the
+# mean cross-validation across 5 iteration via a form of bootstrapping. The
+# objective is to assess the stability of the tuning procedure for different
+# choices of the classification metric.
 
 # %%
 from pathlib import Path
@@ -439,9 +493,8 @@ model = make_pipeline(
     LogisticRegression(max_iter=10_000),
 )
 
-# Since the computation of the validation curve is expensive, we stored the results
-# and commit them in the repository. If the folder containing the results does not
-# exist, we compute the validation curve and store the results.
+# Since the computation of the validation curve is expensive, we reuse
+# precomputed results when available on disk.
 
 n_splits, param_range = 100, np.logspace(-2, 4, 30)
 test_scores = {}
@@ -519,23 +572,28 @@ _ = fig.suptitle("Stability of parameter tuning based on different metrics")
 #
 # From the previous plots, there are three important observations.
 #
-# First, the proper scoring rule (i.e. the negative log-likelihood) depicts a more
-# distinct bump in comparison to the ranking metric (i.e. the ROC AUC) and the
-# thresholded metric (i.e. the accuracy). The bump is still present for the ROC AUC but
-# it is less pronounced. The accuracy does not show any bump.
+# First, the proper scoring rule (i.e. the negative log-likelihood) depicts a
+# more distinct bump in comparison to the ranking metric (i.e. the ROC AUC) and
+# the thresholded metric (i.e. the accuracy). The bump is still present for the
+# ROC AUC but it is less pronounced. The accuracy does not show an a clearly
+# located bump.
 #
-# Then, the proper scoring rule is the only one showing a significant decrease when
-# the regularization is too low. The intuition is that the model becomes over-confident
-# and thus not well-calibrated while the hard predictions are not be impacted.
+# Then, the proper scoring rule is the only one showing a significant decrease
+# in model performance when the regularization is too low. The intuition is
+# that the model becomes over-confident and thus not well-calibrated. The other
+# metrics do not penalize overconfidence.
 #
-# Lastly, the proper scoring rule is the metric showing the least variance across the
-# different splits near of the optimal value. It therefore makes it a more robust metric
-# to select the best model.
+# Lastly, the proper scoring rule is the metric showing the least variability
+# variability across different resampling when identifying the best
+# hyperparameter. The ranking-only metric and the hard classification metric
+# show a larger variability. This is due to the fact that the proper scoring
+# rule is a more informative evaluation metric for probabilitic classifiers. It
+# therefore makes it a more robust metric to select the best model.
 #
-# We therefore recommend to always use a proper scoring rule when tuning the
-# hyperparemeters. Below, we show the methodology to pursue when using a proper scoring
-# together with a `RandomizedSearchCV`. We therefore needs to set specifically
-# `scoring` to `neg_log_loss` in the `RandomizedSearchCV`.
+# We therefore recommend to use a proper scoring rule when tuning the
+# hyperparemeters of a probabilistic classifier. Below, we show the methodology
+# to pursue when using a proper scoring together with a `RandomizedSearchCV` by
+# setting `scoring` to `"neg_log_loss"`.
 
 # %%
 from scipy.stats import loguniform
@@ -593,5 +651,4 @@ _ = fig.suptitle(
 # %% [markdown]
 #
 # We see that our procedure leads to a well-calibrated model since we used a
-# cross-validated proper scoring rule to select the best hyper-parameter
-# combination.
+# cross-validated as expected.
