@@ -182,12 +182,19 @@
                 </a>
             </li>
         </ul>
-        <ul class="nav bd-sidenav">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Classification metrics</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/classification_metrics.html">Choosing a classification metric</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Calibration</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/build_calibration_curve.html">What is a calibration curve?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/different_calibration_curves.html">Reading calibration curves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/miscalibration_under_over_fit.html">Miscalibration caused by inappropriate hyperparameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/miscalibration_reweighting.html">Miscalibration caused by data points reweighting</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cost-sensitive learning</span></p>
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/cost_sensitive_learning.html">Cost-sensitive learning to optimize business metrics</a></li>
 </ul>
 
@@ -386,7 +393,9 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slides">Slides</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks </a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks </a><ul class="nav section-nav flex-column">
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebooks-locally">Running the notebooks locally</a><ul class="nav section-nav flex-column">
@@ -419,12 +428,23 @@ and how to derive optimal decision policies for a user specified cost model.</p>
 <section id="notebooks">
 <h3>Notebooks <a class="reference external" href="https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite"><img alt="Launch JupyterLite" src="_images/jupyterlite_badge.svg" /></a><a class="headerlink" href="#notebooks" title="Link to this heading">#</a></h3>
 <div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Classification metrics</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/classification_metrics.html">Choosing a classification metric</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Calibration</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/build_calibration_curve.html">What is a calibration curve?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/different_calibration_curves.html">Reading calibration curves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/miscalibration_under_over_fit.html">Miscalibration caused by inappropriate hyperparameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/miscalibration_reweighting.html">Miscalibration caused by data points reweighting</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cost-sensitive learning</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/cost_sensitive_learning.html">Cost-sensitive learning to optimize business metrics</a></li>
 </ul>
 </div>
@@ -511,7 +531,9 @@ file as notebook, you need to right click on the file and select
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slides">Slides</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks </a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks </a><ul class="nav section-nav flex-column">
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebooks-locally">Running the notebooks locally</a><ul class="nav section-nav flex-column">
