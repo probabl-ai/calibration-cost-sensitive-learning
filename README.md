@@ -1,8 +1,11 @@
 # Probabilistic calibration and cost-sensitive learning
 
-Browse the tutorial online:
+Browse online:
 
-- https://probabl-ai.github.io/calibration-cost-sensitive-learning/
+[![Launch JupyterLite](./book/images/jupyterbook_badge.svg 'Our JupyterBook
+website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/) [![Launch
+JupyterLite](./book/images/jupyterlite_badge.svg 'Our JupyterLite
+website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite)
 
 ## Getting started
 
@@ -23,9 +26,9 @@ The Python environment and necessary packages will be automatically installed fo
 
 ### Opening lecture notes
 
-The lecture notes are available in the `content/python_files` directory. To open the Python
-file as notebook, you need to right click on the file and select
-`Open with` -> `Notebook`.
+The lecture notes are available in the `content/python_files` directory. To open the
+Python file as notebook, you need to right click on the file and select `Open with` ->
+`Notebook`.
 
 Alternatively, you can generate notebooks as well:
 
