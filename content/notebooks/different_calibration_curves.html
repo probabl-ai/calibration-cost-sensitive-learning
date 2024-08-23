@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Understanding calibration curves &#8212; Probabilistic calibration of cost-sensitive learning</title>
+    <title>Reading calibration curves &#8212; Probabilistic calibration of cost-sensitive learning</title>
   
   
   
@@ -182,7 +182,7 @@
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="classification_metrics.html">Choosing a classification metric</a></li>
 <li class="toctree-l1"><a class="reference internal" href="build_calibration_curve.html">What is a calibration curve?</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Understanding calibration curves</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Reading calibration curves</a></li>
 <li class="toctree-l1"><a class="reference internal" href="miscalibration_under_over_fit.html">Miscalibration due to inappropriate model hyperparameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="miscalibration_reweighting.html">Miscalibration due to data points reweighting</a></li>
 </ul>
@@ -368,7 +368,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Understanding calibration curves</h1>
+    <h1>Reading calibration curves</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -382,14 +382,23 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="understanding-calibration-curves">
-<h1>Understanding calibration curves<a class="headerlink" href="#understanding-calibration-curves" title="Link to this heading">#</a></h1>
-<p>In this notebook, we explore calibration curves. We use different set of predictions
-leading to different calibration curves from which we want to build insights and
-understand the impact and meaning when it comes to our predictive models.</p>
-<p>So let’s first generate some predictions. The generative process is located in the
-file <code class="docutils literal notranslate"><span class="pre">_generate_predictions.py</span></code>. This process stores the true labels and the
-predicted probability estimates of several models into the <code class="docutils literal notranslate"><span class="pre">predictions</span></code> folder.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="reading-calibration-curves">
+<h1>Reading calibration curves<a class="headerlink" href="#reading-calibration-curves" title="Link to this heading">#</a></h1>
+<p>We use different sets of predictions leading to various calibration curves
+with typical shapes, from which we want to derive insights into the
+underlying models that generated these predictions, namely:</p>
+<ul class="simple">
+<li><p>a well calibrated model;</p></li>
+<li><p>an overconfident model;</p></li>
+<li><p>an underconfident model;</p></li>
+<li><p>a model fit with improper class weights/resampling.</p></li>
+</ul>
+<p>First, let’s gather different prediction sets for the same classification
+task. This is achieved using a script named <code class="docutils literal notranslate"><span class="pre">_generate_predictions.py</span></code>. This
+script stores the true labels and the predicted probability estimates of
+several models into the <code class="docutils literal notranslate"><span class="pre">predictions</span></code> folder. We don’t need to understand
+what model they correspond to, we just want to analyze the calibration of
+these models.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure to have scikit-learn &gt;= 1.5</span>
@@ -432,12 +441,37 @@ predicted probability estimates of several models into the <code class="docutils
 </div>
 </div>
 </div>
-<p>We observed that we have a binary classification problem. Now, we load different
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">unique_class_labels</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">unique_class_labels</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([0, 1])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([24886, 25114])
+</pre></div>
+</div>
+</div>
+</div>
+<p>We observe that we have a binary classification problem. Now, we load different
 sets of predictions of probabilities estimated by different models.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_1.npy&quot;</span><span class="p">)</span>
-<span class="n">y_proba</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_1.npy&quot;</span><span class="p">)</span>
+<span class="n">y_proba_1</span>
 </pre></div>
 </div>
 </div>
@@ -448,161 +482,239 @@ sets of predictions of probabilities estimated by different models.</p>
 </div>
 </div>
 </div>
-<p>We assess the calibration of the model that provide these predictions by plotting
-the calibration curve.</p>
+<p>We assess the calibration of the model that outputs these predictions by
+plotting the calibration curve:</p>
+<ul class="simple">
+<li><p>data points are first <strong>grouped into bins of similar predicted
+probabilities</strong>;</p></li>
+<li><p>then for each bin, we plot a point of the curve that represents the
+<strong>fraction of observed positive labels in a bin</strong> against the <strong>mean
+predicted probability for the positive class in that bin</strong>.</p></li>
+</ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">sklearn.calibration</span> <span class="kn">import</span> <span class="n">CalibrationDisplay</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;n_bins&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;strategy&quot;</span><span class="p">:</span> <span class="s2">&quot;quantile&quot;</span><span class="p">}</span>
-<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Calibrated model&quot;</span><span class="p">,</span>
-    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="n">model_predictions</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Well calibrated&quot;</span><span class="p">:</span> <span class="n">y_proba_1</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">plot_calibration_curves</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">model_predictions</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">y_proba</span> <span class="ow">in</span> <span class="n">model_predictions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span>
+            <span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span>
+        <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">)</span>
+
+
+<span class="n">plot_calibration_curves</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">model_predictions</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/3ae2d595c9bc20fd9c251badc5e3278ed2f08a2bd0af914ac48c093baccdf9e0.png" src="../../_images/3ae2d595c9bc20fd9c251badc5e3278ed2f08a2bd0af914ac48c093baccdf9e0.png" />
+<img alt="../../_images/c6248e23017ee838520495c5e76bacb44d800c7af3be0837601a60d8af1b06cd.png" src="../../_images/c6248e23017ee838520495c5e76bacb44d800c7af3be0837601a60d8af1b06cd.png" />
 </div>
 </div>
 <p>We observe that the calibration curve is close to the diagonal that represents a
 perfectly calibrated model. It means that relying on the predicted probabilities
 will provide reliable estimates of the true probabilities.</p>
-<p>For further analysis, we also compute the ROC AUC score of the model. It recall that
-this metric is only based on the ranking of the predicted probabilities.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ROC AUC: </span><span class="si">{</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="w"> </span><span class="n">y_proba</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ROC AUC: 0.80
-</pre></div>
-</div>
-</div>
-</div>
-<p>So in addition of being well calibrated, our model is capable of distinguishing
-between the two classes.</p>
 <p>We now repeat the same analysis for the other sets of predictions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_2.npy&quot;</span><span class="p">)</span>
-<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Uncalibrated model&quot;</span><span class="p">,</span>
-    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ROC AUC: </span><span class="si">{</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="w"> </span><span class="n">y_proba</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_predictions</span><span class="p">[</span><span class="s2">&quot;Overconfident&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_2.npy&quot;</span><span class="p">)</span>
+<span class="n">plot_calibration_curves</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">model_predictions</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ROC AUC: 0.80
-</pre></div>
-</div>
-<img alt="../../_images/046011120913a68c56d4af025f5313a6a65bf07108c35f5f1782a3909c4901d2.png" src="../../_images/046011120913a68c56d4af025f5313a6a65bf07108c35f5f1782a3909c4901d2.png" />
+<img alt="../../_images/c9db8cdbf147953e68604a9c09853c1e4a6cb6c748e4dd084b1cd25fec76675b.png" src="../../_images/c9db8cdbf147953e68604a9c09853c1e4a6cb6c748e4dd084b1cd25fec76675b.png" />
 </div>
 </div>
-<p>We see that the ROC AUC score is the same. It means that whatever transformation we
-apply to the predicted probabilities, it did not change the ranking of the
-predictions. However, the calibration curve is not following the diagonal anymore.</p>
-<p>Let’s slightly modify the graphical representation to better interpret the results.</p>
+<p>Let’s first focus on the <strong>right part of the curve</strong>, that is when the models
+predicts the positive class, assuming a decision threshold at 0.5. The
+calibration curve is below the diagonal. It means that the fraction of
+observed positive data points is lower than the predicted probabilities.
+Therefore, our model over-estimates the probabilities of the positive class
+when the predictions are higher than the default threshold: the model is
+therefore <strong>overconfident in predicting the positive class</strong>.</p>
+<p>Let’s now focus on the <strong>left part of the curve</strong>, that is when the model
+predicts the negative class. The curve is above the diagonal, meaning that
+the fraction of observed positive data points is higher than the predicted
+probabilities of the positive class. This also means that the fraction of
+observed negatives is lower than the predicted probabilities of the negative
+class. Therefore, our model is also <strong>overconfident in predicting the
+negative class</strong>.</p>
+<p>In conclusion, our model is overconfident when predicting either classes:
+the predicted probabilities are too close to 0 or 1 compared to the observed
+fraction of positive data points in each bin.</p>
+<p>Let’s use the same approach to analyze other typical calibration curves.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Estimated probability = 0.5&quot;</span><span class="p">)</span>
-<span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Uncalibrated model&quot;</span><span class="p">,</span>
-    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span>
-<span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_predictions</span><span class="p">[</span><span class="s2">&quot;Underconfident&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_3.npy&quot;</span><span class="p">)</span>
+<span class="n">plot_calibration_curves</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">model_predictions</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/684d364779203d05fb08ffb905ae4f1a74fcb6e64bede9f3e7e56bad8dd52feb.png" src="../../_images/684d364779203d05fb08ffb905ae4f1a74fcb6e64bede9f3e7e56bad8dd52feb.png" />
-</div>
-</div>
-<p>We added a vertical line at a 0.5 threshold for the mean predicted probability. Let’s
-first focus on the left part of the curve. The calibration curve is above the diagonal
-it means that the fraction of positive samples is higher than the predicted
-probabilities. Therefore, our model is too conservative at predicting the positive
-class and is therefore under-confident. On the right part of the curve, the
-calibration curve is below the diagonal. It means that the fraction of positive
-samples is lower than the predicted probabilities. Our model is therefore
-over-confident.</p>
-<p>Let’s use the same approach to analyze some other typical calibration curves.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_3.npy&quot;</span><span class="p">)</span>
-<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Estimated probability = 0.5&quot;</span><span class="p">)</span>
-<span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Uncalibrated model&quot;</span><span class="p">,</span>
-    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ROC AUC: </span><span class="si">{</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="w"> </span><span class="n">y_proba</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ROC AUC: 0.80
-</pre></div>
-</div>
-<img alt="../../_images/0e4a828990b1d86243935d2ce152260c07ce897f284a24bde650df41e42734b2.png" src="../../_images/0e4a828990b1d86243935d2ce152260c07ce897f284a24bde650df41e42734b2.png" />
-</div>
-</div>
-<p>As in the previous case, we observe that the transformation applied does not change
-the ranking of the predictions since we obtain the same ROC AUC score. However, we
-have a completely different calibration curve that is not following the diagonal as
-well.</p>
-<p>First, we note that the curve does not span on the left side of the plot. It means
-that our model never predicts probabilities lower than 0.5 even though there is
-a small fraction of positive samples. On the right side of the curve, we are below
-the diagonal meaning that our model is predicting higher probabilities estimates
-than the fraction of positive samples. Our model is clearly over-confident.</p>
-<p>Let’s check the last set of predictions.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_4.npy&quot;</span><span class="p">)</span>
-<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:orange&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Estimated probability = 0.5&quot;</span><span class="p">)</span>
-<span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Uncalibrated model&quot;</span><span class="p">,</span>
-    <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ROC AUC: </span><span class="si">{</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="w"> </span><span class="n">y_proba</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ROC AUC: 0.80
-</pre></div>
-</div>
-<img alt="../../_images/5b6777dad3245c39614e18662d74ce9a555d88f6fc88f2a86bc98a24e0f3ece6.png" src="../../_images/5b6777dad3245c39614e18662d74ce9a555d88f6fc88f2a86bc98a24e0f3ece6.png" />
+<img alt="../../_images/c58a7a25d7e49a0e171350bb695e46c6f223d7389224e340854e003bcf20980e.png" src="../../_images/c58a7a25d7e49a0e171350bb695e46c6f223d7389224e340854e003bcf20980e.png" />
 </div>
 </div>
 <p>Here, we observe the opposite behaviour compared to the previous case: our model
-output relatively low probabilities while the fraction of positive samples is high.
-Therefore, this model is under-confident.</p>
+outputs probabilities that are too close to 0.5 compared to the empirical positive
+class fraction. Therefore, this model is underconfident.</p>
+<p>Let’s check the last set of predictions:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_predictions</span><span class="p">[</span><span class="s2">&quot;Improper class weights&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_4.npy&quot;</span><span class="p">)</span>
+<span class="n">plot_calibration_curves</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">model_predictions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/4cb36e218ee01f206bcc2760a927a3c597d124f838c282cc150eb7715948c7bc.png" src="../../_images/4cb36e218ee01f206bcc2760a927a3c597d124f838c282cc150eb7715948c7bc.png" />
+</div>
+</div>
+<p>Here, we observe a curve that off the diagonal without ever crossing it. This
+is another typical case of mis-calibration: in this case the model always
+over estimates the true probabilities, both below and above the 0.5
+threshold. As we will explore in a later notebook, this is a typical behavior
+of a model trained with improper class weights or resampling strategies.</p>
+<p>Finally, let’s also display the ROC curves computed for all those models:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">RocCurveDisplay</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">y_proba</span> <span class="ow">in</span> <span class="n">model_predictions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span>
+        <span class="n">y_true</span><span class="p">,</span>
+        <span class="n">y_proba</span><span class="p">,</span>
+        <span class="n">n_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">roc_display</span> <span class="o">=</span> <span class="n">RocCurveDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span>
+        <span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Calibration curves&quot;</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Receiver operator curves&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/892d2c10d169f7e9ef5e7aac473a8971ea32259b7c13151cf3e9ebc50d1191f5.png" src="../../_images/892d2c10d169f7e9ef5e7aac473a8971ea32259b7c13151cf3e9ebc50d1191f5.png" />
+</div>
+</div>
+<p>We observe that the all the ROC curves overlap exactly and as a result the
+ROC AUC values are exactly the same. This means that all those predictions
+have the same ability to discriminate between the two classes, also known as
+“ranking power” or “resolution”. The models predictions only differ in their
+calibration.</p>
+<p>This highlights the fact that ROC curves and ranking metrics such as ROC AUC
+and average precision are blind to the calibration of probabilistic models.
+On the contrary, metrics such as log loss or Brier score are sensitive to
+both the calibration and the ranking power of the models:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">log_loss</span><span class="p">,</span>
+    <span class="n">brier_score_loss</span><span class="p">,</span>
+    <span class="n">roc_auc_score</span><span class="p">,</span>
+    <span class="n">average_precision_score</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">model_scores</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">y_proba</span> <span class="ow">in</span> <span class="n">model_predictions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">model_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;Model&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+            <span class="s2">&quot;Log-loss&quot;</span><span class="p">:</span> <span class="n">log_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">),</span>
+            <span class="s2">&quot;Brier score&quot;</span><span class="p">:</span> <span class="n">brier_score_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">),</span>
+            <span class="s2">&quot;ROC AUC&quot;</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">),</span>
+            <span class="s2">&quot;Average Precision&quot;</span><span class="p">:</span> <span class="n">average_precision_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_proba</span><span class="p">),</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">model_scores</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Log-loss</th>
+      <th>Brier score</th>
+      <th>ROC AUC</th>
+      <th>Average Precision</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Well calibrated</th>
+      <td>0.546</td>
+      <td>0.183</td>
+      <td>0.799</td>
+      <td>0.802</td>
+    </tr>
+    <tr>
+      <th>Overconfident</th>
+      <td>0.631</td>
+      <td>0.199</td>
+      <td>0.799</td>
+      <td>0.802</td>
+    </tr>
+    <tr>
+      <th>Underconfident</th>
+      <td>0.594</td>
+      <td>0.202</td>
+      <td>0.799</td>
+      <td>0.802</td>
+    </tr>
+    <tr>
+      <th>Improper class weights</th>
+      <td>0.667</td>
+      <td>0.232</td>
+      <td>0.799</td>
+      <td>0.802</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
 </section>
 
     <script type="text/x-thebe-config">
