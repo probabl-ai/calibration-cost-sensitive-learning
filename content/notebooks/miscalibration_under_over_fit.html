@@ -60,7 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'content/notebooks/miscalibration_under_over_fit';</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Miscalibration due to data points reweighting" href="miscalibration_reweighting.html" />
+    <link rel="next" title="Miscalibration caused by data points reweighting" href="miscalibration_reweighting.html" />
     <link rel="prev" title="Reading calibration curves" href="different_calibration_curves.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -184,7 +184,7 @@
 <li class="toctree-l1"><a class="reference internal" href="build_calibration_curve.html">What is a calibration curve?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="different_calibration_curves.html">Reading calibration curves</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Miscalibration caused by inappropriate hyperparameters</a></li>
-<li class="toctree-l1"><a class="reference internal" href="miscalibration_reweighting.html">Miscalibration due to data points reweighting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="miscalibration_reweighting.html">Miscalibration caused by data points reweighting</a></li>
 </ul>
 
     </div>
@@ -2274,7 +2274,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f911f0d1880&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7fb8ba97f620&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;RandomizedSearchCV<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>RandomizedSearchCV(cv=ShuffleSplit(n_splits=10, random_state=0, test_size=0.2, train_size=None),
@@ -2285,7 +2285,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f911f0d1880&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7fb8ba97f620&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">best_estimator_: Pipeline</label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
@@ -2383,7 +2383,7 @@ cross-validated as expected.</p>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Miscalibration due to data points reweighting</p>
+        <p class="prev-next-title">Miscalibration caused by data points reweighting</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
