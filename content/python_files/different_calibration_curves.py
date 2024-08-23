@@ -2,12 +2,17 @@
 #
 # # Reading calibration curves
 #
-# In this notebook, we explore calibration curves. We use different set of
-# predictions leading to different calibration curves from which we want to
-# build insights and understand the impact and meaning when it comes to our
-# predictive models.
+# In this notebook, we introduce calibration curves. We use different set of
+# predictions leading to different calibration curves with typical shapes from
+# which we want to derive insights on the underlying models that generated
+# these predictions, namely:
 #
-# So let's first collect different prediction sets for the same classification
+# - a well calibrated model;
+# - an over-confident model;
+# - an under-confident model;
+# - a model fit with improper class weights/resampling.
+#
+# So let's first gather different prediction sets for the same classification
 # task. This is achieved by a script named `_generate_predictions.py`. This
 # script stores the true labels and the predicted probability estimates of
 # several models into the `predictions` folder. We don't need to understand
@@ -50,9 +55,9 @@ y_proba_1
 
 # %% [markdown]
 #
-# We assess the calibration of the model that provide these predictions by
+# We assess the calibration of the model that outputs these predictions by
 # plotting the calibration curve:
-# 
+#
 # - data points are first **grouped into bins of similar predicted
 #   probabilities**;
 # - then for each bin, we plot a point of the curve that represents the
@@ -61,15 +66,25 @@ y_proba_1
 
 # %%
 from sklearn.calibration import CalibrationDisplay
+import matplotlib.pyplot as plt
 
-params = {"n_bins": 10, "strategy": "quantile"}
-disp = CalibrationDisplay.from_predictions(y_true, y_proba_1, **params)
-_ = disp.ax_.set(
-    title="Model 1 - well calibrated",
-    xlim=(0, 1),
-    ylim=(0, 1),
-    aspect="equal",
-)
+model_predictions = {
+    "Well calibrated": y_proba_1,
+}
+
+
+def plot_calibration_curves(y_true, model_predictions):
+    _, ax = plt.subplots()
+    for model_name, y_proba in model_predictions.items():
+        CalibrationDisplay.from_predictions(
+            y_true, y_proba, n_bins=10, strategy="quantile", name=model_name, ax=ax
+        )
+    ax.axvline(0.5, color="gray", linestyle="--")
+    ax.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
+    ax.legend(loc="upper left")
+
+
+plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
 #
@@ -84,25 +99,12 @@ _ = disp.ax_.set(
 #
 # We now repeat the same analysis for the other sets of predictions.
 
-# %%
-y_proba_2 = np.load("../predictions/y_prob_2.npy")
-
 
 # %%
-disp = CalibrationDisplay.from_predictions(y_true, y_proba_2, **params)
-disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
-disp.ax_.legend()
-_ = disp.ax_.set(
-    title="Model 2 - over confident",
-    xlim=(0, 1),
-    ylim=(0, 1),
-    aspect="equal",
-)
+model_predictions["Over-confident"] = np.load("../predictions/y_prob_2.npy")
+plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
-#
-# We added a vertical line at a 0.5 threshold for the mean predicted
-# probability.
 #
 # Let's first focus on the **right part of the curve**, that is when the models
 # predicts the positive class, assuming a decision threshold at 0.5. The
@@ -111,7 +113,7 @@ _ = disp.ax_.set(
 # Therefore, our model over-estimates the probabilities of the positive class
 # when the predictions are higher than the default threshold: the model is
 # therefore **over-confident in predicting the positive class**.
-# 
+#
 # Let's now focus on the **left part of the curve**, that is when the model
 # predicts the negative class. The curve is above the diagonal, meaning that
 # the fraction of observed positive data points is higher than the predicted
@@ -127,39 +129,85 @@ _ = disp.ax_.set(
 # Let's use the same approach to analyze some other typical calibration curves.
 
 # %%
-y_proba_3 = np.load("../predictions/y_prob_3.npy")
-disp = CalibrationDisplay.from_predictions(y_true, y_proba_3, **params)
-disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
-disp.ax_.legend()
-_ = disp.ax_.set(
-    title="Model 3 - under confident",
-    xlim=(0, 1),
-    ylim=(0, 1),
-    aspect="equal",
-)
+model_predictions["Under-confident"] = np.load("../predictions/y_prob_3.npy")
+plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
 #
 # Here, we observe the opposite behaviour compared to the previous case: our model
-# output probabilities that are too close to 0.5 compared to the empirical positive
+# outputs probabilities that are too close to 0.5 compared to the empirical positive
 # class fraction. Therefore, this model is under-confident.
 #
-# Let's check the last set of predictions.
+# Let's check the last set of predictions:
 
 # %%
-y_proba_4 = np.load("../predictions/y_prob_4.npy")
-disp = CalibrationDisplay.from_predictions(y_true, y_proba_4, **params)
-disp.ax_.axvline(0.5, color="tab:orange", label="Estimated probability = 0.5")
-disp.ax_.legend()
-_ = disp.ax_.set(
-    title="Model 4 - ",
-    xlim=(0, 1),
-    ylim=(0, 1),
-    aspect="equal",
-)
+model_predictions["Improper class weights"] = np.load("../predictions/y_prob_4.npy")
+plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
 #
-# Here, we observe the opposite behaviour compared to the previous case: our model
-# output relatively low probabilities while the fraction of positive samples is high.
-# Therefore, this model is under-confident.
+# Here, we observe a curve that off the diagonal without ever crossing it. This
+# is another typical case of mis-calibration: in this case the model always
+# over estimates the true probabilities, both below and above the 0.5
+# threshold. As we will explore in a later notebook, this is a typical behavior
+# of a model trained with improper class weights or resampling strategies.
+#
+# Finally, let's also display the ROC curves computed for all those models:
+
+# %%
+import matplotlib.pyplot as plt
+from sklearn.metrics import RocCurveDisplay
+
+fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+
+for model_name, y_proba in model_predictions.items():
+    CalibrationDisplay.from_predictions(
+        y_true,
+        y_proba,
+        n_bins=10,
+        strategy="quantile",
+        name=model_name,
+        ax=axs[0],
+    )
+    roc_display = RocCurveDisplay.from_predictions(
+        y_true, y_proba, name=model_name, ax=axs[1]
+    )
+
+axs[0].legend(loc="upper left")
+_ = axs[0].set(title="Calibration curves", xlim=(0, 1), ylim=(0, 1), aspect="equal")
+_ = axs[1].set(title="Receiver operator curves", aspect="equal")
+# %%
+#
+# We observe that the ROC curves all overlap exactly and has a result the ROC
+# AUC metrics are exactly the same. This means that all those predictions have
+# the same ability to discriminate between the two classes, also known as
+# "ranking power" or "resolution". The models predictions only differ in their
+# calibration.
+#
+# This highlights the fact that ROC curves and ranking metrics such as ROC AUC
+# and average precision are blind to the calibration of probabilistic models.
+# On the contrary, metrics such as log loss or Brier are sensitive to both the
+# calibration and the ranking power of the models:
+
+# %%
+import pandas as pd
+from sklearn.metrics import (
+    log_loss,
+    brier_score_loss,
+    roc_auc_score,
+    average_precision_score,
+)
+
+model_scores = []
+for model_name, y_proba in model_predictions.items():
+    model_scores.append(
+        {
+            "Model": model_name,
+            "Log-loss": log_loss(y_true, y_proba),
+            "Brier score": brier_score_loss(y_true, y_proba),
+            "ROC AUC": roc_auc_score(y_true, y_proba),
+            "Average Precision": average_precision_score(y_true, y_proba),
+        }
+    )
+pd.DataFrame(model_scores).set_index("Model").round(3)
+# %%

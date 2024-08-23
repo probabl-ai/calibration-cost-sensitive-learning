@@ -47,7 +47,7 @@ np.save("../predictions/y_prob_3.npy", y_pred)
 # Equality reweighting the classes at training time.
 
 p = raw_y_pred
-w = 0.1
+w = 0.3
 y_pred = (p / w) / (1 - p + p / w)
 
 np.save("../predictions/y_prob_4.npy", y_pred)
