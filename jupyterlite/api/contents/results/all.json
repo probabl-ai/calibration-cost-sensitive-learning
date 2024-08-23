@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2024-08-23T16:30:25.064404Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2024-08-23T16:28:50.939905Z",
+      "mimetype": null,
+      "name": "validation_curve_accuracy.npz",
+      "path": "results/validation_curve_accuracy.npz",
+      "size": 24276,
+      "type": "file",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2024-08-23T16:30:25.064404Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2024-08-23T16:28:50.939905Z",
+      "mimetype": null,
+      "name": "validation_curve_neg_log_loss.npz",
+      "path": "results/validation_curve_neg_log_loss.npz",
+      "size": 24276,
+      "type": "file",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2024-08-23T16:30:25.064404Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2024-08-23T16:28:50.939905Z",
+      "mimetype": null,
+      "name": "validation_curve_roc_auc.npz",
+      "path": "results/validation_curve_roc_auc.npz",
+      "size": 24276,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2024-08-23T16:30:25.064404Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2024-08-23T16:30:25.064404Z",
+  "mimetype": null,
+  "name": "results",
+  "path": "results",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
