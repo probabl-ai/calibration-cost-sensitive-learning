@@ -88,13 +88,14 @@ amount_groupby_class = pd.concat([data["Amount"], target], axis=1).groupby("Clas
 ]
 
 _, ax = plt.subplots(ncols=2, figsize=(12, 6), sharex=True, sharey=True)
-bins = np.linspace(0, data["Amount"].max(), 200)
+bins = np.linspace(0, data["Amount"].max(), 30)
 for class_id, amount in amount_groupby_class:
     ax[class_id].hist(amount, bins=bins, edgecolor="black", density=True)
     ax[class_id].set(
         xlabel="Amount (€)",
         ylabel="Ratio of transactions",
         xscale="log",
+        yscale="log",
         title=(
             "Distribution of the amount of "
             f"{"fraudulent" if class_id else "legitimate"} transactions"
@@ -141,12 +142,12 @@ def business_metric(y_true, y_pred, amount):
     true_positive_c11 = (y_pred == 1) & (y_true == 1)
 
     accept_legitimate = (amount[true_negative_c00] * commission_transaction_gain).sum()
-    accept_fraudulent = (
-        - amount[false_negative_c01].sum()
-        + false_negative_c01.sum() * avg_accept_fraud_cost
+    accept_fraudulent = -(
+        amount[false_negative_c01].sum()
+        + (false_negative_c01 * avg_accept_fraud_cost).sum()
     )
-    refuse_legitimate = false_positive_c10.sum() * avg_refuse_legit_cost
-    refuse_fraudulent = true_positive_c11.sum() * 0
+    refuse_legitimate = -(false_positive_c10 * avg_refuse_legit_cost).sum()
+    refuse_fraudulent = (true_positive_c11 * 0).sum()
 
     return accept_legitimate + accept_fraudulent + refuse_legitimate + refuse_fraudulent
 
@@ -204,6 +205,14 @@ benefit = business_scorer(
     always_reject_policy, data_test, target_test, amount=amount_test
 )
 print(f"Benefit of the 'always reject' policy: {benefit:,.2f}€")
+
+# %%
+business_score = business_metric(
+    target_test,
+    target_test,
+    amount=amount_test,
+)
+print(f"Benefit of oracle decisions (not reachable):  {business_score:,.2f}€")
 
 
 # %%
@@ -335,8 +344,8 @@ print(f"Benefit of logistic regression with a tuned threshold:  {business_score:
 def elkan_optimal_threshold(amount):
     # Cost matrix (negative of gain matrix)
     c00 = -commission_transaction_gain * amount  # Accepting a legitimate transaction
-    c01 = amount  # Accepting a fraudulent transaction
-    c10 = 5  # Refusing a legitimate transaction
+    c01 = amount + avg_accept_fraud_cost  # Accepting a fraudulent transaction
+    c10 = avg_refuse_legit_cost  # Refusing a legitimate transaction
     c11 = 0  # Refusing a fraudulent transaction
     optimal_threshold = (c10 - c00) / (c10 - c00 + c01 - c11)
     return optimal_threshold
@@ -456,14 +465,6 @@ print(
     f"Benefit of recalibrated logistic regression with optimal variable threshold: "
     f"{business_score:,.2f}€"
 )
-
-# %%
-business_score = business_metric(
-    target_test,
-    target_test,
-    amount=amount_test,
-)
-print(f"Benefit of oracle decisions (not reachable):  {business_score:,.2f}€")
 
 # %% [markdown]
 #
