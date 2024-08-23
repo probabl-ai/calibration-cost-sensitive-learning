@@ -17,10 +17,15 @@
 # ## The credit card dataset
 #
 # The problem that we solve in this tutorial is to detect fraudulent credit card
-# transactions. The dataset is available on OpenML
+# transactions. The dataset is available on OpenML at the following URL:
+# https://openml.org/search?type=data&sort=runs&status=active&id=1597
+#
+# We have a local copy of the dataset in the `datasets` folder. Let's load the dataset
+# and check the data that we have at hand.
 
 # %%
-# Explicit import pyarrow since this is an optional dependency of pandas to trigger
+
+# Explicitly import pyarrow since it is an optional dependency of pandas to trigger
 # the fetching when using JupyterLite with pyodide kernel.
 # Note this is an unnecessary import if you are not using JupyterLite with pyodide.
 import pyarrow  # noqa: F401
@@ -29,63 +34,121 @@ import pandas as pd
 credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="pyarrow")
 credit_card.info()
 
-# %%
-# The dataset contains information about credit card records from which some are
-# fraudulent and others are legitimate. The goal is therefore to predict whether or
-# not a credit card record is fraudulent.
-columns_to_drop = ["Class"]
-data = credit_card.frame.drop(columns=columns_to_drop)
-target = credit_card.frame["Class"].astype(int)
+# %% [markdown]
+#
+# The target column is the "Class" column. It informs us whether a transaction
+# is fraudulent (class 1) or legitimate (class 0).
+#
+# We see a set of features that are anonymized starting with "V". Looking at the dataset
+# description in OpenML, we learn that those features are the result of a PCA
+# transformation. The only non-transformed features are the "Time" and "Amount" columns.
+# The "Time" corresponds to the number of seconds elapsed between this transaction and
+# the first transaction in the dataset. The "Amount" is the amount of the transaction.
+#
+# We first split the target from the data that we want to use to train our predictive
+# model.
 
 # %%
-# First, we check the class distribution of the datasets.
+target_name = "Class"
+data = credit_card.drop(columns=target_name)
+target = credit_card[target_name].astype(int)
+
+# %% [markdown]
+#
+# The credit card fraud detection problem also has a special characteristic: the
+# dataset is highly imbalanced. We can check the distribution of the target to
+# confirm this.
+
+# %%
 target.value_counts(normalize=True)
 
-# %%
+# %% [markdown]
+#
 # The dataset is highly imbalanced with fraudulent transaction representing only 0.17%
 # of the data. Since we are interested in training a machine learning model, we should
-# also make sure that we have enough samples in the minority class to train the model.
+# also make sure that we have enough samples in the minority class to train the model
+# by looking at the absolute number of samples.
+
+# %%
 target.value_counts()
 
-# %%
+# %% [markdown]
+#
 # We observe that we have around 500 samples that is on the low end of the number of
 # samples required to train a machine learning model. In addition of the target
-# distribution, we check the distribution of the amount of the
-# fraudulent transactions.
-import matplotlib.pyplot as plt
-
-fraud = target == 1
-amount_fraud = data["Amount"][fraud]
-_, ax = plt.subplots()
-ax.hist(amount_fraud, bins=30)
-ax.set_title("Amount of fraud transaction")
-_ = ax.set_xlabel("Amount (€)")
+# distribution, we check the distribution of the amount of the legitimate and fraudulent
+# separately transactions.
 
 # %%
-# Addressing the problem with a business metric
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+import numpy as np
+import matplotlib.pyplot as plt
+
+amount_groupby_class = pd.concat([data["Amount"], target], axis=1).groupby("Class")[
+    "Amount"
+]
+
+_, ax = plt.subplots(ncols=2, figsize=(12, 6), sharex=True, sharey=True)
+bins = np.linspace(0, data["Amount"].max(), 200)
+for class_id, amount in amount_groupby_class:
+    ax[class_id].hist(amount, bins=bins, edgecolor="black", density=True)
+    ax[class_id].set(
+        xlabel="Amount (€)",
+        ylabel="Ratio of transactions",
+        xscale="log",
+        title=(
+            "Distribution of the amount of "
+            f"{"fraudulent" if class_id else "legitimate"} transactions"
+        ),
+    )
+
+# %% [markdown]
 #
-# Now, we create the business metric that depends on the amount of each transaction. We
-# define the cost matrix similarly to [2]_. Accepting a legitimate transaction provides
-# a gain of 2% of the amount of the transaction. However, accepting a fraudulent
-# transaction result in a loss of the amount of the transaction. As stated in [2]_, the
-# gain and loss related to refusals (of fraudulent and legitimate transactions) are not
-# trivial to define. Here, we define that a refusal of a legitimate transaction
-# is estimated to a loss of 5€ while the refusal of a fraudulent transaction is
-# estimated to a gain of 50€. Therefore, we define the following function to
-# compute the total benefit of a given decision:
+# We cannot conclude a particular pattern in the distribution of the amount of the
+# transactions.
+#
+# ## Addressing the problem with a business metric
+#
+# Now, we create the business metric that depends on the amount of each transaction.
+#
+# The gain of a legitimate transaction is quite easy to define since it is a commission
+# that the bank receives. Here, we define it to be 2% of the amount of the transaction.
+# Similarly, there is no gain at refusing a fraudulent transaction: the bank does not
+# receive money from external actors or clients in this case.
+#
+# Defining a cost for refusing a legitimate transaction or accepting a fraudulent
+# transaction is more complex. If we accept a fraudulent transaction, the bank loses the
+# amount of the transaction. There is also an extract cost involved that is an
+# aggregation of several other costs: the cost of the fraud investigation, the cost of
+# the customer support, and the cost related to brand reputation damage. Those
+# additional should be defined by the data scientist in collaboration with the business
+# stakeholders. A similar approach should be taken for the cost of refusing a
+# legitimate: the cost of the customer support, the cost of the customer
+# dissatisfaction, and the cost of the customer churn.
+
+# %%
+# Commission received for each accepted legitimate transaction.
+commission_transaction_gain = 0.02
+# Average cost of accepting a fraudulent transaction.
+avg_accept_fraud_cost = 50
+# Average cost of refusing a legitimate transaction.
+avg_refuse_legit_cost = 5
 
 
 def business_metric(y_true, y_pred, amount):
-    mask_true_positive = (y_true == 1) & (y_pred == 1)
-    mask_true_negative = (y_true == 0) & (y_pred == 0)
-    mask_false_positive = (y_true == 0) & (y_pred == 1)
-    mask_false_negative = (y_true == 1) & (y_pred == 0)
-    fraudulent_refuse = mask_true_positive.sum() * 50
-    fraudulent_accept = -amount[mask_false_negative].sum()
-    legitimate_refuse = mask_false_positive.sum() * -5
-    legitimate_accept = (amount[mask_true_negative] * 0.02).sum()
-    return fraudulent_refuse + fraudulent_accept + legitimate_refuse + legitimate_accept
+    true_negative_c00 = (y_pred == 0) & (y_true == 0)
+    false_negative_c01 = (y_pred == 0) & (y_true == 1)
+    false_positive_c10 = (y_pred == 1) & (y_true == 0)
+    true_positive_c11 = (y_pred == 1) & (y_true == 1)
+
+    accept_legitimate = (amount[true_negative_c00] * commission_transaction_gain).sum()
+    accept_fraudulent = (
+        - amount[false_negative_c01].sum()
+        + false_negative_c01.sum() * avg_accept_fraud_cost
+    )
+    refuse_legitimate = false_positive_c10.sum() * avg_refuse_legit_cost
+    refuse_fraudulent = true_positive_c11.sum() * 0
+
+    return accept_legitimate + accept_fraudulent + refuse_legitimate + refuse_fraudulent
 
 
 # %%
@@ -108,7 +171,7 @@ business_scorer = make_scorer(business_metric).set_score_request(amount=True)
 # each transaction. To use this information as metadata, we need to have an external
 # variable that we can pass to the scorer or the model that internally routes this
 # metadata to the scorer. So let's create this variable.
-amount = credit_card.frame["Amount"].to_numpy()
+amount = credit_card["Amount"].to_numpy()
 
 # %%
 from sklearn.model_selection import train_test_split
@@ -271,10 +334,10 @@ print(f"Benefit of logistic regression with a tuned threshold:  {business_score:
 # %%
 def elkan_optimal_threshold(amount):
     # Cost matrix (negative of gain matrix)
-    c00 = -0.02 * amount  # Accepting a legitimate transaction
+    c00 = -commission_transaction_gain * amount  # Accepting a legitimate transaction
     c01 = amount  # Accepting a fraudulent transaction
     c10 = 5  # Refusing a legitimate transaction
-    c11 = -50  # Refusing a fraudulent transaction
+    c11 = 0  # Refusing a fraudulent transaction
     optimal_threshold = (c10 - c00) / (c10 - c00 + c01 - c11)
     return optimal_threshold
 
@@ -402,4 +465,11 @@ business_score = business_metric(
 )
 print(f"Benefit of oracle decisions (not reachable):  {business_score:,.2f}€")
 
-# %%
+# %% [markdown]
+#
+# ## References
+#
+# .. [1] `Charles Elkan, "The Foundations of Cost-Sensitive Learning",
+#        International joint conference on artificial intelligence.
+#        Vol. 17. No. 1. Lawrence Erlbaum Associates Ltd, 2001.
+#        <https://cseweb.ucsd.edu/~elkan/rescale.pdf>`_
