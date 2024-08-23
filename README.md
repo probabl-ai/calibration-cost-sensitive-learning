@@ -1,5 +1,9 @@
 # Probabilistic calibration and cost-sensitive learning
 
+Browse the tutorial online:
+
+- https://probabl-ai.github.io/calibration-cost-sensitive-learning/
+
 ## Getting started
 
 ### Install `pixi`
