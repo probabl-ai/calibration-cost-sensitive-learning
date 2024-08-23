@@ -24,6 +24,7 @@ pandas = ">=2.2.2,<3"
 matplotlib = ">=3.9.1,<4"
 jupytext = ">=1.16.4,<2"
 pyarrow = ">=17.0.0,<18"
+notebook = ">=7.2.1,<8"
 
 [feature.dev.dependencies]
 ipykernel = "*"
@@ -34,11 +35,17 @@ black = "*"
 
 [feature.doc.dependencies]
 jupyter-book = "*"
+jupyterlite = "*"
+jupyter_server = "*"
+jupyterlab_server = "*"
+jupyterlite-pyodide-kernel = "*"
+python-libarchive-c = "*"
 
 [feature.doc.tasks]
 convert-to-notebooks = { cmd = "jupytext --to notebook ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
 convert-to-executed-notebooks = { cmd = "jupytext --to notebook --execute ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
 build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
+build-jupyterlite = { cmd = "jupyter lite build --contents content --output-dir dist", cwd = "jupyterlite" }
 
 [environments]
 lint = ["lint"]

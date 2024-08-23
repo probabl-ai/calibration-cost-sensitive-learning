@@ -19,8 +19,23 @@ jobs:
           pixi-version: v0.27.1
           environments: doc
 
+      - name: Convert Python file to notebooks for JupyterLite
+        run: |
+          # to create the predictions and validation curves cache
+          pixi run -e doc convert-to-executed-notebooks
+          # to clean the output
+          pixi run -e doc convert-to-notebooks
+
+      - name: Build the JupyterLite site
+        run: |
+          pixi run -e doc build-jupyterlite
+
       - name: Build and publish the book
         run: pixi run -e doc build-book
+
+      - name: Copy jupyterlite site under the book directory
+        run: |
+          cp -r jupyterlite/dist book/_build/html/jupyterlite
 
       - name: Update the main gh-page website
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
