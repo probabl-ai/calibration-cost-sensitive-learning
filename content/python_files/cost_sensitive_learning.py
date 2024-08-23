@@ -3,22 +3,22 @@
 # # Cost-sensitive learning to optimize business metrics
 #
 # As stated in the introduction of this tutorial, many real-world applications are
-# interested by taking operating decisions. A predictive model under such
-# circumstances should optimized a "utility function" or also called "business
-# metric". The aim is therefore to maximize a gain or minimize a cost that is
-# related to the decision taken by the model.
+# interested by taking operating decisions. A predictive model under such circumstances
+# should optimized a "utility function" or also called "business metric". The aim is
+# therefore to maximize a gain or minimize a cost that is related to the decision taken
+# by the model.
 #
-# In this tutorial, we describe a concrete example based on the credit card
-# fraud detection problem. We first describe the dataset to train our predictive model
-# and the data used to evaluate the operating decisions in this application. Then, we
-# show a couple of approaches, each having different requirements, to get the optimal
+# In this tutorial, we describe a concrete example based on the credit card fraud
+# detection problem. We first describe the dataset to train our predictive model and the
+# data used to evaluate the operating decisions in this application. Then, we show a
+# couple of approaches, each having different requirements, to get the optimal
 # predictive model.
 #
 # ## The credit card dataset
 #
 # The problem that we solve in this tutorial is to detect fraudulent credit card
-# transactions. The dataset is available on OpenML at the following URL:
-# https://openml.org/search?type=data&sort=runs&status=active&id=1597
+# transactions. The dataset is available on OpenML at the [following URL](
+# https://openml.org/search?type=data&sort=runs&status=active&id=1597).
 #
 # We have a local copy of the dataset in the `datasets` folder. Let's load the dataset
 # and check the data that we have at hand.
@@ -307,21 +307,21 @@ print(
 #
 # ### Tuned logistic regression with optimal decision threshold
 #
-# From the research paper from Charles Elkan [1]_, we know that the optimal decision
+# From the research paper from Charles Elkan [1], we know that the optimal decision
 # threshold can be computed given the following two assumptions:
 #
 # - the probabilistic classifier is well-calibrated,
 # - the business metric can be expressed as a cost matrix.
 #
 # When defining our business metric, we have already expressed it as a cost matrix. So
-# to use the approach described in [1]_, we only need to check the calibration of our
+# to use the approach described in [1], we only need to check the calibration of our
 # model. In the previous section, we already tuned the hyperparameter of the logistic
 # regression using a proper scoring rule that should help towards getting a
 # well-calibrated model. As a first step, we assume that our classifier is
 # well-calibrated. Later, we will add an extra calibration step to check if it improves
 # the performance of our model in terms of the business metric.
 #
-# The optimal decision threshold proposed by Charles Elkan in [1]_ is defined as
+# The optimal decision threshold proposed by Charles Elkan in [1] is defined as
 # follows:
 
 # %%
@@ -593,13 +593,12 @@ print(
 # the business metric.
 #
 # ## Conclusion
-# TODO: Add a conclusion
+# TODO: Add a conclusion about how much profit we make on a year.
 #
 # ## References
 #
-# .. [1] `Charles Elkan, "The Foundations of Cost-Sensitive Learning",
-#        International joint conference on artificial intelligence.
-#        Vol. 17. No. 1. Lawrence Erlbaum Associates Ltd, 2001.
-#        <https://cseweb.ucsd.edu/~elkan/rescale.pdf>`_
+# [1] Charles Elkan, "The Foundations of Cost-Sensitive Learning", International joint
+#  conference on artificial intelligence. Vol. 17. No. 1. Lawrence Erlbaum Associates
+#  Ltd, 2001. [URL](https://cseweb.ucsd.edu/~elkan/rescale.pdf)
 
 # %%
