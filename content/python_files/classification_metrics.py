@@ -191,7 +191,7 @@ f1_score(y_observed, threshold_preserving_transformation(y_predicted_probs) > 0.
 # %%
 f1_score(y_observed, non_threshold_preserving_transformation(y_predicted_probs) > 0.5)
 
-# %%
+# %% [markdown]
 #
 # ### Summary:
 #
