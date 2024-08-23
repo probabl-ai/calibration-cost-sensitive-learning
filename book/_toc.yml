@@ -9,3 +9,4 @@ chapters:
 - file: content/notebooks/different_calibration_curves
 - file: content/notebooks/miscalibration_under_over_fit
 - file: content/notebooks/miscalibration_reweighting
+- file: content/notebooks/cost_sensitive_learning
