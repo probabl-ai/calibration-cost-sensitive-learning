@@ -23,6 +23,7 @@ scikit-learn = ">=1.5.1,<2"
 pandas = ">=2.2.2,<3"
 matplotlib = ">=3.9.1,<4"
 jupytext = ">=1.16.4,<2"
+pyarrow = ">=17.0.0,<18"
 
 [feature.dev.dependencies]
 ipykernel = "*"

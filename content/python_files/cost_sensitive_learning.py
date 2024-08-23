@@ -1,18 +1,33 @@
-# %%
+# %% [markdown]
 #
-# Cost-sensitive learning when gains and costs are not constant
-# -------------------------------------------------------------
+# # Cost-sensitive learning to optimize business metrics
 #
-# As stated in [2]_, gains and costs are generally not constant in real-world problems.
-# In this section, we use a similar example as in [2]_ for the problem of
-# detecting fraud in credit card transaction records.
+# As stated in the introduction of this tutorial, many real-world applications are
+# interested by taking operating decisions. A predictive model under such
+# circumstances should optimized a "utility function" or also called "business
+# metric". The aim is therefore to maximize a gain or minimize a cost that is
+# related to the decision taken by the model.
 #
-# The credit card dataset
-# ^^^^^^^^^^^^^^^^^^^^^^^
-from sklearn.datasets import fetch_openml
+# In this tutorial, we describe a concrete example based on the credit card
+# fraud detection problem. We first describe the dataset to train our predictive model
+# and the data used to evaluate the operating decisions in this application. Then, we
+# show a couple of approaches, each having different requirements, to get the optimal
+# predictive model.
+#
+# ## The credit card dataset
+#
+# The problem that we solve in this tutorial is to detect fraudulent credit card
+# transactions. The dataset is available on OpenML
 
-credit_card = fetch_openml(data_id=1597, as_frame=True, parser="pandas")
-credit_card.frame.info()
+# %%
+# Explicit import pyarrow since this is an optional dependency of pandas to trigger
+# the fetching when using JupyterLite with pyodide kernel.
+# Note this is an unnecessary import if you are not using JupyterLite with pyodide.
+import pyarrow  # noqa: F401
+import pandas as pd
+
+credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="pyarrow")
+credit_card.info()
 
 # %%
 # The dataset contains information about credit card records from which some are
