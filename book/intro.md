@@ -7,7 +7,7 @@ and how to derive optimal decision policies for a user specified cost model.
 
 ### Slides
 
-[Introductionary concepts](https://docs.google.com/presentation/d/1EW3alaVuUKzk8aCWONxpBQQ1LqCmFHNixIwbnfgjuSA/edit?usp=sharing)
+[Introductory concepts](https://docs.google.com/presentation/d/1EW3alaVuUKzk8aCWONxpBQQ1LqCmFHNixIwbnfgjuSA/edit?usp=sharing)
 
 ### Notebooks
 
