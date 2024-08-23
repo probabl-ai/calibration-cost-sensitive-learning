@@ -93,9 +93,6 @@ plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
 #
-# So in addition of being well calibrated, our model is capable of distinguishing
-# between the two classes.
-#
 # We now repeat the same analysis for the other sets of predictions.
 
 
@@ -175,18 +172,18 @@ for model_name, y_proba in model_predictions.items():
 axs[0].legend(loc="upper left")
 _ = axs[0].set(title="Calibration curves", xlim=(0, 1), ylim=(0, 1), aspect="equal")
 _ = axs[1].set(title="Receiver operator curves", aspect="equal")
-# %%
+# %% [markdown]
 #
-# We observe that the ROC curves all overlap exactly and has a result the ROC
-# AUC metrics are exactly the same. This means that all those predictions have
-# the same ability to discriminate between the two classes, also known as
+# We observe that the all the ROC curves overlap exactly and as a result the
+# ROC AUC values are exactly the same. This means that all those predictions
+# have the same ability to discriminate between the two classes, also known as
 # "ranking power" or "resolution". The models predictions only differ in their
 # calibration.
 #
 # This highlights the fact that ROC curves and ranking metrics such as ROC AUC
 # and average precision are blind to the calibration of probabilistic models.
-# On the contrary, metrics such as log loss or Brier are sensitive to both the
-# calibration and the ranking power of the models:
+# On the contrary, metrics such as log loss or Brier score are sensitive to
+# both the calibration and the ranking power of the models:
 
 # %%
 import pandas as pd
@@ -209,4 +206,3 @@ for model_name, y_proba in model_predictions.items():
         }
     )
 pd.DataFrame(model_scores).set_index("Model").round(3)
-# %%
