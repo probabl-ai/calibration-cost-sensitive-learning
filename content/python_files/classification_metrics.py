@@ -2,7 +2,7 @@
 #
 # # Classification metrics
 #
-# This notebook illustrate the impact of transforming predicted probabilities
+# This notebook illustrates the impact of transforming predicted probabilities
 # on the different metrics used to evaluate classification models.
 #
 # ## Ranking metrics are not impacted by monotonic transformations
@@ -162,8 +162,8 @@ def threshold_preserving_transformation(x):
 
 x = np.linspace(0, 1, 1000)
 y = threshold_preserving_transformation(x)
-_ = plt.plot(x, y)
-_ = plt.hlines(0.5, 0, 1, colors="gray", linestyles="--")
+plt.plot(x, y)
+plt.hlines(0.5, 0, 1, colors="gray", linestyles="--")
 _ = plt.vlines(0.5, 0, 1, colors="gray", linestyles="--")
 
 
@@ -213,7 +213,7 @@ f1_score(y_observed, non_threshold_preserving_transformation(y_predicted_probs) 
 #   the hard classification metric.
 # - Using a ranking loss to evaluate a probabilistic classifier only partially
 #   informs us about the ability of the model to yield correct soft
-#   predictions: ranking metrics
+#   predictions.
 # - Proper scoring rules evaluate both calibration and resolution (ranking
 #   power) jointly are the only metrics that are guaranteed to select the best
 #   probabilistic models.
