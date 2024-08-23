@@ -1,4 +1,4 @@
-# Probablistic classification and cost-sensitive learning
+# Probabilistic classification and cost-sensitive learning
 
 This tutorial introduces how to assess the quality of probabilistic classifiers
 and how to derive optimal decision policies for a user specified cost model.
@@ -9,12 +9,10 @@ and how to derive optimal decision policies for a user specified cost model.
 
 [Introductory concepts](https://docs.google.com/presentation/d/1EW3alaVuUKzk8aCWONxpBQQ1LqCmFHNixIwbnfgjuSA/edit?usp=sharing)
 
-### Notebooks
+### Notebooks [![Launch JupyterLite](/images/jupyterlite_badge.svg 'Our JupyterLite website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite)
 
 ```{tableofcontents}
 ```
-
-Browse the [notebooks with jupyterlite](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite).
 
 ## Running the notebooks locally
 
