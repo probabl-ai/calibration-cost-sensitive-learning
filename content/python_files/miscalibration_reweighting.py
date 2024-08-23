@@ -1,6 +1,6 @@
 # %% [markdown]
 #
-# # Miscalibration due to data points reweighting
+# # Miscalibration caused by data points reweighting
 #
 # Another cause for model miscalibration is related to training set resampling. In
 # general, resampling is encountered when dealing with imbalanced datasets. In this
