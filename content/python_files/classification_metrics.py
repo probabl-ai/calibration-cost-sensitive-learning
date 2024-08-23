@@ -1,6 +1,6 @@
 # %% [markdown]
 #
-# # Chosing a classification metric
+# # Choosing a classification metric
 #
 # This notebook illustrates the impact of transforming predicted probabilities
 # on the different metrics used to evaluate classification models. Based on
