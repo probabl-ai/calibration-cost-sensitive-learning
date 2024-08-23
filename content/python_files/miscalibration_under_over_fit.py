@@ -558,7 +558,7 @@ tuned_model.fit(X_train, y_train)
 
 # %% [markdown]
 #
-# Now that we train the model, we check if it is well-calibrated on the left-out
+# Now that we trained the model, we check if it is well-calibrated on the left-out
 # test set.
 
 # %%
@@ -592,5 +592,6 @@ _ = fig.suptitle(
 )
 # %% [markdown]
 #
-# We see that our hyperparameter tuning procedure leadsx§ to a well-calibrated model since
-# we used a proper scoring rule.
+# We see that our procedure leads to a well-calibrated model since we used a
+# cross-validated proper scoring rule to select the best hyper-parameter
+# combination.
