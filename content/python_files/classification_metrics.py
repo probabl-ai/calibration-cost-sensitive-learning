@@ -69,7 +69,7 @@ compare_metrics(roc_auc_score, monotonic_function, y_observed, y_predicted_probs
 
 # %% [markdown]
 #
-# ### Solution
+# ### Exercise:
 #
 # - Check that the same result holds for other ranking metrics such as
 # `average_precision_score`.
