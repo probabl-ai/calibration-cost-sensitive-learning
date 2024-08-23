@@ -1,4 +1,4 @@
-# Probabilistic calibration of cost-sensitive learning
+# Probabilistic calibration and cost-sensitive learning
 
 ## Getting started
 
