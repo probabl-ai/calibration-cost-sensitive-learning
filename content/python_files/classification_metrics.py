@@ -197,23 +197,24 @@ f1_score(y_observed, non_threshold_preserving_transformation(y_predicted_probs) 
 #
 # - Ranking metrics are not impacted by monotonic transformations.
 # - Proper scoring rules are impacted by monotonic transformations: a strictly
-#   increasing transformation change the calibration term of the proper scoring
-#   loss while preserving the grouping loss (ranking) and the irreducible error
-#   (independent of the model predictions).
-# - Threshold can be impacted by monotonic transformation of the soft
-#   predictions if the decision threshold is changed by the transformation.
+#   increasing transformation changes the calibration term of the proper
+#   scoring loss while preserving the grouping loss (ranking) and the
+#   irreducible error (independent of the model predictions).
+# - Hard classification metrics can be impacted by a monotonic transformation
+#   $t$ of the soft predictions if $t(0.5) \neq 0.5$ (assuming the default 0.5
+#   decisin threshold).
 #
 # As a consequence:
 #
-# - Using a thresholded metric to evaluate a probabilitic classifier does not
-#   inform us at all about the ability of the model to yield correct soft
-#   predictions. Hard classification metrics are very sensitive to the choice
-#   of the threshold. As a result, they are only meaningful if we also tune the
-#   threshold according to some business objective captured in the choice of
-#   the hard classification metric.
+# - Using a hard classification metric to evaluate a probabilitic classifier
+#   does not inform us at all about the ability of the model to yield correct
+#   soft predictions. Hard classification metrics can be very sensitive to the
+#   choice of the threshold. As a result, they are only meaningful if we also
+#   tune the threshold according to a specific choice of hard classification
+#   metric that should ideally reflect the business objective.
 # - Using a ranking loss to evaluate a probabilistic classifier only partially
 #   informs us about the ability of the model to yield correct soft
 #   predictions.
-# - Proper scoring rules evaluate both calibration and resolution (ranking
-#   power) jointly are the only metrics that are guaranteed to select the best
-#   probabilistic models.
+# - Proper scoring rules jointly evaluate both calibration and resolution
+#   (ranking power). They are the only metrics that are guaranteed to identify
+#   the best probabilistic model.
