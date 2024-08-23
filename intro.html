@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Prerequisites &#8212; Probabilistic calibration of cost-sensitive learning</title>
+    <title>Probablistic classification and cost-sensitive learning &#8212; Probabilistic calibration of cost-sensitive learning</title>
   
   
   
@@ -176,7 +176,7 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1 current active">
                 <a class="reference internal" href="#">
-                    Prerequisites
+                    Probablistic classification and cost-sensitive learning
                 </a>
             </li>
         </ul>
@@ -371,7 +371,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Prerequisites</h1>
+    <h1>Probablistic classification and cost-sensitive learning</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -381,12 +381,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-pixi">Install <code class="docutils literal notranslate"><span class="pre">pixi</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-jupyter-lab">Launching Jupyter Lab</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#opening-lecture-notes">Opening lecture notes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slides">Slides</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebooks-locally">Running the notebooks locally</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-pixi">Install <code class="docutils literal notranslate"><span class="pre">pixi</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-jupyter-lab">Launching Jupyter Lab</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#opening-lecture-notes">Opening lecture notes</a></li>
 </ul>
 </li>
 </ul>
@@ -400,27 +403,10 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="prerequisites">
-<h1>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h1>
-<section id="install-pixi">
-<h2>Install <code class="docutils literal notranslate"><span class="pre">pixi</span></code><a class="headerlink" href="#install-pixi" title="Link to this heading">#</a></h2>
-<p>You can refer to the <a class="reference external" href="https://pixi.sh/latest/#installation">official website</a> for
-installation.</p>
-</section>
-<section id="launching-jupyter-lab">
-<h2>Launching Jupyter Lab<a class="headerlink" href="#launching-jupyter-lab" title="Link to this heading">#</a></h2>
-<p>To launch Jupyter Lab, run the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pixi<span class="w"> </span>run<span class="w"> </span>jupyter<span class="w"> </span>lab
-</pre></div>
-</div>
-<p>The Python environment and necessary packages will be automatically installed for you.</p>
-</section>
-<section id="opening-lecture-notes">
-<h2>Opening lecture notes<a class="headerlink" href="#opening-lecture-notes" title="Link to this heading">#</a></h2>
-<p>The lecture notes are available in the <code class="docutils literal notranslate"><span class="pre">python_files</span></code> directory. To open the Python
-file as notebook, you need to right click on the file and select
-<code class="docutils literal notranslate"><span class="pre">Open</span> <span class="pre">with</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Notebook</span></code>.</p>
-</section>
+  <section class="tex2jax_ignore mathjax_ignore" id="probablistic-classification-and-cost-sensitive-learning">
+<h1>Probablistic classification and cost-sensitive learning<a class="headerlink" href="#probablistic-classification-and-cost-sensitive-learning" title="Link to this heading">#</a></h1>
+<p>This tutorial introduces how to assess the quality of probabilistic classifiers
+and how to derive optimal decision policies for a user specified cost model.</p>
 <section id="table-of-contents">
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Link to this heading">#</a></h2>
 <section id="slides">
@@ -438,6 +424,29 @@ file as notebook, you need to right click on the file and select
 <li class="toctree-l1"><a class="reference internal" href="content/notebooks/miscalibration_reweighting.html">Miscalibration due to data points reweighting</a></li>
 </ul>
 </div>
+<p>Browse the <a class="reference external" href="https://glemaitre.github.io/calibration-cost-sensitive-learning-jupyterlite">notebooks with jupyterlite</a>.</p>
+</section>
+</section>
+<section id="running-the-notebooks-locally">
+<h2>Running the notebooks locally<a class="headerlink" href="#running-the-notebooks-locally" title="Link to this heading">#</a></h2>
+<section id="install-pixi">
+<h3>Install <code class="docutils literal notranslate"><span class="pre">pixi</span></code><a class="headerlink" href="#install-pixi" title="Link to this heading">#</a></h3>
+<p>You can refer to the <a class="reference external" href="https://pixi.sh/latest/#installation">official website</a> for
+installation.</p>
+</section>
+<section id="launching-jupyter-lab">
+<h3>Launching Jupyter Lab<a class="headerlink" href="#launching-jupyter-lab" title="Link to this heading">#</a></h3>
+<p>To launch Jupyter Lab, run the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pixi<span class="w"> </span>run<span class="w"> </span>jupyter<span class="w"> </span>lab
+</pre></div>
+</div>
+<p>The Python environment and necessary packages will be automatically installed for you.</p>
+</section>
+<section id="opening-lecture-notes">
+<h3>Opening lecture notes<a class="headerlink" href="#opening-lecture-notes" title="Link to this heading">#</a></h3>
+<p>The lecture notes are available in the <code class="docutils literal notranslate"><span class="pre">python_files</span></code> directory. To open the Python
+file as notebook, you need to right click on the file and select
+<code class="docutils literal notranslate"><span class="pre">Open</span> <span class="pre">with</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">Notebook</span></code>.</p>
 </section>
 </section>
 </section>
@@ -497,12 +506,15 @@ file as notebook, you need to right click on the file and select
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-pixi">Install <code class="docutils literal notranslate"><span class="pre">pixi</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-jupyter-lab">Launching Jupyter Lab</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#opening-lecture-notes">Opening lecture notes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#table-of-contents">Table of contents</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#slides">Slides</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notebooks">Notebooks</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#running-the-notebooks-locally">Running the notebooks locally</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-pixi">Install <code class="docutils literal notranslate"><span class="pre">pixi</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#launching-jupyter-lab">Launching Jupyter Lab</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#opening-lecture-notes">Opening lecture notes</a></li>
 </ul>
 </li>
 </ul>
