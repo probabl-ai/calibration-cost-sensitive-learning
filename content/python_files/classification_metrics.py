@@ -1,9 +1,11 @@
 # %% [markdown]
 #
-# # Classification metrics
+# # Chosing a classification metric
 #
 # This notebook illustrates the impact of transforming predicted probabilities
-# on the different metrics used to evaluate classification models.
+# on the different metrics used to evaluate classification models. Based on
+# those experiment we derive recommendations of the choice of classification
+# metrics.
 #
 # ## Ranking metrics are not impacted by monotonic transformations
 #
