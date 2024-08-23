@@ -105,7 +105,11 @@ for class_id, amount in amount_groupby_class:
 # %% [markdown]
 #
 # We cannot conclude a particular pattern in the distribution of the amount of the
-# transactions.
+# transactions apart from the fact that the fraudulent transactions tend to not have
+# really large amounts. This information could be useful: if we train a predictive
+# model on these data, we should consider that we do not know how our predictive model
+# will behave on fraudulent transactions with large amounts in the future. It might be
+# worth considering to have a specific treatment for those transactions.
 #
 # ## Addressing the problem with a business metric
 #
@@ -127,15 +131,22 @@ for class_id, amount in amount_groupby_class:
 # dissatisfaction, and the cost of the customer churn.
 
 # %%
-# Commission received for each accepted legitimate transaction.
+# Commission received for each accepted legitimate transaction
 commission_transaction_gain = 0.02
-# Average cost of accepting a fraudulent transaction.
-avg_accept_fraud_cost = 50
-# Average cost of refusing a legitimate transaction.
-avg_refuse_legit_cost = 5
+# Average cost of accepting a fraudulent transaction
+avg_accept_fraud_cost = 20
+# Average cost of refusing a legitimate transaction
+avg_refuse_legit_cost = 10
 
 
-def business_metric(y_true, y_pred, amount):
+def business_gain_func(y_true, y_pred, amount):
+    """Business metric to optimize.
+
+    The amount computed in this function are expressed in terms of gain. It means that
+    the diagonal entry of the cost matrix C_00 and C_11 are positive values and the
+    other entries are negative values. The off-diagonal entries are however negative
+    values.
+    """
     true_negative_c00 = (y_pred == 0) & (y_true == 0)
     false_negative_c01 = (y_pred == 0) & (y_true == 1)
     false_positive_c10 = (y_pred == 1) & (y_true == 0)
@@ -152,27 +163,44 @@ def business_metric(y_true, y_pred, amount):
     return accept_legitimate + accept_fraudulent + refuse_legitimate + refuse_fraudulent
 
 
-# %%
+# %% [markdown]
+#
 # From this business metric, we create a scikit-learn scorer that given a fitted
-# classifier and a test set compute the business metric. In this regard, we use
-# the :func:`~sklearn.metrics.make_scorer` factory. The variable `amount` is an
-# additional metadata to be passed to the scorer and we need to use
-# :ref:`metadata routing <metadata_routing>` to take into account this information.
+# classifier and a test set compute the business metric. This scorer is handy because it
+# can be used in meta-estimators, grid-search, and cross-validation.
+#
+# To create this scorer, we use the :func:`~sklearn.metrics.make_scorer` factory. The
+# metric defined above request the amount of each transaction. This variable is an
+# additional metadata to be passed to the scorer and we need to use metadata routing to
+# take into account this information.
+
+# %%
 import sklearn
 from sklearn.metrics import make_scorer
 
 sklearn.set_config(enable_metadata_routing=True)
-business_scorer = make_scorer(business_metric).set_score_request(amount=True)
+business_gain_scorer = make_scorer(business_gain_func).set_score_request(amount=True)
 
-# %%
-# So at this stage, we observe that the amount of the transaction is used twice: once
-# as a feature to train our predictive model and once as a metadata to compute the
-# the business metric and thus the statistical performance of our model. When used as a
+# %% [markdown]
+#
+# So at this stage, we see that the amount of the transaction is used twice: once as a
+# feature to train our predictive model and once as a metadata to compute the the
+# business metric and thus the statistical performance of our model. When used as a
 # feature, we are only required to have a column in `data` that contains the amount of
 # each transaction. To use this information as metadata, we need to have an external
 # variable that we can pass to the scorer or the model that internally routes this
 # metadata to the scorer. So let's create this variable.
+
+# %%
 amount = credit_card["Amount"].to_numpy()
+
+# %% [markdown]
+#
+# ## Investigate baseline policies
+#
+# Before to train a machine learning model, we investigate some baseline policies to
+# serve as reference. Also, we prepare our dataset, to have a left-out test set to
+# evaluate the performance of our predictive model.
 
 # %%
 from sklearn.model_selection import train_test_split
@@ -183,31 +211,46 @@ data_train, data_test, target_train, target_test, amount_train, amount_test = (
     )
 )
 
+# %% [markdown]
+#
+# The first baseline policy to evaluate is to check the performance of a policy that
+# always accepts the transaction. We recall that class "0" is the legitimate class and
+# class "1" is the fraudulent class.
+
 # %%
-# We first evaluate some baseline policies to serve as reference. Recall that
-# class "0" is the legitimate class and class "1" is the fraudulent class.
 from sklearn.dummy import DummyClassifier
 
 always_accept_policy = DummyClassifier(strategy="constant", constant=0)
 always_accept_policy.fit(data_train, target_train)
-benefit = business_scorer(
+benefit = business_gain_scorer(
     always_accept_policy, data_test, target_test, amount=amount_test
 )
 print(f"Benefit of the 'always accept' policy: {benefit:,.2f}€")
 
-# %%
+# %% [markdown]
+#
 # A policy that considers all transactions as legitimate would create a profit of
-# around 220,000€. We make the same evaluation for a classifier that predicts all
+# around 216,000€. We make the same evaluation for a classifier that predicts all
 # transactions as fraudulent.
+
+# %%
 always_reject_policy = DummyClassifier(strategy="constant", constant=1)
 always_reject_policy.fit(data_train, target_train)
-benefit = business_scorer(
+benefit = business_gain_scorer(
     always_reject_policy, data_test, target_test, amount=amount_test
 )
 print(f"Benefit of the 'always reject' policy: {benefit:,.2f}€")
 
+# %% [markdown]
+#
+# Such a policy would entail a catastrophic loss: around 1,421,000€. This is
+# expected since the vast majority of the transactions are legitimate and the
+# policy would refuse them at a non-trivial cost.
+#
+# Now, we evaluate the oracle model that would not make any mistake at all.
+
 # %%
-business_score = business_metric(
+business_score = business_gain_func(
     target_test,
     target_test,
     amount=amount_test,
@@ -215,23 +258,28 @@ business_score = business_metric(
 print(f"Benefit of oracle decisions (not reachable):  {business_score:,.2f}€")
 
 
-# %%
-# Such a policy would entail a catastrophic loss: around 670,000€. This is
-# expected since the vast majority of the transactions are legitimate and the
-# policy would refuse them at a non-trivial cost.
+# %% [markdown]
 #
-# A predictive model that adapts the accept/reject decisions on a per
-# transaction basis should ideally allow us to make a profit larger than the
-# 220,000€ of the best of our constant baseline policies.
+# This perfect model would make a profit of around 251,000€.
 #
-# We start with a logistic regression model with the default decision threshold
-# at 0.5. Here we tune the hyperparameter `C` of the logistic regression with a
-# proper scoring rule (the log loss) to ensure that the model's probabilistic
-# predictions returned by its `predict_proba` method are as accurate as
-# possible, irrespectively of the choice of the value of the decision
-# threshold.
-import numpy as np
+# Therefore, we conclude that a predictive model that a model which adapts the
+# accept/reject decisions on a per transaction basis should ideally allow us to make a
+# profit larger than the ~216,000€ and will be capped by an amount of ~251,000€ of the
+# best of our constant baseline policies.
 
+# %% [markdown]
+#
+# ## Training predictive models
+#
+# ### Tuned logistic regression on a proper scoring rule
+#
+# We start training a logistic regression model with the default decision threshold at
+# 0.5. Here we tune the hyperparameter `C` of the logistic regression with a proper
+# scoring rule (the log loss) to ensure that the model's probabilistic predictions
+# returned by its `predict_proba` method are as accurate as possible, irrespectively of
+# the choice of the value of the decision threshold.
+
+# %%
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import make_pipeline
@@ -247,102 +295,44 @@ model
 # %%
 print(
     "Benefit of logistic regression with default threshold: "
-    f"{business_scorer(model, data_test, target_test, amount=amount_test):,.2f}€"
+    f"{business_gain_scorer(model, data_test, target_test, amount=amount_test):,.2f}€"
 )
 
-# %%
-# The business metric shows that our predictive model with a default decision
-# threshold is already winning over the baseline in terms of profit and it would be
-# already beneficial to use it to accept or reject transactions instead of
-# accepting all transactions.
+# %% [markdown]
 #
-# Tuning the decision threshold
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The business metric shows that our predictive model with a default decision threshold
+# is already winning over the baseline in terms of profit and it would be already
+# beneficial to use it to accept or reject transactions instead of accepting all
+# transactions.
 #
-# Now the question is: is our model optimum for the type of decision that we want to do?
-# Up to now, we did not optimize the decision threshold. We use the
-# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` to optimize the decision
-# given our business scorer. To avoid a nested cross-validation, we will use the
-# best estimator found during the previous grid-search.
-from sklearn.model_selection import TunedThresholdClassifierCV
-
-tuned_model = TunedThresholdClassifierCV(
-    estimator=model.best_estimator_,
-    scoring=business_scorer,
-    thresholds=100,
-    n_jobs=2,
-)
-
-# %%
-# Since our business scorer requires the amount of each transaction, we need to pass
-# this information in the `fit` method. The
-# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
-# automatically dispatching this metadata to the underlying scorer.
-tuned_model.fit(data_train, target_train, amount=amount_train)
-
-# %%
-# We observe that the tuned decision threshold is far away from the default 0.5:
-print(f"Tuned decision threshold: {tuned_model.best_threshold_:.2f}")
-
-# %%
-print(
-    "Benefit of logistic regression with a tuned threshold: "
-    f"{business_scorer(tuned_model, data_test, target_test, amount=amount_test):,.2f}€"
-)
-
-# %%
-# We observe that tuning the decision threshold increases the expected profit
-# when deploying our model - as indicated by the business metric. It is therefore
-# valuable, whenever possible, to optimize the decision threshold with respect
-# to the business metric.
+# ### Tuned logistic regression with optimal decision threshold
 #
-# Manually setting the decision threshold instead of tuning it
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# From the research paper from Charles Elkan [1]_, we know that the optimal decision
+# threshold can be computed given the following two assumptions:
 #
-# In the previous example, we used the
-# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` to find the optimal
-# decision threshold. However, in some cases, we might have some prior knowledge about
-# the problem at hand and we might be happy to set the decision threshold manually.
+# - the probabilistic classifier is well-calibrated,
+# - the business metric can be expressed as a cost matrix.
 #
-# The class :class:`~sklearn.model_selection.FixedThresholdClassifier` allows us to
-# manually set the decision threshold. At prediction time, it behave as the previous
-# tuned model but no search is performed during the fitting process.
+# When defining our business metric, we have already expressed it as a cost matrix. So
+# to use the approach described in [1]_, we only need to check the calibration of our
+# model. In the previous section, we already tuned the hyperparameter of the logistic
+# regression using a proper scoring rule that should help towards getting a
+# well-calibrated model. As a first step, we assume that our classifier is
+# well-calibrated. Later, we will add an extra calibration step to check if it improves
+# the performance of our model in terms of the business metric.
 #
-# Here, we will reuse the decision threshold found in the previous section to create a
-# new model and check that it gives the same results.
-from sklearn.model_selection import FixedThresholdClassifier
-
-model_fixed_threshold = FixedThresholdClassifier(
-    estimator=model, threshold=tuned_model.best_threshold_
-).fit(data_train, target_train)
+# The optimal decision threshold proposed by Charles Elkan in [1]_ is defined as
+# follows:
 
 # %%
-business_score = business_scorer(
-    model_fixed_threshold, data_test, target_test, amount=amount_test
-)
-print(f"Benefit of logistic regression with a tuned threshold:  {business_score:,.2f}€")
-
-# %%
-# We observe that we obtained the exact same results but the fitting process
-# was much faster since we did not perform any hyper-parameter search.
-#
-# Finally, the estimate of the (average) business metric itself can be unreliable, in
-# particular when the number of data points in the minority class is very small.
-# Any business impact estimated by cross-validation of a business metric on
-# historical data (offline evaluation) should ideally be confirmed by A/B testing
-# on live data (online evaluation). Note however that A/B testing models is
-# beyond the scope of the scikit-learn library itself.
-
-# %%
-# Fixed Elkan-optimal threshold
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# Under the assumption that the probabilistic classifier is well-calibrated.
 
 
-# %%
 def elkan_optimal_threshold(amount):
-    # Cost matrix (negative of gain matrix)
+    """Compute the Elkan-optimal threshold for a given amount.
+
+    The values are expressed as costs. Therefore, the diagonal entries of the cost
+    matrix (C_00 and C_11) are negative values and the off-diagonal values are positive.
+    """
     c00 = -commission_transaction_gain * amount  # Accepting a legitimate transaction
     c01 = amount + avg_accept_fraud_cost  # Accepting a fraudulent transaction
     c10 = avg_refuse_legit_cost  # Refusing a legitimate transaction
@@ -351,46 +341,94 @@ def elkan_optimal_threshold(amount):
     return optimal_threshold
 
 
-elkan_optimal_threshold(amount_test).mean()
+# %% [markdown]
+#
+# Therefore, given a transaction amount, an optimal threshold can be computed for each
+# transaction amount. Let's plot the distribution of the optimal threshold for the
+# transactions in the test set. In addition, we plot the optimal threshold as a function
+# of the transaction amount.
 
 # %%
-elkan_optimal_threshold(amount_test[amount_test > 100]).mean()
+_, ax = plt.subplots(ncols=2, figsize=(14, 6))
+
+ax[0].hist(elkan_optimal_threshold(amount_train), bins=50, edgecolor="black")
+ax[0].set(
+    xlabel="Optimal threshold",
+    ylabel="Number of transactions",
+    title="Optimal threshold distribution",
+)
+
+x = np.linspace(amount_train.min(), amount_train.max(), 1_000)
+ax[1].plot(x, elkan_optimal_threshold(x))
+_ = ax[1].set(
+    xlabel="Amount (€)",
+    ylabel="Optimal threshold",
+    title="Optimal threshold in function of the transaction amount",
+)
+
+# %% [markdown]
+#
+# We see that the optimal threshold varies from ~0.02 to ~0.33 depending on the amount
+# of the transaction. Looking at the optimal threshold as a function of the transaction
+# amount, we see that the optimal threshold decreases as the amount of the transaction
+# increases. Therefore, it means that we declare a transaction as fraudulent with a
+# lower probability when the amount of the transaction is higher.
+#
+# As a first experiment, we set the decision threshold to the mean of the optimal
+# threshold for the transactions in the test set. Let's check the value of this
+# threshold.
 
 # %%
-elkan_optimal_threshold(amount_test[amount_test <= 100]).mean()
+elkan_optimal_threshold(amount_train).mean()
+
+# %% [markdown]
+#
+# Let's use this global threshold to change the decision threshold of our logistic
+# regression model and evaluate the performance of our model in terms of the business
+# metric.
 
 # %%
-_ = plt.hist(elkan_optimal_threshold(amount_test), bins=30)
-# %%
-import matplotlib.pyplot as plt
+from sklearn.model_selection import FixedThresholdClassifier
 
-x = np.linspace(amount_test.min(), amount_test.max(), 1000)
-plt.plot(x, elkan_optimal_threshold(x))
-plt.xlabel("Amount (€)")
-_ = plt.ylabel("Optimal threshold")
-
-# %%
 fixed_elkan_model = FixedThresholdClassifier(
     estimator=model.best_estimator_,
-    threshold=elkan_optimal_threshold(amount_test).mean(),
+    threshold=elkan_optimal_threshold(amount_train).mean(),
 ).fit(data_train, target_train)
 
-business_score = business_scorer(
+business_score = business_gain_scorer(
     fixed_elkan_model, data_test, target_test, amount=amount_test
 )
+
 print(
     f"Benefit of logistic regression with a fixed mean theoretical threshold: "
     f"{business_score:,.2f}€"
 )
 
+# %% [markdown]
+#
+# We see that using a more optimal threshold than the default one increases the profit
+# of our model. Since, we made the assumption that our model is well-calibrated, we
+# could now check that it was really the case.
 
 # %%
 from sklearn.calibration import CalibrationDisplay
 
 disp = CalibrationDisplay.from_estimator(
-    model.best_estimator_, data_test, target_test, strategy="quantile", n_bins=5
+    model.best_estimator_,
+    data_test,
+    target_test,
+    strategy="quantile",
+    n_bins=5,
+    name="Tuned logistic regression",
 )
 _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log")
+
+# %% [markdown]
+#
+# Our model is not perfectly calibrated. Before to tune the decision threshold, we
+# might try to improve the model calibration. However, it should be noted that since
+# we have little data in the fraudulent class, the classifier might be difficult to
+# calibrate since we need to make an internal cross-validation.
 
 # %%
 from sklearn.calibration import CalibratedClassifierCV
@@ -403,43 +441,119 @@ disp = CalibrationDisplay.from_estimator(
 )
 _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log")
 
+# %% [markdown]
+#
+# Now that our model has been through a calibration step, we can check the performance
+# of our model with the optimal threshold.
+
 # %%
 fixed_elkan_model = FixedThresholdClassifier(
     estimator=calibrated_estimator,
-    threshold=elkan_optimal_threshold(amount_test).mean(),
+    threshold=elkan_optimal_threshold(amount_train).mean(),
 ).fit(data_train, target_train)
 
-business_score = business_scorer(
+business_score = business_gain_scorer(
     fixed_elkan_model, data_test, target_test, amount=amount_test
 )
+
 print(
     f"Benefit of recalibrated logistic regression with a fixed mean theoretical "
     f" threshold:  {business_score:,.2f}€"
 )
 
+# %% [markdown]
+#
+# It seems that this extra calibration step did improve the performance of our model in
+# terms of the business metric.
+#
+# ### Tune decision threshold by business metric optimization
+#
+# In the previous section, we presented a method to compute the optimal decision
+# threshold but it relied on the assumption that the probabilistic classifier is
+# well-calibrated and that the business metric can be expressed as a cost matrix.
+#
+# If those assumptions are not met, we can instead tune the decision threshold by
+# directly optimizing the business metric. This optimization is done through a
+# grid-search over the decision threshold involving a cross-validation. The class
+# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
+# performing this optimization.
 
 # %%
-# Variable Elkan-optimal threshold - predict-time optimization
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+from sklearn.model_selection import TunedThresholdClassifierCV
+
+tuned_model = TunedThresholdClassifierCV(
+    estimator=model.best_estimator_,
+    scoring=business_gain_scorer,
+    thresholds=100,
+    n_jobs=2,
+)
+tuned_model
+
+# %% [markdown]
 #
-# Also under the assumption that the probabilistic classifier is well-calibrated.
+# Since our business scorer requires the amount of each transaction, we need to pass
+# this information in the `fit` method. The
+# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
+# automatically dispatching this metadata to the underlying scorer.
+
+# %%
+tuned_model.fit(data_train, target_train, amount=amount_train)
+
+# %% [markdown]
+#
+# Let's compare the decision threshold found by the model compared to our fixed global
+# threshold from the previous section.
+
+# %%
+tuned_model.best_threshold_
+
+# %% [markdown]
+#
+# Now, let's check the performance of our model with the tuned decision threshold on
+# the test set and using the business metric.
+
+# %%
+print(
+    "Benefit of logistic regression with a tuned threshold: "
+    f"{business_gain_scorer(tuned_model, data_test, target_test, amount=amount_test):,.2f}€"
+)
+
+# %% [markdown]
+#
+# We see that the obtained profit is slightly higher than the one obtained with the
+# fixed global threshold.
+#
+# ### Variable optimal threshold
+#
+# As we previously mentioned, theoretically, there is an optimal threshold for each
+# transaction amount. Let's write a similar class than the `FixedThresholdClassifier`
+# but that uses different thresholds depending on the amount of the transaction.
+
+# %%
 
 
 class VariableThresholdClassifier:
 
-    def __init__(self, estimator, variable_threshold):
-        self.estimator = estimator
+    def __init__(self, classifier, variable_threshold):
+        self.classifier = classifier
         self.variable_threshold = variable_threshold
 
     def fit(self, X, y):
         return self
 
     def predict(self, X, amount):
-        proba = self.estimator.predict_proba(X)[:, 1]
+        proba = self.classifier.predict_proba(X)[:, 1]
         return (proba >= self.variable_threshold(amount)).astype(int)
 
 
-business_score = business_metric(
+# %% [markdown]
+#
+# This estimator takes a trained classifier and call the optimal threshold function for
+# each of the predictions and compare it with the classifier's probability predictions.
+# We now evaluate the performance of this model on the test set.
+
+# %%
+business_score = business_gain_func(
     target_test,
     VariableThresholdClassifier(
         model.best_estimator_,
@@ -452,8 +566,15 @@ print(
     f"{business_score:,.2f}€"
 )
 
+# %% [markdown]
+#
+# We see that the profit is almost the same as the one obtained with the tuned threshold
+# model. However, we did not take care about the calibration of the underlying model
+# while as for the fixed threshold model, this is an assumption. So let's used the
+# recalibrated model to see if it improves the performance of our model.
+
 # %%
-business_score = business_metric(
+business_score = business_gain_func(
     target_test,
     VariableThresholdClassifier(
         calibrated_estimator,
@@ -468,9 +589,17 @@ print(
 
 # %% [markdown]
 #
+# We see that the recalibrated model improve the performance of our model in terms of
+# the business metric.
+#
+# ## Conclusion
+# TODO: Add a conclusion
+#
 # ## References
 #
 # .. [1] `Charles Elkan, "The Foundations of Cost-Sensitive Learning",
 #        International joint conference on artificial intelligence.
 #        Vol. 17. No. 1. Lawrence Erlbaum Associates Ltd, 2001.
 #        <https://cseweb.ucsd.edu/~elkan/rescale.pdf>`_
+
+# %%
