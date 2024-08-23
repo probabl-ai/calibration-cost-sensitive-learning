@@ -2,18 +2,17 @@
 #
 # # Reading calibration curves
 #
-# In this notebook, we introduce calibration curves. We use different set of
-# predictions leading to different calibration curves with typical shapes from
-# which we want to derive insights on the underlying models that generated
-# these predictions, namely:
+# We use different sets of predictions leading to various calibration curves
+# with typical shapes, from which we want to derive insights into the
+# underlying models that generated these predictions, namely:
 #
 # - a well calibrated model;
-# - an over-confident model;
-# - an under-confident model;
+# - an overconfident model;
+# - an underconfident model;
 # - a model fit with improper class weights/resampling.
 #
-# So let's first gather different prediction sets for the same classification
-# task. This is achieved by a script named `_generate_predictions.py`. This
+# First, let's gather different prediction sets for the same classification
+# task. This is achieved using a script named `_generate_predictions.py`. This
 # script stores the true labels and the predicted probability estimates of
 # several models into the `predictions` folder. We don't need to understand
 # what model they correspond to, we just want to analyze the calibration of
@@ -101,7 +100,7 @@ plot_calibration_curves(y_true, model_predictions)
 
 
 # %%
-model_predictions["Over-confident"] = np.load("../predictions/y_prob_2.npy")
+model_predictions["Overconfident"] = np.load("../predictions/y_prob_2.npy")
 plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
@@ -112,31 +111,31 @@ plot_calibration_curves(y_true, model_predictions)
 # observed positive data points is lower than the predicted probabilities.
 # Therefore, our model over-estimates the probabilities of the positive class
 # when the predictions are higher than the default threshold: the model is
-# therefore **over-confident in predicting the positive class**.
+# therefore **overconfident in predicting the positive class**.
 #
 # Let's now focus on the **left part of the curve**, that is when the model
 # predicts the negative class. The curve is above the diagonal, meaning that
 # the fraction of observed positive data points is higher than the predicted
 # probabilities of the positive class. This also means that the fraction of
 # observed negatives is lower than the predicted probabilities of the negative
-# class. Therefore, our model is also **over-confident in predicting the
+# class. Therefore, our model is also **overconfident in predicting the
 # negative class**.
 #
-# In conclusion, our model is over-confident when predicting either classes:
+# In conclusion, our model is overconfident when predicting either classes:
 # the predicted probabilities are too close to 0 or 1 compared to the observed
 # fraction of positive data points in each bin.
 #
-# Let's use the same approach to analyze some other typical calibration curves.
+# Let's use the same approach to analyze other typical calibration curves.
 
 # %%
-model_predictions["Under-confident"] = np.load("../predictions/y_prob_3.npy")
+model_predictions["Underconfident"] = np.load("../predictions/y_prob_3.npy")
 plot_calibration_curves(y_true, model_predictions)
 
 # %% [markdown]
 #
 # Here, we observe the opposite behaviour compared to the previous case: our model
 # outputs probabilities that are too close to 0.5 compared to the empirical positive
-# class fraction. Therefore, this model is under-confident.
+# class fraction. Therefore, this model is underconfident.
 #
 # Let's check the last set of predictions:
 
