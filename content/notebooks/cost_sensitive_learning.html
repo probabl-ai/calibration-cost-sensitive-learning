@@ -412,27 +412,32 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="cost-sensitive-learning-to-optimize-business-metrics">
 <h1>Cost-sensitive learning to optimize business metrics<a class="headerlink" href="#cost-sensitive-learning-to-optimize-business-metrics" title="Link to this heading">#</a></h1>
-<p>As stated in the introduction of this tutorial, many real-world applications are
-interested by taking operating decisions. A predictive model under such circumstances
-should optimized a “utility function” or also called “business metric”. The aim is
-therefore to maximize a gain or minimize a cost that is related to the decision taken
-by the model.</p>
-<p>In this tutorial, we describe a concrete example based on the credit card fraud
-detection problem. We first describe the dataset to train our predictive model and the
-data used to evaluate the operating decisions in this application. Then, we show a
-couple of approaches, each having different requirements, to get the optimal
-predictive model.</p>
+<p>Many real-world applications of machine learning aim to automate operational
+decisions with access to partial contextual information. This requires
+designing a decision policy that is optimal with respect to some given
+“utility function” or “business metric”. The aim is therefore to maximize a
+gain or minimize a cost that is related to the decision taken by the system
+(for instance accept or reject a transaction) prior to the observation of a
+delayed outcome (discovering that the transaction was legitimate or
+fraudulent) modeled as a target random variable conditioned on observed
+contextual information.</p>
+<p>In this tutorial, we explore the concrete example of fraud detection in
+credit card transactions. We first describe the dataset used to train our
+predictive models and the function used to evaluate the resulting operational
+decisions. Then, we design a few machine learning based decision system of
+increasing sophistication and compare their business performance to baselines
+and oracle decisions on held out data.</p>
 <section id="the-credit-card-dataset">
 <h2>The credit card dataset<a class="headerlink" href="#the-credit-card-dataset" title="Link to this heading">#</a></h2>
-<p>The problem that we solve in this tutorial is to detect fraudulent credit card
-transactions. The dataset is available on OpenML at the <a class="reference external" href="https://openml.org/search?type=data&amp;amp;sort=runs&amp;amp;status=active&amp;amp;id=1597">following URL</a>.</p>
-<p>We have a local copy of the dataset in the <code class="docutils literal notranslate"><span class="pre">datasets</span></code> folder. Let’s load the dataset
-and check the data that we have at hand.</p>
+<p>The dataset is available on OpenML at the <a class="reference external" href="https://openml.org/search?type=data&amp;amp;sort=runs&amp;amp;status=active&amp;amp;id=1597">following URL</a>.</p>
+<p>We have a local copy of the dataset in the <code class="docutils literal notranslate"><span class="pre">datasets</span></code> folder. Let’s load the
+parquet file and check the data that we have at hand.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Explicitly import pyarrow since it is an optional dependency of pandas to trigger</span>
-<span class="c1"># the fetching when using JupyterLite with pyodide kernel.</span>
-<span class="c1"># Note this is an unnecessary import if you are not using JupyterLite with pyodide.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Explicitly import pyarrow since it is an optional dependency of pandas to</span>
+<span class="c1"># trigger the fetching when using JupyterLite with pyodide kernel. Note this is</span>
+<span class="c1"># an unnecessary (but harmless) import if you are not using JupyterLite with</span>
+<span class="c1"># pyodide.</span>
 <span class="kn">import</span> <span class="nn">pyarrow</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
@@ -486,13 +491,14 @@ memory usage: 65.5 MB
 </div>
 <p>The target column is the “Class” column. It informs us whether a transaction
 is fraudulent (class 1) or legitimate (class 0).</p>
-<p>We see a set of features that are anonymized starting with “V”. Looking at the dataset
-description in OpenML, we learn that those features are the result of a PCA
-transformation. The only non-transformed features are the “Time” and “Amount” columns.
-The “Time” corresponds to the number of seconds elapsed between this transaction and
-the first transaction in the dataset. The “Amount” is the amount of the transaction.</p>
-<p>We first split the target from the data that we want to use to train our predictive
-model.</p>
+<p>We see a set of features that are anonymized starting with “V”. Looking at
+the dataset description in OpenML, we learn that those features are the
+result of a PCA transformation. The only non-transformed features are the
+“Time” and “Amount” columns. The “Time” corresponds to the number of seconds
+elapsed between this transaction and the first transaction in the dataset.
+The “Amount” is the amount of the transaction.</p>
+<p>We first extract the target column from the other columns used as inputs to
+our predictive model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target_name</span> <span class="o">=</span> <span class="s2">&quot;Class&quot;</span>

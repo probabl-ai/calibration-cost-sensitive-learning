@@ -2,32 +2,37 @@
 #
 # # Cost-sensitive learning to optimize business metrics
 #
-# As stated in the introduction of this tutorial, many real-world applications are
-# interested by taking operating decisions. A predictive model under such circumstances
-# should optimized a "utility function" or also called "business metric". The aim is
-# therefore to maximize a gain or minimize a cost that is related to the decision taken
-# by the model.
+# Many real-world applications of machine learning aim to automate operational
+# decisions with access to partial contextual information. This requires
+# designing a decision policy that is optimal with respect to some given
+# "utility function" or "business metric". The aim is therefore to maximize a
+# gain or minimize a cost that is related to the decision taken by the system
+# (for instance accept or reject a transaction) prior to the observation of a
+# delayed outcome (discovering that the transaction was legitimate or
+# fraudulent) modeled as a target random variable conditioned on observed
+# contextual information.
 #
-# In this tutorial, we describe a concrete example based on the credit card fraud
-# detection problem. We first describe the dataset to train our predictive model and the
-# data used to evaluate the operating decisions in this application. Then, we show a
-# couple of approaches, each having different requirements, to get the optimal
-# predictive model.
+# In this tutorial, we explore the concrete example of fraud detection in
+# credit card transactions. We first describe the dataset used to train our
+# predictive models and the function used to evaluate the resulting operational
+# decisions. Then, we design a few machine learning based decision system of
+# increasing sophistication and compare their business performance to baselines
+# and oracle decisions on held out data.
 #
 # ## The credit card dataset
 #
-# The problem that we solve in this tutorial is to detect fraudulent credit card
-# transactions. The dataset is available on OpenML at the [following URL](
+# The dataset is available on OpenML at the [following URL](
 # https://openml.org/search?type=data&sort=runs&status=active&id=1597).
 #
-# We have a local copy of the dataset in the `datasets` folder. Let's load the dataset
-# and check the data that we have at hand.
+# We have a local copy of the dataset in the `datasets` folder. Let's load the
+# parquet file and check the data that we have at hand.
 
 # %%
 
-# Explicitly import pyarrow since it is an optional dependency of pandas to trigger
-# the fetching when using JupyterLite with pyodide kernel.
-# Note this is an unnecessary import if you are not using JupyterLite with pyodide.
+# Explicitly import pyarrow since it is an optional dependency of pandas to
+# trigger the fetching when using JupyterLite with pyodide kernel. Note this is
+# an unnecessary (but harmless) import if you are not using JupyterLite with
+# pyodide.
 import pyarrow  # noqa: F401
 import pandas as pd
 
@@ -39,14 +44,15 @@ credit_card.info()
 # The target column is the "Class" column. It informs us whether a transaction
 # is fraudulent (class 1) or legitimate (class 0).
 #
-# We see a set of features that are anonymized starting with "V". Looking at the dataset
-# description in OpenML, we learn that those features are the result of a PCA
-# transformation. The only non-transformed features are the "Time" and "Amount" columns.
-# The "Time" corresponds to the number of seconds elapsed between this transaction and
-# the first transaction in the dataset. The "Amount" is the amount of the transaction.
+# We see a set of features that are anonymized starting with "V". Looking at
+# the dataset description in OpenML, we learn that those features are the
+# result of a PCA transformation. The only non-transformed features are the
+# "Time" and "Amount" columns. The "Time" corresponds to the number of seconds
+# elapsed between this transaction and the first transaction in the dataset.
+# The "Amount" is the amount of the transaction.
 #
-# We first split the target from the data that we want to use to train our predictive
-# model.
+# We first extract the target column from the other columns used as inputs to
+# our predictive model:
 
 # %%
 target_name = "Class"
