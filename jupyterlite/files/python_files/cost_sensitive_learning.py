@@ -104,7 +104,7 @@ for class_id, amount in amount_groupby_class:
         yscale="log",
         title=(
             "Distribution of the amount of "
-            f"{"fraudulent" if class_id else "legitimate"} transactions"
+            f'{"fraudulent" if class_id else "legitimate"} transactions'
         ),
     )
 
@@ -121,64 +121,69 @@ for class_id, amount in amount_groupby_class:
 #
 # Now, we create the business metric that depends on the amount of each transaction.
 #
-# The gain of a legitimate transaction is quite easy to define since it is a commission
-# that the bank receives. Here, we define it to be 2% of the amount of the transaction.
-# Similarly, there is no gain at refusing a fraudulent transaction: the bank does not
-# receive money from external actors or clients in this case.
+# The gain of a legitimate transaction is quite easy to define since it is a
+# commission that the operator receives. Here, we define it to be 2% of the
+# amount of the transaction. Similarly, there is no gain in refusing a
+# fraudulent transaction: the operator does not receive money from external
+# actors or clients in this case.
 #
-# Defining a cost for refusing a legitimate transaction or accepting a fraudulent
-# transaction is more complex. If we accept a fraudulent transaction, the bank loses the
-# amount of the transaction. There is also an extract cost involved that is an
-# aggregation of several other costs: the cost of the fraud investigation, the cost of
-# the customer support, and the cost related to brand reputation damage. Those
-# additional should be defined by the data scientist in collaboration with the business
+# Defining a cost for refusing a legitimate transaction or accepting a
+# fraudulent transaction is more complex. If the operator accepts a fraudulent
+# transaction, it loses the amount of the transaction. There is also an extra
+# cost involved that we define as the sum of several other costs: the cost of
+# the fraud investigation, the cost of the customer support, and the cost
+# related to brand reputation damage. Those additional costs should be
+# specified by the data scientist in collaboration with the business
 # stakeholders. A similar approach should be taken for the cost of refusing a
-# legitimate: the cost of the customer support, the cost of the customer
-# dissatisfaction, and the cost of the customer churn.
+# legitimate transaction: the cost of customer support and the cost of a
+# customer churning multiplied by estimated contribution of rejecting a
+# legitimate transaction on churning.
 
 # %%
 # Commission received for each accepted legitimate transaction
 commission_transaction_gain = 0.02
-# Average cost of accepting a fraudulent transaction
+# Expected extra cost of accepting a fraudulent transaction
 avg_accept_fraud_cost = 20
-# Average cost of refusing a legitimate transaction
+# Expected cost of refusing a legitimate transaction
 avg_refuse_legit_cost = 10
 
 
 def business_gain_func(y_true, y_pred, amount):
     """Business metric to optimize.
 
-    The amount computed in this function are expressed in terms of gain. It means that
-    the diagonal entry of the cost matrix C_00 and C_11 are positive values and the
+    The terms computed in this function are expressed in terms of gain. It means that
+    the diagonal entry of the gain matrix G_00 and G_11 are positive values and the
     other entries are negative values. The off-diagonal entries are however negative
-    values.
+    values (a cost is considered as a negative gain).
     """
-    true_negative_c00 = (y_pred == 0) & (y_true == 0)
-    false_negative_c01 = (y_pred == 0) & (y_true == 1)
-    false_positive_c10 = (y_pred == 1) & (y_true == 0)
-    true_positive_c11 = (y_pred == 1) & (y_true == 1)
+    true_negative_g00 = (y_pred == 0) & (y_true == 0)
+    false_negative_g01 = (y_pred == 0) & (y_true == 1)
+    false_positive_g10 = (y_pred == 1) & (y_true == 0)
+    true_positive_g11 = (y_pred == 1) & (y_true == 1)
 
-    accept_legitimate = (amount[true_negative_c00] * commission_transaction_gain).sum()
+    accept_legitimate = (amount[true_negative_g00] * commission_transaction_gain).sum()
     accept_fraudulent = -(
-        amount[false_negative_c01].sum()
-        + (false_negative_c01 * avg_accept_fraud_cost).sum()
+        amount[false_negative_g01].sum()
+        + (false_negative_g01 * avg_accept_fraud_cost).sum()
     )
-    refuse_legitimate = -(false_positive_c10 * avg_refuse_legit_cost).sum()
-    refuse_fraudulent = (true_positive_c11 * 0).sum()
+    refuse_legitimate = -(false_positive_g10 * avg_refuse_legit_cost).sum()
+    refuse_fraudulent = (true_positive_g11 * 0).sum()
 
     return accept_legitimate + accept_fraudulent + refuse_legitimate + refuse_fraudulent
 
 
 # %% [markdown]
 #
-# From this business metric, we create a scikit-learn scorer that given a fitted
-# classifier and a test set compute the business metric. This scorer is handy because it
-# can be used in meta-estimators, grid-search, and cross-validation.
+# From this business metric, we create a scikit-learn scorer that computes the
+# business metric given a fitted classifier and a test set. This scorer is
+# handy because it can be used in meta-estimators, grid-search, and
+# cross-validation.
 #
-# To create this scorer, we use the :func:`~sklearn.metrics.make_scorer` factory. The
-# metric defined above request the amount of each transaction. This variable is an
-# additional metadata to be passed to the scorer and we need to use metadata routing to
-# take into account this information.
+# To create this scorer, we use the :func:`~sklearn.metrics.make_scorer`
+# factory. The metric defined above requests the amount of each transaction.
+# This variable is an additional metadata to be passed to the scorer and we
+# need to use scikit-learn's metadata routing mechanism to pass this side
+# information where appropriate.
 
 # %%
 import sklearn
@@ -191,11 +196,12 @@ business_gain_scorer = make_scorer(business_gain_func).set_score_request(amount=
 #
 # So at this stage, we see that the amount of the transaction is used twice: once as a
 # feature to train our predictive model and once as a metadata to compute the the
-# business metric and thus the statistical performance of our model. When used as a
+# business metric and thus the business performance of our model. When used as a
 # feature, we are only required to have a column in `data` that contains the amount of
 # each transaction. To use this information as metadata, we need to have an external
-# variable that we can pass to the scorer or the model that internally routes this
-# metadata to the scorer. So let's create this variable.
+# variable that we can pass to the scorer or the model that internally routes
+# this metadata to the scorer. So let's extract this variable as a standalone
+# numpy array:
 
 # %%
 amount = credit_card["Amount"].to_numpy()

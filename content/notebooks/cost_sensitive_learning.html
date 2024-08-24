@@ -569,7 +569,7 @@ separately transactions.</p>
         <span class="n">yscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="p">(</span>
             <span class="s2">&quot;Distribution of the amount of &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s2">&quot;fraudulent&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">class_id</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;legitimate&quot;</span><span class="si">}</span><span class="s2"> transactions&quot;</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="s2">&quot;fraudulent&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">class_id</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;legitimate&quot;</span><span class="si">}</span><span class="s1"> transactions&#39;</span>
         <span class="p">),</span>
     <span class="p">)</span>
 </pre></div>
@@ -589,62 +589,67 @@ worth considering to have a specific treatment for those transactions.</p>
 <section id="addressing-the-problem-with-a-business-metric">
 <h2>Addressing the problem with a business metric<a class="headerlink" href="#addressing-the-problem-with-a-business-metric" title="Link to this heading">#</a></h2>
 <p>Now, we create the business metric that depends on the amount of each transaction.</p>
-<p>The gain of a legitimate transaction is quite easy to define since it is a commission
-that the bank receives. Here, we define it to be 2% of the amount of the transaction.
-Similarly, there is no gain at refusing a fraudulent transaction: the bank does not
-receive money from external actors or clients in this case.</p>
-<p>Defining a cost for refusing a legitimate transaction or accepting a fraudulent
-transaction is more complex. If we accept a fraudulent transaction, the bank loses the
-amount of the transaction. There is also an extract cost involved that is an
-aggregation of several other costs: the cost of the fraud investigation, the cost of
-the customer support, and the cost related to brand reputation damage. Those
-additional should be defined by the data scientist in collaboration with the business
+<p>The gain of a legitimate transaction is quite easy to define since it is a
+commission that the operator receives. Here, we define it to be 2% of the
+amount of the transaction. Similarly, there is no gain in refusing a
+fraudulent transaction: the operator does not receive money from external
+actors or clients in this case.</p>
+<p>Defining a cost for refusing a legitimate transaction or accepting a
+fraudulent transaction is more complex. If the operator accepts a fraudulent
+transaction, it loses the amount of the transaction. There is also an extra
+cost involved that we define as the sum of several other costs: the cost of
+the fraud investigation, the cost of the customer support, and the cost
+related to brand reputation damage. Those additional costs should be
+specified by the data scientist in collaboration with the business
 stakeholders. A similar approach should be taken for the cost of refusing a
-legitimate: the cost of the customer support, the cost of the customer
-dissatisfaction, and the cost of the customer churn.</p>
+legitimate transaction: the cost of customer support and the cost of a
+customer churning multiplied by estimated contribution of rejecting a
+legitimate transaction on churning.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Commission received for each accepted legitimate transaction</span>
 <span class="n">commission_transaction_gain</span> <span class="o">=</span> <span class="mf">0.02</span>
-<span class="c1"># Average cost of accepting a fraudulent transaction</span>
+<span class="c1"># Expected extra cost of accepting a fraudulent transaction</span>
 <span class="n">avg_accept_fraud_cost</span> <span class="o">=</span> <span class="mi">20</span>
-<span class="c1"># Average cost of refusing a legitimate transaction</span>
+<span class="c1"># Expected cost of refusing a legitimate transaction</span>
 <span class="n">avg_refuse_legit_cost</span> <span class="o">=</span> <span class="mi">10</span>
 
 
 <span class="k">def</span> <span class="nf">business_gain_func</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Business metric to optimize.</span>
 
-<span class="sd">    The amount computed in this function are expressed in terms of gain. It means that</span>
-<span class="sd">    the diagonal entry of the cost matrix C_00 and C_11 are positive values and the</span>
+<span class="sd">    The terms computed in this function are expressed in terms of gain. It means that</span>
+<span class="sd">    the diagonal entry of the gain matrix G_00 and G_11 are positive values and the</span>
 <span class="sd">    other entries are negative values. The off-diagonal entries are however negative</span>
-<span class="sd">    values.</span>
+<span class="sd">    values (a cost is considered as a negative gain).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">true_negative_c00</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">false_negative_c01</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">false_positive_c10</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">true_positive_c11</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">true_negative_g00</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">false_negative_g01</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">false_positive_g10</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">true_positive_g11</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">accept_legitimate</span> <span class="o">=</span> <span class="p">(</span><span class="n">amount</span><span class="p">[</span><span class="n">true_negative_c00</span><span class="p">]</span> <span class="o">*</span> <span class="n">commission_transaction_gain</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">accept_legitimate</span> <span class="o">=</span> <span class="p">(</span><span class="n">amount</span><span class="p">[</span><span class="n">true_negative_g00</span><span class="p">]</span> <span class="o">*</span> <span class="n">commission_transaction_gain</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">accept_fraudulent</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span>
-        <span class="n">amount</span><span class="p">[</span><span class="n">false_negative_c01</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="o">+</span> <span class="p">(</span><span class="n">false_negative_c01</span> <span class="o">*</span> <span class="n">avg_accept_fraud_cost</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">amount</span><span class="p">[</span><span class="n">false_negative_g01</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">false_negative_g01</span> <span class="o">*</span> <span class="n">avg_accept_fraud_cost</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="p">)</span>
-    <span class="n">refuse_legitimate</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">false_positive_c10</span> <span class="o">*</span> <span class="n">avg_refuse_legit_cost</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">refuse_fraudulent</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_positive_c11</span> <span class="o">*</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">refuse_legitimate</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">false_positive_g10</span> <span class="o">*</span> <span class="n">avg_refuse_legit_cost</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">refuse_fraudulent</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_positive_g11</span> <span class="o">*</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">accept_legitimate</span> <span class="o">+</span> <span class="n">accept_fraudulent</span> <span class="o">+</span> <span class="n">refuse_legitimate</span> <span class="o">+</span> <span class="n">refuse_fraudulent</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>From this business metric, we create a scikit-learn scorer that given a fitted
-classifier and a test set compute the business metric. This scorer is handy because it
-can be used in meta-estimators, grid-search, and cross-validation.</p>
-<p>To create this scorer, we use the :func:<code class="docutils literal notranslate"><span class="pre">~sklearn.metrics.make_scorer</span></code> factory. The
-metric defined above request the amount of each transaction. This variable is an
-additional metadata to be passed to the scorer and we need to use metadata routing to
-take into account this information.</p>
+<p>From this business metric, we create a scikit-learn scorer that computes the
+business metric given a fitted classifier and a test set. This scorer is
+handy because it can be used in meta-estimators, grid-search, and
+cross-validation.</p>
+<p>To create this scorer, we use the :func:<code class="docutils literal notranslate"><span class="pre">~sklearn.metrics.make_scorer</span></code>
+factory. The metric defined above requests the amount of each transaction.
+This variable is an additional metadata to be passed to the scorer and we
+need to use scikit-learn’s metadata routing mechanism to pass this side
+information where appropriate.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
@@ -658,11 +663,12 @@ take into account this information.</p>
 </div>
 <p>So at this stage, we see that the amount of the transaction is used twice: once as a
 feature to train our predictive model and once as a metadata to compute the the
-business metric and thus the statistical performance of our model. When used as a
+business metric and thus the business performance of our model. When used as a
 feature, we are only required to have a column in <code class="docutils literal notranslate"><span class="pre">data</span></code> that contains the amount of
 each transaction. To use this information as metadata, we need to have an external
-variable that we can pass to the scorer or the model that internally routes this
-metadata to the scorer. So let’s create this variable.</p>
+variable that we can pass to the scorer or the model that internally routes
+this metadata to the scorer. So let’s extract this variable as a standalone
+numpy array:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">amount</span> <span class="o">=</span> <span class="n">credit_card</span><span class="p">[</span><span class="s2">&quot;Amount&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
