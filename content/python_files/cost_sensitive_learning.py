@@ -84,7 +84,7 @@ target.value_counts()
 # We observe that we have around 500 data points for the minority class. This
 # is on the low end of the number of data points required to train a machine
 # learning model successfully.
-# 
+#
 # In addition of the target distribution, we check the distribution of the
 # amount of the legitimate and fraudulent separately transactions.
 
