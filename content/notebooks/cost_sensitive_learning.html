@@ -526,10 +526,11 @@ Name: proportion, dtype: float64
 </div>
 </div>
 </div>
-<p>The dataset is highly imbalanced with fraudulent transaction representing only 0.17%
-of the data. Since we are interested in training a machine learning model, we should
-also make sure that we have enough samples in the minority class to train the model
-by looking at the absolute number of samples.</p>
+<p>The dataset is highly imbalanced with fraudulent transactions representing
+only 0.17% of the data. Since we are interested in training a machine
+learning model, we should also make sure that we have enough data points in
+the minority class to train the model by looking at the absolute numbers of
+transactions of each class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
@@ -545,10 +546,11 @@ Name: count, dtype: int64
 </div>
 </div>
 </div>
-<p>We observe that we have around 500 samples that is on the low end of the number of
-samples required to train a machine learning model. In addition of the target
-distribution, we check the distribution of the amount of the legitimate and fraudulent
-separately transactions.</p>
+<p>We observe that we have around 500 data points for the minority class. This
+is on the low end of the number of data points required to train a machine
+learning model successfully.</p>
+<p>In addition of the target distribution, we check the distribution of the
+amount of the legitimate and fraudulent separately transactions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>

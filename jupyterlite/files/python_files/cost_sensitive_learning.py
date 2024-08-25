@@ -70,20 +70,23 @@ target.value_counts(normalize=True)
 
 # %% [markdown]
 #
-# The dataset is highly imbalanced with fraudulent transaction representing only 0.17%
-# of the data. Since we are interested in training a machine learning model, we should
-# also make sure that we have enough samples in the minority class to train the model
-# by looking at the absolute number of samples.
+# The dataset is highly imbalanced with fraudulent transactions representing
+# only 0.17% of the data. Since we are interested in training a machine
+# learning model, we should also make sure that we have enough data points in
+# the minority class to train the model by looking at the absolute numbers of
+# transactions of each class.
 
 # %%
 target.value_counts()
 
 # %% [markdown]
 #
-# We observe that we have around 500 samples that is on the low end of the number of
-# samples required to train a machine learning model. In addition of the target
-# distribution, we check the distribution of the amount of the legitimate and fraudulent
-# separately transactions.
+# We observe that we have around 500 data points for the minority class. This
+# is on the low end of the number of data points required to train a machine
+# learning model successfully.
+# 
+# In addition of the target distribution, we check the distribution of the
+# amount of the legitimate and fraudulent separately transactions.
 
 # %%
 import numpy as np
