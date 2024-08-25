@@ -2448,6 +2448,25 @@ should be further confirmed via an outer cross-validation.</p>
 </section>
 <section id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>The analysis presented in this example only uses 2 days of data:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(2.0)
+</pre></div>
+</div>
+</div>
+</div>
+<p>We observed that the difference in profit between the “always accept”
+baseline (216 k€) and a logistic regression model with a default threshold at
+0.5 (235 k€) was already substantial: 19 k€ in two days, which translate to
+around 3.5 million euros per year.</p>
+<p>When we further tune the threshold we could increase the profit to 239 k€
+which translate to an 730 k€ increase in profit per year.</p>
 <p>TODO: Add a conclusion about how much profit we make on a year.</p>
 </section>
 <section id="references">
