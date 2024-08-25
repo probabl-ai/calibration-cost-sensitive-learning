@@ -660,13 +660,17 @@ print(
 
 # %% [markdown]
 #
-# We observed that the difference in profit between the "always accept"
-# baseline (216 k€) and a logistic regression model with a default threshold at
-# 0.5 (235 k€) was already substantial: 19 k€ in two days, which translate to
-# around 3.5 million euros per year.
+# The difference in profit between the "always accept" baseline (216 k€) and a
+# logistic regression model with a default threshold at 0.5 (235 k€) was
+# already substantial: 19 k€ in two days, which translate to around 3.5 M€ per
+# year.
 #
 # When we further tune the threshold we could increase the profit to 239 k€
-# which translate to an 730 k€ increase in profit per year.
+# which would translate to an additional 730 k€ increase in profit per year
+# so tuning the threshold is worth the effort.
+#
+# Off-course those numbers should be confirmed with data collected over a
+# longer period of time.
 
 
 # TODO: Add a conclusion about how much profit we make on a year.
