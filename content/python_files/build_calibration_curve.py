@@ -215,7 +215,7 @@ _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
 #
 # Modify your previous implementation such that `pd.cut` uses quantiles to create the
 # bins instead of the default uniform behaviour. Specifically, look at the `bins`
-# parameter in `pd.cut`` and the function `np.quantile` to compute the quantile from
+# parameter in `pd.cut` and the function `np.quantile` to compute the quantile from
 # the predicted probabilities in `y_prob` to create the bins.
 
 # %%
