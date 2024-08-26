@@ -365,7 +365,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -381,6 +383,17 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Exercise:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Solution:</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -511,6 +524,61 @@ through the class <code class="docutils literal notranslate"><span class="pre">s
 <img alt="../../_images/3c3a1aa6b093721e244811f1a6681f515a02a0fc8fe6cdf873dcd64108b89bb4.png" src="../../_images/3c3a1aa6b093721e244811f1a6681f515a02a0fc8fe6cdf873dcd64108b89bb4.png" />
 </div>
 </div>
+<section id="exercise">
+<h2>Exercise:<a class="headerlink" href="#exercise" title="Link to this heading">#</a></h2>
+<p>As a pedagogical exercise, we will build the calibration curve from scratch. This
+will help us understand the underlying process. The calibration curve is built by
+following these steps:</p>
+<ol class="arabic simple">
+<li><p>Bin the predicted probabilities (i.e. <code class="docutils literal notranslate"><span class="pre">y_prob</span></code>) into 10 bins. You can use the
+<code class="docutils literal notranslate"><span class="pre">pd.cut</span></code> function from the <code class="docutils literal notranslate"><span class="pre">pandas</span></code> library. It will return a <code class="docutils literal notranslate"><span class="pre">Categorical</span></code>
+object where we get the bin identifier for each sample.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Create a DataFrame with the true labels, predicted probabilities, and bin
+identifier.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Group the DataFrame by the bin identifier and calculate the mean of the true
+labels and the predicted probabilities.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Plot the calibration curve by plotting the average predicted probabilities
+against the fraction of positive samples.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="solution">
+<h2>Solution:<a class="headerlink" href="#solution" title="Link to this heading">#</a></h2>
 <p>As a pedagogical exercise, we will build the calibration curve from scratch. This
 will help us understand the underlying process. The calibration curve is built by
 following these steps:</p>
@@ -700,12 +768,26 @@ can show it on our previous example:</p>
 <img alt="../../_images/05916db087b7f0dfe82fd7f45425e033a51cbace75d227ff27864b04a04520ba.png" src="../../_images/05916db087b7f0dfe82fd7f45425e033a51cbace75d227ff27864b04a04520ba.png" />
 </div>
 </div>
+</section>
+<section id="id1">
+<h2>Exercise:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
 <p>Modify your previous implementation such that <code class="docutils literal notranslate"><span class="pre">pd.cut</span></code> uses quantiles to create the
 bins instead of the default uniform behaviour. Specifically, look at the <code class="docutils literal notranslate"><span class="pre">bins</span></code>
-parameter and the function <code class="docutils literal notranslate"><span class="pre">np.quantile</span></code>.</p>
+parameter in <code class="docutils literal notranslate"><span class="pre">pd.cut``</span> <span class="pre">and</span> <span class="pre">the</span> <span class="pre">function</span> </code>np.quantile<code class="docutils literal notranslate"><span class="pre">to</span> <span class="pre">compute</span> <span class="pre">the</span> <span class="pre">quantile</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">predicted</span> <span class="pre">probabilities</span> <span class="pre">in</span></code>y_prob` to create the bins.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bin_identifier</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">y_prob</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">y_prob</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id2">
+<h2>Solution:<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">y_prob</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">))</span>
+<span class="n">bin_identifier</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">y_prob</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
 <span class="n">predictions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
         <span class="s2">&quot;y_true&quot;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">,</span>
@@ -738,6 +820,7 @@ parameter and the function <code class="docutils literal notranslate"><span clas
 <img alt="../../_images/50b6f89a7bb75d808f31a4b2e1bf45cabefa4bdec36ab0e701dca3f7b83fce39.png" src="../../_images/50b6f89a7bb75d808f31a4b2e1bf45cabefa4bdec36ab0e701dca3f7b83fce39.png" />
 </div>
 </div>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -794,6 +877,24 @@ parameter and the function <code class="docutils literal notranslate"><span clas
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Exercise:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Solution:</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

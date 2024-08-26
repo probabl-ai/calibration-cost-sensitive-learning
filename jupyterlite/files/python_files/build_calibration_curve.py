@@ -90,6 +90,49 @@ _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
 
 # %% [markdown]
 #
+# ## Exercise:
+#
+# As a pedagogical exercise, we will build the calibration curve from scratch. This
+# will help us understand the underlying process. The calibration curve is built by
+# following these steps:
+#
+# 1. Bin the predicted probabilities (i.e. `y_prob`) into 10 bins. You can use the
+#    `pd.cut` function from the `pandas` library. It will return a `Categorical`
+#    object where we get the bin identifier for each sample.
+
+# %%
+import pandas as pd
+
+# TODO
+
+# %% [markdown]
+#
+# 2. Create a DataFrame with the true labels, predicted probabilities, and bin
+#    identifier.
+
+# %%
+# TODO
+
+# %% [markdown]
+#
+# 3. Group the DataFrame by the bin identifier and calculate the mean of the true
+#    labels and the predicted probabilities.
+
+# %%
+# TODO
+
+# %% [markdown]
+#
+# 4. Plot the calibration curve by plotting the average predicted probabilities
+#    against the fraction of positive samples.
+
+# %%
+# TODO
+
+# %% [markdown]
+#
+# ## Solution:
+#
 # As a pedagogical exercise, we will build the calibration curve from scratch. This
 # will help us understand the underlying process. The calibration curve is built by
 # following these steps:
@@ -168,12 +211,23 @@ _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
 
 # %% [markdown]
 #
+# ## Exercise:
+#
 # Modify your previous implementation such that `pd.cut` uses quantiles to create the
 # bins instead of the default uniform behaviour. Specifically, look at the `bins`
-# parameter and the function `np.quantile`.
+# parameter in `pd.cut`` and the function `np.quantile` to compute the quantile from
+# the predicted probabilities in `y_prob` to create the bins.
 
 # %%
-bin_identifier = pd.cut(y_prob, bins=np.quantile(y_prob, np.linspace(0, 1, n_bins)))
+# TODO
+
+# %% [markdown]
+#
+# ## Solution:
+
+# %%
+bins = np.quantile(y_prob, np.linspace(0, 1, n_bins))
+bin_identifier = pd.cut(y_prob, bins=bins)
 predictions = pd.DataFrame(
     {
         "y_true": y_true,
