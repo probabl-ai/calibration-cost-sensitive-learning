@@ -671,9 +671,6 @@ print(
 #
 # Off-course those numbers should be confirmed with data collected over a
 # longer period of time.
-
-
-# TODO: Add a conclusion about how much profit we make on a year.
 #
 # ## References
 #
