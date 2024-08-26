@@ -56,7 +56,7 @@ credit_card.info()
 
 # %%
 target_name = "Class"
-data = credit_card.drop(columns=target_name)
+data = credit_card.drop(columns=[target_name, "Time"])
 target = credit_card[target_name].astype(int)
 
 # %% [markdown]
@@ -576,7 +576,7 @@ print(
 #
 # We see that the obtained profit is quite similar (maybe slightly higher) to
 # the profit obtained with the previous way of setting a fixed decision
-# threshold. 
+# threshold.
 #
 # ### Variable optimal threshold
 #
@@ -656,7 +656,7 @@ print(
 # The analysis presented in this example only uses 2 days of data:
 
 # %%
-((data["Time"].max() - data["Time"].min()) / (60 * 60 * 24)).round(1)
+((credit_card["Time"].max() - credit_card["Time"].min()) / (60 * 60 * 24)).round(1)
 
 # %% [markdown]
 #
@@ -677,5 +677,3 @@ print(
 # [1] Charles Elkan, "The Foundations of Cost-Sensitive Learning", International joint
 #  conference on artificial intelligence. Vol. 17. No. 1. Lawrence Erlbaum Associates
 #  Ltd, 2001. [URL](https://cseweb.ucsd.edu/~elkan/rescale.pdf)
-
-# %%
