@@ -178,6 +178,8 @@ _ = disp.ax_.set(aspect="equal")
 # We observe that the calibration of the model is far from ideal. Is there a
 # way to improve the calibration of our model?
 #
+# ### Exercise:
+#
 # As an exercise, let's try to three different hyperparameters configurations:
 # - one configuration with 5 knots (i.e. `n_knots`) for the spline
 #   transformation and a regularization parameter `C` of 1e-1 for the logistic

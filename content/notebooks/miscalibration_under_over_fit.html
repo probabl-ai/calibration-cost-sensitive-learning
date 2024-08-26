@@ -388,6 +388,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#is-it-true-for-other-models">Is it true for other models?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calibration-aware-hyperparameter-tuning">Calibration-aware hyperparameter tuning</a></li>
@@ -1424,6 +1425,8 @@ here to keep the notebook simple.</p>
 </div>
 <p>We observe that the calibration of the model is far from ideal. Is there a
 way to improve the calibration of our model?</p>
+<section id="exercise">
+<h2>Exercise:<a class="headerlink" href="#exercise" title="Link to this heading">#</a></h2>
 <p>As an exercise, let’s try to three different hyperparameters configurations:</p>
 <ul class="simple">
 <li><p>one configuration with 5 knots (i.e. <code class="docutils literal notranslate"><span class="pre">n_knots</span></code>) for the spline
@@ -1449,6 +1452,7 @@ What can you observe in terms of under-/over-fitting and calibration?</p>
 </div>
 </div>
 </div>
+</section>
 <section id="solution">
 <h2>Solution:<a class="headerlink" href="#solution" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
@@ -2282,7 +2286,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f68496ebce0&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f38717ee720&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;RandomizedSearchCV<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>RandomizedSearchCV(cv=ShuffleSplit(n_splits=10, random_state=0, test_size=0.2, train_size=None),
@@ -2293,7 +2297,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f68496ebce0&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f38717ee720&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">best_estimator_: Pipeline</label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
@@ -2411,6 +2415,7 @@ cross-validated as expected.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#is-it-true-for-other-models">Is it true for other models?</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calibration-aware-hyperparameter-tuning">Calibration-aware hyperparameter tuning</a></li>
