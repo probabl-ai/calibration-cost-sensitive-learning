@@ -502,7 +502,7 @@ our predictive model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target_name</span> <span class="o">=</span> <span class="s2">&quot;Class&quot;</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">credit_card</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">target_name</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">credit_card</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">target_name</span><span class="p">,</span> <span class="s2">&quot;Time&quot;</span><span class="p">])</span>
 <span class="n">target</span> <span class="o">=</span> <span class="n">credit_card</span><span class="p">[</span><span class="n">target_name</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1210,7 +1210,8 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
              param_grid={&#x27;logisticregression__C&#x27;: array([1.e-06, 1.e-05, 1.e-04, 1.e-03, 1.e-02, 1.e-01, 1.e+00, 1.e+01,
        1.e+02, 1.e+03, 1.e+04, 1.e+05, 1.e+06])},
              scoring=&#x27;neg_log_loss&#x27;)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox" ><label for="sk-estimator-id-2" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">best_estimator_: Pipeline</label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
-                (&#x27;logisticregression&#x27;, LogisticRegression(C=np.float64(10.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" ><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;StandardScaler<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" ><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(10.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
+                (&#x27;logisticregression&#x27;,
+                 LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" ><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;StandardScaler<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" ><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1219,7 +1220,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;logisticregression__C&#39;: np.float64(10.0)}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;logisticregression__C&#39;: np.float64(100.0)}
 </pre></div>
 </div>
 </div>
@@ -1234,7 +1235,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with default threshold: 235,128.87€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with default threshold: 235,234.87€
 </pre></div>
 </div>
 </div>
@@ -1361,7 +1362,7 @@ business metric.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with a fixed mean theoretical threshold: 236,745.60€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with a fixed mean theoretical threshold: 236,756.32€
 </pre></div>
 </div>
 </div>
@@ -1390,7 +1391,7 @@ result use plot the calibration curve with a logarithmic scale:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/10e3427b7b5e2a8c92d4583030f72d555b5feac78a1dfa46ce08772ad0a85e03.png" src="../../_images/10e3427b7b5e2a8c92d4583030f72d555b5feac78a1dfa46ce08772ad0a85e03.png" />
+<img alt="../../_images/3e8312bd8dbdcd133e1e7b712de8923a3d09def7bdf3f9b60f8a88e800e3a2c5.png" src="../../_images/3e8312bd8dbdcd133e1e7b712de8923a3d09def7bdf3f9b60f8a88e800e3a2c5.png" />
 </div>
 </div>
 <p>The calibration looks good but not perfect. Let’s attempt to improve it.
@@ -1414,7 +1415,7 @@ classifiers paired with 5 isotonic calibrators, one pair for each split:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/287fb437f9acdeef4671cd1e9f19972df5ee7858d7aa64d9437ffd53bca1029e.png" src="../../_images/287fb437f9acdeef4671cd1e9f19972df5ee7858d7aa64d9437ffd53bca1029e.png" />
+<img alt="../../_images/6f5ee0ef11b6ba4f63c90ffca516e6e5e8dd1b4211d4d78ca1e5bc32d3a51b3b.png" src="../../_images/6f5ee0ef11b6ba4f63c90ffca516e6e5e8dd1b4211d4d78ca1e5bc32d3a51b3b.png" />
 </div>
 </div>
 <p>The calibration curve of the resulting model does not look significantly
@@ -1440,7 +1441,7 @@ improvement measured with the business metric:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with a fixed mean theoretical  threshold:  237,821.36€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with a fixed mean theoretical  threshold:  237,523.85€
 </pre></div>
 </div>
 </div>
@@ -1887,15 +1888,16 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </style><div id="sk-container-id-2" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
                                                       StandardScaler()),
                                                      (&#x27;logisticregression&#x27;,
-                                                      LogisticRegression(C=np.float64(10.0)))]),
+                                                      LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
                            scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;&nbsp;TunedThresholdClassifierCV<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.TunedThresholdClassifierCV.html">?<span>Documentation for TunedThresholdClassifierCV</span></a><span class="sk-estimator-doc-link ">i<span>Not fitted</span></span></label><div class="sk-toggleable__content "><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
                                                       StandardScaler()),
                                                      (&#x27;logisticregression&#x27;,
-                                                      LogisticRegression(C=np.float64(10.0)))]),
+                                                      LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
                            scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label  sk-toggleable__label-arrow ">estimator: Pipeline</label><div class="sk-toggleable__content "><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
-                (&#x27;logisticregression&#x27;, LogisticRegression(C=np.float64(10.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;StandardScaler<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content "><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;LogisticRegression<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content "><pre>LogisticRegression(C=np.float64(10.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
+                (&#x27;logisticregression&#x27;,
+                 LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;StandardScaler<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content "><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label  sk-toggleable__label-arrow ">&nbsp;LogisticRegression<a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content "><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
 <p>Since our business scorer requires the amount of each transaction, we need to pass
 this information in the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method. The
@@ -2315,15 +2317,16 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </style><div id="sk-container-id-3" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
                                                       StandardScaler()),
                                                      (&#x27;logisticregression&#x27;,
-                                                      LogisticRegression(C=np.float64(10.0)))]),
+                                                      LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
                            scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;TunedThresholdClassifierCV<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.TunedThresholdClassifierCV.html">?<span>Documentation for TunedThresholdClassifierCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
                                                       StandardScaler()),
                                                      (&#x27;logisticregression&#x27;,
-                                                      LogisticRegression(C=np.float64(10.0)))]),
+                                                      LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
                            scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">estimator: Pipeline</label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
-                (&#x27;logisticregression&#x27;, LogisticRegression(C=np.float64(10.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;StandardScaler<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(10.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
+                (&#x27;logisticregression&#x27;,
+                 LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;StandardScaler<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
 <p>Let’s compare the decision threshold found by the model compared to our fixed global
 threshold from the previous section.</p>
@@ -2334,7 +2337,7 @@ threshold from the previous section.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.040404040403838125)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.03030303030292765)
 </pre></div>
 </div>
 </div>
@@ -2354,7 +2357,7 @@ threshold by computing the value of the business metric on the test set:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with a tuned threshold: 238,447.87€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with a tuned threshold: 238,123.39€
 </pre></div>
 </div>
 </div>
@@ -2410,7 +2413,7 @@ model on the test set.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with optimal variable threshold: 238,040.07€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with optimal variable threshold: 237,032.00€
 </pre></div>
 </div>
 </div>
@@ -2436,7 +2439,7 @@ calibration of the underlying classifier:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with optimal variable threshold: 239,291.20€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with optimal variable threshold: 238,978.13€
 </pre></div>
 </div>
 </div>
@@ -2451,7 +2454,7 @@ should be further confirmed via an outer cross-validation.</p>
 <p>The analysis presented in this example only uses 2 days of data:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">((</span><span class="n">credit_card</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">credit_card</span><span class="p">[</span><span class="s2">&quot;Time&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">))</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
