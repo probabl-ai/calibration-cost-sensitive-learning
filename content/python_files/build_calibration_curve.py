@@ -167,12 +167,7 @@ predictions
 #    labels and the predicted probabilities.
 
 # %%
-avg_predicted_probabilities = predictions.groupby(
-    "bin_identifier", observed=True
-).y_prob.mean()
-fraction_positive_samples = predictions.groupby(
-    "bin_identifier", observed=True
-).y_true.mean()
+mean_per_bin = predictions.groupby("bin_identifier", observed=True).mean()
 
 # %% [markdown]
 #
@@ -181,7 +176,7 @@ fraction_positive_samples = predictions.groupby(
 
 # %%
 _, ax = plt.subplots()
-ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
+mean_per_bin.plot("y_prob", "y_true", ax=ax)
 ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
 ax.legend()
 _ = ax.set(
@@ -235,14 +230,9 @@ predictions = pd.DataFrame(
         "bin_identifier": bin_identifier,
     }
 )
-avg_predicted_probabilities = predictions.groupby(
-    "bin_identifier", observed=True
-).y_prob.mean()
-fraction_positive_samples = predictions.groupby(
-    "bin_identifier", observed=True
-).y_true.mean()
+mean_per_bin = predictions.groupby("bin_identifier", observed=True).mean()
 _, ax = plt.subplots()
-ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
+mean_per_bin.plot("y_prob", "y_true", ax=ax)
 ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
 ax.legend()
 _ = ax.set(
