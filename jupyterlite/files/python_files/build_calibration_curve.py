@@ -11,17 +11,17 @@
 # discuss the implications of the data modeling process on the calibration curve.
 #
 # So let's first generate some predictions. The generative process is located in the
-# file `_generate_predictions.py`. This process stores the true labels and the
+# file `_generate_predictions.py`. This process stores the observed labels and the
 # predicted probability estimates of several models into the `predictions` folder.
 
 # %%
 # Make sure to have scikit-learn >= 1.5
 import sklearn
+
 sklearn.__version__
 
-# %%
-# Equivalent to the magic command "%run _generate_predictions.py" but it allows this
-# file to be executed as a Python script.
+# %% Equivalent to the magic command "%run _generate_predictions.py" but it
+# allows this file to be executed as a Python script.
 from IPython import get_ipython
 
 ipython = get_ipython()
@@ -29,54 +29,56 @@ ipython.run_line_magic("run", "../python_files/_generate_predictions.py")
 
 # %% [markdown]
 #
-# Let's load a the true labels and the predicted probabilities of one of the models.
+# Let's load a the observed labels and the predicted probabilities of one of
+# the models.
 
 # %%
 import numpy as np
 
-y_true = np.load("../predictions/y_true.npy")
+y_observed = np.load("../predictions/y_true.npy")
 y_prob = np.load("../predictions/y_prob_2.npy")
 
 # %%
-y_true
+y_observed
 
 # %% [markdown]
 #
-# `y_true` contains the true labels. In this case, we face a binary classification
-# problem.
+# `y_observed` contains the observed labels. In this case, we face a binary
+# classification problem.
 
 # %%
 y_prob
 
 # %% [markdown]
 #
-# `y_prob` contains the predicted probabilities of the positive class estimated by a
-# given model.
+# `y_prob` contains the predicted probabilities of the positive class estimated
+# by a given model.
 #
-# As discussed earlier, we could evaluate the discriminative power of the model using
-# a metric such as the ROC-AUC score.
+# As discussed earlier, we could evaluate the discriminative power of the model
+# using a metric such as the ROC-AUC score.
 
 # %%
 from sklearn.metrics import roc_auc_score
 
-print(f"ROC AUC: {roc_auc_score(y_true, y_prob):.2f}")
+print(f"ROC AUC: {roc_auc_score(y_observed, y_prob):.2f}")
 
 # %% [markdown]
 #
-# The score is much above 0.5 and it means that our model is able to discriminate
-# between the two classes. However, this score does not tell us if the predicted
-# probabilities are well calibrated.
+# The score is much above 0.5 and it means that our model is able to
+# discriminate between the two classes. However, this score does not tell us if
+# the predicted probabilities are well calibrated.
 #
-# We can provide an example of a well-calibrated probability: for a given sample, the
-# predicted probabilities is considered well-calibrated if the proportion of samples
-# where this probability is predicted is equal to the probability itself.
+# We can provide an example of a well-calibrated probability: for a given
+# sample, the predicted probabilities is considered well-calibrated if the
+# proportion of samples where this probability is predicted is equal to the
+# probability itself.
 #
-# It is therefore possible to group predictions into bins based on their predicted
-# probabilities and to calculate the proportion of positive samples in each bin and
-# compare it to the average predicted probability in the bin.
+# It is therefore possible to group predictions into bins based on their
+# predicted probabilities and to calculate the proportion of positive samples
+# in each bin and compare it to the average predicted probability in the bin.
 #
-# Scikit-learn provide a utility to plot this graphical representation. It is available
-# through the class `sklearn.calibration.CalibrationDisplay`.
+# Scikit-learn provide a utility to plot this graphical representation. It is
+# available through the class `sklearn.calibration.CalibrationDisplay`.
 
 # %%
 import matplotlib.pyplot as plt
@@ -84,7 +86,7 @@ from sklearn.calibration import CalibrationDisplay
 
 n_bins = 10
 disp = CalibrationDisplay.from_predictions(
-    y_true, y_prob, n_bins=n_bins, strategy="uniform"
+    y_observed, y_prob, n_bins=n_bins, strategy="uniform"
 )
 _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
 
@@ -107,7 +109,7 @@ import pandas as pd
 
 # %% [markdown]
 #
-# 2. Create a DataFrame with the true labels, predicted probabilities, and bin
+# 2. Create a DataFrame with the observed labels, predicted probabilities, and bin
 #    identifier.
 
 # %%
@@ -115,8 +117,8 @@ import pandas as pd
 
 # %% [markdown]
 #
-# 3. Group the DataFrame by the bin identifier and calculate the mean of the true
-#    labels and the predicted probabilities.
+# 3. Group the DataFrame by the bin identifier and calculate the mean of the
+#    observed labels and the predicted probabilities.
 
 # %%
 # TODO
@@ -148,13 +150,13 @@ bin_identifier = pd.cut(y_prob, bins=n_bins)
 
 # %% [markdown]
 #
-# 2. Create a DataFrame with the true labels, predicted probabilities, and bin
-#    identifier.
+# 2. Create a DataFrame with the observed labels, predicted probabilities, and
+#    bin identifier.
 
 # %%
 predictions = pd.DataFrame(
     {
-        "y_true": y_true,
+        "y_observed": y_observed,
         "y_prob": y_prob,
         "bin_identifier": bin_identifier,
     }
@@ -163,16 +165,11 @@ predictions
 
 # %% [markdown]
 #
-# 3. Group the DataFrame by the bin identifier and calculate the mean of the true
-#    labels and the predicted probabilities.
+# 3. Group the DataFrame by the bin identifier and calculate the mean of the
+#    observed labels and the predicted probabilities.
 
 # %%
-avg_predicted_probabilities = predictions.groupby(
-    "bin_identifier", observed=True
-).y_prob.mean()
-fraction_positive_samples = predictions.groupby(
-    "bin_identifier", observed=True
-).y_true.mean()
+mean_per_bin = predictions.groupby("bin_identifier", observed=True).mean()
 
 # %% [markdown]
 #
@@ -181,7 +178,7 @@ fraction_positive_samples = predictions.groupby(
 
 # %%
 _, ax = plt.subplots()
-ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
+mean_per_bin.plot("y_prob", "y_observed", ax=ax)
 ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
 ax.legend()
 _ = ax.set(
@@ -205,7 +202,7 @@ _ = ax.set(
 
 # %%
 disp = CalibrationDisplay.from_predictions(
-    y_true, y_prob, n_bins=n_bins, strategy="quantile"
+    y_observed, y_prob, n_bins=n_bins, strategy="quantile"
 )
 _ = disp.ax_.set(xlim=(0, 1), ylim=(0, 1), aspect="equal")
 
@@ -230,19 +227,14 @@ bins = np.quantile(y_prob, np.linspace(0, 1, n_bins))
 bin_identifier = pd.cut(y_prob, bins=bins)
 predictions = pd.DataFrame(
     {
-        "y_true": y_true,
+        "y_observed": y_observed,
         "y_prob": y_prob,
         "bin_identifier": bin_identifier,
     }
 )
-avg_predicted_probabilities = predictions.groupby(
-    "bin_identifier", observed=True
-).y_prob.mean()
-fraction_positive_samples = predictions.groupby(
-    "bin_identifier", observed=True
-).y_true.mean()
+mean_per_bin = predictions.groupby("bin_identifier", observed=True).mean()
 _, ax = plt.subplots()
-ax.plot(avg_predicted_probabilities, fraction_positive_samples, "s-")
+mean_per_bin.plot("y_prob", "y_observed", ax=ax)
 ax.plot([0, 1], [0, 1], "k:", label="Perfectly calibrated")
 ax.legend()
 _ = ax.set(

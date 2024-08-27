@@ -412,12 +412,13 @@ own calibration curve.</p>
 without going into details on the model used to generate the predictions. We later
 discuss the implications of the data modeling process on the calibration curve.</p>
 <p>So let’s first generate some predictions. The generative process is located in the
-file <code class="docutils literal notranslate"><span class="pre">_generate_predictions.py</span></code>. This process stores the true labels and the
+file <code class="docutils literal notranslate"><span class="pre">_generate_predictions.py</span></code>. This process stores the observed labels and the
 predicted probability estimates of several models into the <code class="docutils literal notranslate"><span class="pre">predictions</span></code> folder.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure to have scikit-learn &gt;= 1.5</span>
 <span class="kn">import</span> <span class="nn">sklearn</span>
+
 <span class="n">sklearn</span><span class="o">.</span><span class="n">__version__</span>
 </pre></div>
 </div>
@@ -430,8 +431,7 @@ predicted probability estimates of several models into the <code class="docutils
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Equivalent to the magic command &quot;%run _generate_predictions.py&quot; but it allows this</span>
-<span class="c1"># file to be executed as a Python script.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># allows this file to be executed as a Python script.</span>
 <span class="kn">from</span> <span class="nn">IPython</span> <span class="kn">import</span> <span class="n">get_ipython</span>
 
 <span class="n">ipython</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span>
@@ -440,12 +440,13 @@ predicted probability estimates of several models into the <code class="docutils
 </div>
 </div>
 </div>
-<p>Let’s load a the true labels and the predicted probabilities of one of the models.</p>
+<p>Let’s load a the observed labels and the predicted probabilities of one of
+the models.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_true.npy&quot;</span><span class="p">)</span>
+<span class="n">y_observed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_true.npy&quot;</span><span class="p">)</span>
 <span class="n">y_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;../predictions/y_prob_2.npy&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -453,7 +454,7 @@ predicted probability estimates of several models into the <code class="docutils
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_true</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_observed</span>
 </pre></div>
 </div>
 </div>
@@ -463,8 +464,8 @@ predicted probability estimates of several models into the <code class="docutils
 </div>
 </div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">y_true</span></code> contains the true labels. In this case, we face a binary classification
-problem.</p>
+<p><code class="docutils literal notranslate"><span class="pre">y_observed</span></code> contains the observed labels. In this case, we face a binary
+classification problem.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_prob</span>
@@ -478,15 +479,15 @@ problem.</p>
 </div>
 </div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">y_prob</span></code> contains the predicted probabilities of the positive class estimated by a
-given model.</p>
-<p>As discussed earlier, we could evaluate the discriminative power of the model using
-a metric such as the ROC-AUC score.</p>
+<p><code class="docutils literal notranslate"><span class="pre">y_prob</span></code> contains the predicted probabilities of the positive class estimated
+by a given model.</p>
+<p>As discussed earlier, we could evaluate the discriminative power of the model
+using a metric such as the ROC-AUC score.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ROC AUC: </span><span class="si">{</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span><span class="w"> </span><span class="n">y_prob</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ROC AUC: </span><span class="si">{</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_observed</span><span class="p">,</span><span class="w"> </span><span class="n">y_prob</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -496,17 +497,18 @@ a metric such as the ROC-AUC score.</p>
 </div>
 </div>
 </div>
-<p>The score is much above 0.5 and it means that our model is able to discriminate
-between the two classes. However, this score does not tell us if the predicted
-probabilities are well calibrated.</p>
-<p>We can provide an example of a well-calibrated probability: for a given sample, the
-predicted probabilities is considered well-calibrated if the proportion of samples
-where this probability is predicted is equal to the probability itself.</p>
-<p>It is therefore possible to group predictions into bins based on their predicted
-probabilities and to calculate the proportion of positive samples in each bin and
-compare it to the average predicted probability in the bin.</p>
-<p>Scikit-learn provide a utility to plot this graphical representation. It is available
-through the class <code class="docutils literal notranslate"><span class="pre">sklearn.calibration.CalibrationDisplay</span></code>.</p>
+<p>The score is much above 0.5 and it means that our model is able to
+discriminate between the two classes. However, this score does not tell us if
+the predicted probabilities are well calibrated.</p>
+<p>We can provide an example of a well-calibrated probability: for a given
+sample, the predicted probabilities is considered well-calibrated if the
+proportion of samples where this probability is predicted is equal to the
+probability itself.</p>
+<p>It is therefore possible to group predictions into bins based on their
+predicted probabilities and to calculate the proportion of positive samples
+in each bin and compare it to the average predicted probability in the bin.</p>
+<p>Scikit-learn provide a utility to plot this graphical representation. It is
+available through the class <code class="docutils literal notranslate"><span class="pre">sklearn.calibration.CalibrationDisplay</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -514,7 +516,7 @@ through the class <code class="docutils literal notranslate"><span class="pre">s
 
 <span class="n">n_bins</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span>
-    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;uniform&quot;</span>
+    <span class="n">y_observed</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;uniform&quot;</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
 </pre></div>
@@ -544,7 +546,7 @@ object where we get the bin identifier for each sample.</p></li>
 </div>
 </div>
 <ol class="arabic simple" start="2">
-<li><p>Create a DataFrame with the true labels, predicted probabilities, and bin
+<li><p>Create a DataFrame with the observed labels, predicted probabilities, and bin
 identifier.</p></li>
 </ol>
 <div class="cell docutils container">
@@ -555,8 +557,8 @@ identifier.</p></li>
 </div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p>Group the DataFrame by the bin identifier and calculate the mean of the true
-labels and the predicted probabilities.</p></li>
+<li><p>Group the DataFrame by the bin identifier and calculate the mean of the
+observed labels and the predicted probabilities.</p></li>
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -597,14 +599,14 @@ object where we get the bin identifier for each sample.</p></li>
 </div>
 </div>
 <ol class="arabic simple" start="2">
-<li><p>Create a DataFrame with the true labels, predicted probabilities, and bin
-identifier.</p></li>
+<li><p>Create a DataFrame with the observed labels, predicted probabilities, and
+bin identifier.</p></li>
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;y_true&quot;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">,</span>
+        <span class="s2">&quot;y_observed&quot;</span><span class="p">:</span> <span class="n">y_observed</span><span class="p">,</span>
         <span class="s2">&quot;y_prob&quot;</span><span class="p">:</span> <span class="n">y_prob</span><span class="p">,</span>
         <span class="s2">&quot;bin_identifier&quot;</span><span class="p">:</span> <span class="n">bin_identifier</span><span class="p">,</span>
     <span class="p">}</span>
@@ -632,7 +634,7 @@ identifier.</p></li>
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>y_true</th>
+      <th>y_observed</th>
       <th>y_prob</th>
       <th>bin_identifier</th>
     </tr>
@@ -710,17 +712,12 @@ identifier.</p></li>
 </div></div></div>
 </div>
 <ol class="arabic simple" start="3">
-<li><p>Group the DataFrame by the bin identifier and calculate the mean of the true
-labels and the predicted probabilities.</p></li>
+<li><p>Group the DataFrame by the bin identifier and calculate the mean of the
+observed labels and the predicted probabilities.</p></li>
 </ol>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">avg_predicted_probabilities</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-    <span class="s2">&quot;bin_identifier&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span><span class="o">.</span><span class="n">y_prob</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="n">fraction_positive_samples</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-    <span class="s2">&quot;bin_identifier&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span><span class="o">.</span><span class="n">y_true</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mean_per_bin</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;bin_identifier&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -732,7 +729,7 @@ against the fraction of positive samples.</p></li>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">avg_predicted_probabilities</span><span class="p">,</span> <span class="n">fraction_positive_samples</span><span class="p">,</span> <span class="s2">&quot;s-&quot;</span><span class="p">)</span>
+<span class="n">mean_per_bin</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;y_prob&quot;</span><span class="p">,</span> <span class="s2">&quot;y_observed&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;k:&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Perfectly calibrated&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
@@ -747,7 +744,7 @@ against the fraction of positive samples.</p></li>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/ba42a2403ef3b957994dc035417dd10fd5c60b1208c585928cfb751f16af55c8.png" src="../../_images/ba42a2403ef3b957994dc035417dd10fd5c60b1208c585928cfb751f16af55c8.png" />
+<img alt="../../_images/fb59e95b2f512d8a43a147b13d01c61a04e1f1ca64119b85885178e6005f83a1.png" src="../../_images/fb59e95b2f512d8a43a147b13d01c61a04e1f1ca64119b85885178e6005f83a1.png" />
 </div>
 </div>
 <p>Scikit-learn also provides a parameter <code class="docutils literal notranslate"><span class="pre">strategy</span></code> that is the strategy to adopt to
@@ -758,7 +755,7 @@ can show it on our previous example:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_predictions</span><span class="p">(</span>
-    <span class="n">y_true</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span>
+    <span class="n">y_observed</span><span class="p">,</span> <span class="n">y_prob</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span>
 <span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
 </pre></div>
@@ -791,19 +788,14 @@ the predicted probabilities in <code class="docutils literal notranslate"><span 
 <span class="n">bin_identifier</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span><span class="n">y_prob</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
 <span class="n">predictions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;y_true&quot;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">,</span>
+        <span class="s2">&quot;y_observed&quot;</span><span class="p">:</span> <span class="n">y_observed</span><span class="p">,</span>
         <span class="s2">&quot;y_prob&quot;</span><span class="p">:</span> <span class="n">y_prob</span><span class="p">,</span>
         <span class="s2">&quot;bin_identifier&quot;</span><span class="p">:</span> <span class="n">bin_identifier</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">)</span>
-<span class="n">avg_predicted_probabilities</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-    <span class="s2">&quot;bin_identifier&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span><span class="o">.</span><span class="n">y_prob</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="n">fraction_positive_samples</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
-    <span class="s2">&quot;bin_identifier&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span>
-<span class="p">)</span><span class="o">.</span><span class="n">y_true</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">mean_per_bin</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;bin_identifier&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">avg_predicted_probabilities</span><span class="p">,</span> <span class="n">fraction_positive_samples</span><span class="p">,</span> <span class="s2">&quot;s-&quot;</span><span class="p">)</span>
+<span class="n">mean_per_bin</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;y_prob&quot;</span><span class="p">,</span> <span class="s2">&quot;y_observed&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;k:&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Perfectly calibrated&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
@@ -818,7 +810,7 @@ the predicted probabilities in <code class="docutils literal notranslate"><span 
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/50b6f89a7bb75d808f31a4b2e1bf45cabefa4bdec36ab0e701dca3f7b83fce39.png" src="../../_images/50b6f89a7bb75d808f31a4b2e1bf45cabefa4bdec36ab0e701dca3f7b83fce39.png" />
+<img alt="../../_images/bf52e5949a1dd3fe20c7edcc900532bce18bd65d4fdb9c17ce75643c12af22dd.png" src="../../_images/bf52e5949a1dd3fe20c7edcc900532bce18bd65d4fdb9c17ce75643c12af22dd.png" />
 </div>
 </div>
 </section>
