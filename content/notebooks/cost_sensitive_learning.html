@@ -649,11 +649,11 @@ legitimate transaction on churning.</p>
 computes the business metric given a fitted classifier and a test set. This
 scorer is handy because it can be used in meta-estimators, grid-search, and
 cross-validation.</p>
-<p>To create this scorer, we use the :func:<code class="docutils literal notranslate"><span class="pre">~sklearn.metrics.make_scorer</span></code>
-factory. The metric defined above requests the amount of each transaction.
-This variable is an additional metadata to be passed to the scorer and we
-need to use scikit-learn’s metadata routing mechanism to pass this side
-information where appropriate.</p>
+<p>To create this scorer, we use the <code class="docutils literal notranslate"><span class="pre">sklearn.metrics.make_scorer</span></code> factory. The
+metric defined above requests the amount of each transaction. This variable
+is an additional metadata to be passed to the scorer and we need to use
+scikit-learn’s metadata routing mechanism to pass this side information where
+appropriate.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sklearn</span>
