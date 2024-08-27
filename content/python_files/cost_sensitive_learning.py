@@ -184,11 +184,11 @@ def business_gain_func(y_true, y_pred, amount):
 # scorer is handy because it can be used in meta-estimators, grid-search, and
 # cross-validation.
 #
-# To create this scorer, we use the :func:`~sklearn.metrics.make_scorer`
-# factory. The metric defined above requests the amount of each transaction.
-# This variable is an additional metadata to be passed to the scorer and we
-# need to use scikit-learn's metadata routing mechanism to pass this side
-# information where appropriate.
+# To create this scorer, we use the `sklearn.metrics.make_scorer` factory. The
+# metric defined above requests the amount of each transaction. This variable
+# is an additional metadata to be passed to the scorer and we need to use
+# scikit-learn's metadata routing mechanism to pass this side information where
+# appropriate.
 
 # %%
 import sklearn
