@@ -516,7 +516,12 @@ setting = {
 }
 
 test_scores = {}
-results_folder = Path(__file__).parent.parent / "results"
+try:
+    here = Path(__file__).parent
+except NameError:
+    here = Path(".")
+results_folder = here.parent / "results"
+
 for model_name, model_setting in setting.items():
     for metric_name in ["neg_log_loss", "roc_auc", "accuracy"]:
         results_file_path = (
@@ -639,7 +644,7 @@ param_distributions = {
 }
 
 tuned_model = RandomizedSearchCV(
-    model,
+    spline_model,
     param_distributions=param_distributions,
     n_iter=25,
     scoring="neg_log_loss",
