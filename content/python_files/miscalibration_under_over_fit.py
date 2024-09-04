@@ -203,7 +203,6 @@ param_configs = [
 # TODO: write me!
 
 
-
 # %% [markdown]
 # ### Solution:
 
@@ -447,7 +446,7 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 # decision boundary is achieved with only 4 leaf nodes. This would not be the
 # case on more complex datasets such as a noisy checkerboard classification
 # task for instance.
-# 
+#
 # However, the learning rate is the parameter that controls if the model
 # under-fits or over-fits. A too low learning rate leads to an under-fitting
 # model and the model is underconfident with probability estimates that are too
@@ -483,92 +482,125 @@ for idx, (model_params, ax_boundary, ax_calibration) in enumerate(
 # mean cross-validation across 5 iteration via a form of bootstrapping. The
 # objective is to assess the stability of the tuning procedure for different
 # choices of the classification metric.
+#
+# We conduct a similar study for the gradient-boosting model by varying the
+# `max_leaf_nodes` hyperparameter.
 
 # %%
 from pathlib import Path
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from sklearn.model_selection import ShuffleSplit, validation_curve
 
-model = make_pipeline(
+spline_model = make_pipeline(
     SplineTransformer(n_knots=15),
     PolynomialFeatures(interaction_only=True),
     LogisticRegression(max_iter=10_000),
 )
+gbrt_model = HistGradientBoostingClassifier(max_iter=100, max_leaf_nodes=5)
 
 # Since the computation of the validation curve is expensive, we reuse
 # precomputed results when available on disk.
 
-n_splits, param_range = 100, np.logspace(-2, 4, 30)
+n_splits = 100
+setting = {
+    "spline_regression": {
+        "model": spline_model,
+        "param_name": "logisticregression__C",
+        "param_range": np.logspace(-2, 4, 30),
+    },
+    "gbrt": {
+        "model": gbrt_model,
+        "param_name": "learning_rate",
+        "param_range": np.logspace(-2, 0, 30),
+    },
+}
+
 test_scores = {}
-for metric_name in ["neg_log_loss", "roc_auc", "accuracy"]:
-    results_file_path = Path(f"../results/validation_curve_{metric_name}.npz")
-    if not results_file_path.is_file():
-        _, test_scores_metric = validation_curve(
-            model,
-            X_train,
-            y_train,
-            param_name="logisticregression__C",
-            param_range=param_range,
-            scoring=metric_name,
-            cv=ShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=0),
-            n_jobs=-1,
+results_folder = Path(__file__).parent.parent / "results"
+for model_name, model_setting in setting.items():
+    for metric_name in ["neg_log_loss", "roc_auc", "accuracy"]:
+        results_file_path = (
+            results_folder / f"validation_curve_{model_name}_{metric_name}.npz"
         )
-        parent_folder = results_file_path.parent
-        if not parent_folder.is_dir():
-            parent_folder.mkdir(parents=True)
-        np.savez(results_file_path, test_scores=test_scores_metric)
-        test_scores[metric_name] = test_scores_metric
-    else:
-        with np.load(results_file_path) as data:
-            test_scores[metric_name] = data["test_scores"]
+        if results_file_path.exists():
+            print(
+                f"Loading validation curve for {model_name} with {metric_name} from disk."
+            )
+            with np.load(results_file_path) as data:
+                test_scores[(model_name, metric_name)] = data["test_scores"]
+        else:
+            print(f"Computing validation curve for {model_name} with {metric_name}.")
+            _, test_scores_metric = validation_curve(
+                model_setting["model"],
+                X_train,
+                y_train,
+                param_name=model_setting["param_name"],
+                param_range=model_setting["param_range"],
+                scoring=metric_name,
+                cv=ShuffleSplit(n_splits=n_splits, test_size=0.2, random_state=0),
+                n_jobs=-1,
+            )
+            parent_folder = results_file_path.parent
+            if not parent_folder.is_dir():
+                parent_folder.mkdir(parents=True)
+            np.savez(results_file_path, test_scores=test_scores_metric)
+            test_scores[(model_name, metric_name)] = test_scores_metric
 
 # %%
-fig, axes = plt.subplots(ncols=3, figsize=(15, 5))
+
 full_metric_name = {
     "neg_log_loss": "negative log loss",
     "roc_auc": "ROC AUC",
     "accuracy": "accuracy",
 }
-for idx, (metric_name, ax) in enumerate(
-    zip(["neg_log_loss", "roc_auc", "accuracy"], axes)
-):
-    rng = np.random.default_rng(0)
-    bootstrap_size = 5
-    ax_hist = make_axes_locatable(ax).append_axes("top", size="20%", pad=0.1, sharex=ax)
-    all_best_param_values = []
-    for _ in range(200):
-        selected_fold_idx = rng.choice(n_splits, size=bootstrap_size, replace=False)
-        mean_test_score = test_scores[metric_name][:, selected_fold_idx].mean(axis=1)
-        ax.plot(
-            param_range,
-            mean_test_score,
-            color="tab:blue",
-            linewidth=0.1,
-            zorder=-1,
+for model_name, model_setting in setting.items():
+    fig, axes = plt.subplots(ncols=3, figsize=(18, 5))
+    param_name = model_setting["param_name"]
+    param_range = model_setting["param_range"]
+    for idx, (metric_name, ax) in enumerate(
+        zip(["neg_log_loss", "roc_auc", "accuracy"], axes)
+    ):
+        rng = np.random.default_rng(0)
+        bootstrap_size = 5
+        ax_hist = make_axes_locatable(ax).append_axes(
+            "top", size="20%", pad=0.1, sharex=ax
         )
-        best_param_idx = mean_test_score.argmax()
-        best_param_value = param_range[best_param_idx]
-        best_test_score = mean_test_score[best_param_idx]
-        ax.vlines(
-            best_param_value,
-            ymin=test_scores[metric_name].min(),
-            ymax=best_test_score,
-            linewidth=0.3,
-            color="tab:orange",
+        all_best_param_values = []
+        for _ in range(200):
+            selected_fold_idx = rng.choice(n_splits, size=bootstrap_size, replace=False)
+            mean_test_score = test_scores[(model_name, metric_name)][
+                :, selected_fold_idx
+            ].mean(axis=1)
+            ax.plot(
+                param_range,
+                mean_test_score,
+                color="tab:blue",
+                linewidth=0.1,
+                zorder=-1,
+            )
+            best_param_idx = mean_test_score.argmax()
+            best_param_value = param_range[best_param_idx]
+            best_test_score = mean_test_score[best_param_idx]
+            ax.vlines(
+                best_param_value,
+                ymin=test_scores[(model_name, metric_name)].min(),
+                ymax=best_test_score,
+                linewidth=0.3,
+                color="tab:orange",
+            )
+            all_best_param_values.append(best_param_value)
+        ax.set(
+            xlabel=param_name,
+            ylabel=full_metric_name[metric_name],
+            xscale="log",
         )
-        all_best_param_values.append(best_param_value)
-    ax.set(
-        xlabel="Regularization C",
-        ylabel=full_metric_name[metric_name],
-        xscale="log",
-    )
-    bins = (param_range[:-1] + param_range[1:]) / 2
-    ax_hist.hist(
-        all_best_param_values, bins=bins, color="tab:orange", edgecolor="black"
-    )
-    ax_hist.xaxis.set_tick_params(labelleft=False, labelbottom=False)
-    ax_hist.yaxis.set_tick_params(labelleft=False, labelbottom=False)
-_ = fig.suptitle("Stability of parameter tuning based on different metrics")
+        bins = (param_range[:-1] + param_range[1:]) / 2
+        ax_hist.hist(
+            all_best_param_values, bins=bins, color="tab:orange", edgecolor="black"
+        )
+        ax_hist.xaxis.set_tick_params(labelleft=False, labelbottom=False)
+        ax_hist.yaxis.set_tick_params(labelleft=False, labelbottom=False)
+    _ = fig.suptitle("Stability of parameter tuning based on different metrics")
 
 # %% [markdown]
 #
