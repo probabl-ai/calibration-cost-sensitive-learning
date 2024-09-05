@@ -517,10 +517,10 @@ setting = {
 
 test_scores = {}
 try:
-    here = Path(__file__).parent
+    results_folder = Path(__file__).parent.parent / "results"
 except NameError:
-    here = Path(".")
-results_folder = here.parent / "results"
+    # __file__ is not defined in a notebook
+    results_folder = Path("..") / "results"
 
 for model_name, model_setting in setting.items():
     for metric_name in ["neg_log_loss", "roc_auc", "accuracy"]:
