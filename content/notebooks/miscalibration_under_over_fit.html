@@ -1869,13 +1869,15 @@ Loading validation curve for gbrt with accuracy from disk.
         <span class="p">)</span>
         <span class="n">ax_hist</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelbottom</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">ax_hist</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_tick_params</span><span class="p">(</span><span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">labelbottom</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Stability of parameter tuning based on different metrics&quot;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Stability of parameter tuning for </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> based on different metrics&quot;</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/acc4a50364b4f237a299e8858cc18f6735be877314e8d59dc6006c600294b4e2.png" src="../../_images/acc4a50364b4f237a299e8858cc18f6735be877314e8d59dc6006c600294b4e2.png" />
-<img alt="../../_images/0e75690fb06ab5376aaaf0a7b0bdce31d6a8acd9781e4b62e1e52d9fe8c7eb9a.png" src="../../_images/0e75690fb06ab5376aaaf0a7b0bdce31d6a8acd9781e4b62e1e52d9fe8c7eb9a.png" />
+<img alt="../../_images/02fcdae64d93e3df8eb1e7fd5d67d87dff56b2d90be54126b6df3effc80de8a3.png" src="../../_images/02fcdae64d93e3df8eb1e7fd5d67d87dff56b2d90be54126b6df3effc80de8a3.png" />
+<img alt="../../_images/f58b130c0e5f9a3b2efe0c190a9695d182c7a0f713377ee15632ed02a5614848.png" src="../../_images/f58b130c0e5f9a3b2efe0c190a9695d182c7a0f713377ee15632ed02a5614848.png" />
 </div>
 </div>
 <p>From the previous plots, there are three important observations.</p>
@@ -2333,7 +2335,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f9c5605fce0&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f42f417bcb0&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;RandomizedSearchCV<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>RandomizedSearchCV(cv=ShuffleSplit(n_splits=10, random_state=0, test_size=0.2, train_size=None),
@@ -2344,7 +2346,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f9c5605fce0&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f42f417bcb0&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">best_estimator_: Pipeline</label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
