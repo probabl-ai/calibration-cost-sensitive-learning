@@ -605,7 +605,9 @@ for model_name, model_setting in setting.items():
         )
         ax_hist.xaxis.set_tick_params(labelleft=False, labelbottom=False)
         ax_hist.yaxis.set_tick_params(labelleft=False, labelbottom=False)
-    _ = fig.suptitle("Stability of parameter tuning based on different metrics")
+    _ = fig.suptitle(
+        f"Stability of parameter tuning for {model_name} based on different metrics"
+    )
 
 # %% [markdown]
 #
