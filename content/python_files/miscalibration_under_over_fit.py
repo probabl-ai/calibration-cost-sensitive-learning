@@ -50,7 +50,7 @@ _ = ax.set(
     ylim=(-3, 3),
     xlabel="Feature 1",
     ylabel="Feature 2",
-    title="XOR problem",
+    title="Noisy XOR problem",
     aspect="equal",
 )
 
