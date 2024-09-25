@@ -2,11 +2,11 @@
   "content": [
     {
       "content": null,
-      "created": "2024-09-25T20:22:39.314948Z",
+      "created": "2024-09-25T20:28:03.144069Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2024-09-25T20:21:00.884037Z",
+      "last_modified": "2024-09-25T20:26:42.948403Z",
       "mimetype": "text/markdown",
       "name": "README.md",
       "path": "datasets/README.md",
@@ -16,11 +16,11 @@
     },
     {
       "content": null,
-      "created": "2024-09-25T20:22:39.363949Z",
+      "created": "2024-09-25T20:28:03.193069Z",
       "format": null,
       "hash": null,
       "hash_algorithm": null,
-      "last_modified": "2024-09-25T20:21:01.271044Z",
+      "last_modified": "2024-09-25T20:26:43.313406Z",
       "mimetype": null,
       "name": "credit_card.parquet",
       "path": "datasets/credit_card.parquet",
@@ -29,11 +29,11 @@
       "writable": true
     }
   ],
-  "created": "2024-09-25T20:22:39.314948Z",
+  "created": "2024-09-25T20:28:03.144069Z",
   "format": "json",
   "hash": null,
   "hash_algorithm": null,
-  "last_modified": "2024-09-25T20:22:39.314948Z",
+  "last_modified": "2024-09-25T20:28:03.144069Z",
   "mimetype": null,
   "name": "datasets",
   "path": "datasets",
