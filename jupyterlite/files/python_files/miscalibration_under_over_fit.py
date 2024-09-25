@@ -559,7 +559,7 @@ full_metric_name = {
     "accuracy": "accuracy",
 }
 for model_name, model_setting in setting.items():
-    fig, axes = plt.subplots(ncols=3, figsize=(18, 5))
+    fig, axes = plt.subplots(ncols=3, figsize=(10, 3), constrained_layout=True)
     param_name = model_setting["param_name"]
     param_range = model_setting["param_range"]
     for idx, (metric_name, ax) in enumerate(
