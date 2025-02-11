@@ -37,3 +37,14 @@ pixi run -e doc convert-to-notebooks
 ```
 
 This will convert the Python files into notebooks in the folder `content/notebooks`.
+
+### Building and testing the jupyterlite deployment locally
+
+Test the deployment locally:
+
+
+```bash
+pixi run -e doc serve-jupyterlite
+```
+
+Then open http://[::]:8000/ in a web browser.

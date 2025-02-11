@@ -46,6 +46,7 @@ convert-to-notebooks = { cmd = "jupytext --to notebook ./content/python_files/*.
 convert-to-executed-notebooks = { cmd = "jupytext --to notebook --execute ./content/python_files/*.py && mkdir -p ./content/notebooks && mv ./content/python_files/*.ipynb ./content/notebooks" }
 build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebooks"] }
 build-jupyterlite = { cmd = "jupyter lite build --contents content --output-dir dist", cwd = "jupyterlite" }
+serve-jupyterlite = { cmd = "python -m http.server", cwd = "jupyterlite/dist", depends-on = ["build-jupyterlite"] }
 
 [environments]
 lint = ["lint"]
