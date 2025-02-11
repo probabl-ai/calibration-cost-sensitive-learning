@@ -42,9 +42,12 @@ This will convert the Python files into notebooks in the folder `content/noteboo
 
 Test the deployment locally:
 
-
 ```bash
 pixi run -e doc serve-jupyterlite
 ```
 
 Then open http://[::]:8000/ in a web browser.
+
+Note: firefox often complains about Service Workers not being initialized when
+running jupyterlite served from localhost. This prevents accessing the local
+dataset files. Use a different browser to test the local deployment.

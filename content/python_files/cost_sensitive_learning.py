@@ -28,15 +28,13 @@
 # parquet file and check the data that we have at hand.
 
 # %%
+# Needed by pandas and not installed by default in pyodide.
+%pip install fastparquet
 
-# Explicitly import pyarrow since it is an optional dependency of pandas to
-# trigger the fetching when using JupyterLite with pyodide kernel. Note this is
-# an unnecessary (but harmless) import if you are not using JupyterLite with
-# pyodide.
-import pyarrow  # noqa: F401
+# %%
 import pandas as pd
 
-credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="pyarrow")
+credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="fastparquet")
 credit_card.info()
 
 # %% [markdown]
