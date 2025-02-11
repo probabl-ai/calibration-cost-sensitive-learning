@@ -4,6 +4,11 @@
 format: jb-book
 root: intro
 parts:
+
+- caption: Cost-sensitive learning
+  chapters:
+  - file: content/notebooks/cost_sensitive_learning
+
 - caption: Classification metrics
   chapters:
   - file: content/notebooks/classification_metrics
@@ -15,6 +20,3 @@ parts:
   - file: content/notebooks/miscalibration_under_over_fit
   - file: content/notebooks/miscalibration_reweighting
 
-- caption: Cost-sensitive learning
-  chapters:
-  - file: content/notebooks/cost_sensitive_learning
