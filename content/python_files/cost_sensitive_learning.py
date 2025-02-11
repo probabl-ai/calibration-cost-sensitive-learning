@@ -29,7 +29,7 @@
 
 # %%
 # Needed by pandas and not installed by default in pyodide.
-%pip install fastparquet
+%pip install -q fastparquet
 
 # %%
 import pandas as pd
