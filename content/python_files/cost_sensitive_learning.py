@@ -453,7 +453,7 @@ disp = CalibrationDisplay.from_estimator(
     data_test,
     target_test,
     strategy="quantile",
-    n_bins=5,
+    n_bins=3,
     name="Tuned logistic regression",
 )
 _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log")
@@ -464,17 +464,20 @@ _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log
 # Since we have little fraudulent data in our training set, we cannot aford to
 # use a held out calibration set. Instead we use a nested cross-fitting
 # procedure implemented in `CalibratedClassifierCV`: our original training set
-# is splitted 5 times into train and calibration subsets and we train 5
-# classifiers paired with 5 isotonic calibrators, one pair for each split:
+# is splitted 30 times into train and calibration subsets and we train 30
+# classifiers paired with 30 isotonic calibrators, one pair for each split:
 
 # %%
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.model_selection import ShuffleSplit
 
 calibrated_estimator = CalibratedClassifierCV(
-    model.best_estimator_, method="isotonic", cv=5
+    model.best_estimator_,
+    method="isotonic",
+    cv=ShuffleSplit(n_splits=30, test_size=0.2, random_state=42),
 ).fit(data_train, target_train)
 disp = CalibrationDisplay.from_estimator(
-    calibrated_estimator, data_test, target_test, strategy="quantile", n_bins=5
+    calibrated_estimator, data_test, target_test, strategy="quantile", n_bins=3
 )
 _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log")
 
