@@ -36,8 +36,6 @@ black = "*"
 [feature.doc.dependencies]
 jupyter-book = "*"
 jupyterlite = "*"
-jupyter_server = "*"
-jupyterlab_server = "*"
 jupyterlite-pyodide-kernel = "*"
 python-libarchive-c = "*"
 
