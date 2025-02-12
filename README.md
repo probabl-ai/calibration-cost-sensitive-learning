@@ -5,7 +5,7 @@ Browse online:
 [![Launch JupyterLite](./book/images/jupyterbook_badge.svg 'Our JupyterBook
 website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/) [![Launch
 JupyterLite](./book/images/jupyterlite_badge.svg 'Our JupyterLite
-website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite)
+website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite/tree/notebooks)
 
 ## Getting started
 
