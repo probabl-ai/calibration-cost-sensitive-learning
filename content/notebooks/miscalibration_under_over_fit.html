@@ -16,19 +16,21 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-  
-  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
-
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -36,10 +38,11 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
@@ -64,6 +67,7 @@
     <link rel="prev" title="Reading calibration curves" href="different_calibration_curves.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -79,19 +83,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -99,7 +92,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -107,8 +99,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -124,7 +116,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -154,21 +147,17 @@
     
     
     <img src="../../_static/logo.svg" class="logo__image only-light" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
-    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Probabilistic calibration of cost-sensitive learning - Home"/>`);</script>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -179,7 +168,11 @@
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Classification metrics</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cost-sensitive learning</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="cost_sensitive_learning.html">Cost-sensitive learning to optimize business metrics</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Classification metrics</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="classification_metrics.html">Choosing a classification metric</a></li>
 </ul>
@@ -190,10 +183,6 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Miscalibration caused by inappropriate hyperparameters</a></li>
 <li class="toctree-l1"><a class="reference internal" href="miscalibration_reweighting.html">Miscalibration caused by data points reweighting</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cost-sensitive learning</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="cost_sensitive_learning.html">Cost-sensitive learning to optimize business metrics</a></li>
-</ul>
 
     </div>
 </nav></div>
@@ -201,9 +190,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -347,24 +341,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 <button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
@@ -420,24 +406,24 @@ applications of machine learning.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make sure to have scikit-learn &gt;= 1.5</span>
-<span class="kn">import</span> <span class="nn">sklearn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sklearn</span>
 
 <span class="n">sklearn</span><span class="o">.</span><span class="n">__version__</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;1.5.1&#39;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;1.6.1&#39;
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
-<span class="k">def</span> <span class="nf">xor_generator</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1_000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">xor_generator</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">1_000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="n">unobserved</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
@@ -450,7 +436,7 @@ applications of machine learning.</p>
 <p>We can now generate a dataset and visualize it.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span> <span class="o">=</span> <span class="n">xor_generator</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -467,7 +453,7 @@ applications of machine learning.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/9c7ec019ee9b0104dbca5cb49ddeca29ba8ce595e53330613aba60d96b0add06.png" src="../../_images/9c7ec019ee9b0104dbca5cb49ddeca29ba8ce595e53330613aba60d96b0add06.png" />
+<img alt="../../_images/d729c2a90c257c9ef48cfe4cdba3a9f8d7eae49aae6252adc357eeadb8827069.png" src="../../_images/d729c2a90c257c9ef48cfe4cdba3a9f8d7eae49aae6252adc357eeadb8827069.png" />
 </div>
 </div>
 <p>The XOR problem exhibits a non-linear decision link between the features and
@@ -476,7 +462,7 @@ able to separate the classes correctly. Let’s confirm this intuition by
 fitting a logistic regression model to such a dataset.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
@@ -486,7 +472,8 @@ fitting a logistic regression model to such a dataset.</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><style>#sk-container-id-1 {
   /* Definition of color scheme common for light and dark mode */
-  --sklearn-color-text: black;
+  --sklearn-color-text: #000;
+  --sklearn-color-text-muted: #666;
   --sklearn-color-line: gray;
   /* Definition of color scheme for unfitted estimators */
   --sklearn-color-unfitted-level-0: #fff5e6;
@@ -631,12 +618,21 @@ clickable and can be expanded/collapsed.
 /* Toggleable label */
 #sk-container-id-1 label.sk-toggleable__label {
   cursor: pointer;
-  display: block;
+  display: flex;
   width: 100%;
   margin-bottom: 0;
   padding: 0.5em;
   box-sizing: border-box;
   text-align: center;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+#sk-container-id-1 label.sk-toggleable__label .caption {
+  font-size: 0.6rem;
+  font-weight: lighter;
+  color: var(--sklearn-color-text-muted);
 }
 
 #sk-container-id-1 label.sk-toggleable__label-arrow:before {
@@ -789,7 +785,8 @@ a:visited.sk-estimator-doc-link {
   height: 1em;
   width: 1em;
   text-decoration: none !important;
-  margin-left: 1ex;
+  margin-left: 0.5em;
+  text-align: center;
   /* unfitted */
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
   color: var(--sklearn-color-unfitted-level-1);
@@ -888,12 +885,12 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
   /* fitted */
   background-color: var(--sklearn-color-fitted-level-3);
 }
-</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LogisticRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression()</pre></div> </div></div></div></div></div></div>
+</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>LogisticRegression()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression()</pre></div> </div></div></div></div></div></div>
 </div>
 <p>Let’s visualize the decision boundary learned by the model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.inspection</span> <span class="kn">import</span> <span class="n">DecisionBoundaryDisplay</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.inspection</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionBoundaryDisplay</span>
 
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -920,7 +917,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/b428e9a91bd9f71ea18ac9eeaebf6eb1665b1524e3c32354d573ddaf2c37c9d9.png" src="../../_images/b428e9a91bd9f71ea18ac9eeaebf6eb1665b1524e3c32354d573ddaf2c37c9d9.png" />
+<img alt="../../_images/5d19258b6bff2b9d440cbb27738f683d7a3aeddf2a4b60f135d108d10e84392b.png" src="../../_images/5d19258b6bff2b9d440cbb27738f683d7a3aeddf2a4b60f135d108d10e84392b.png" />
 </div>
 </div>
 <p>We see that the probability estimate is almost constant (near 0.5) everywhere
@@ -935,9 +932,9 @@ interaction across features before passing the result to a final logistic
 regression model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">SplineTransformer</span><span class="p">,</span> <span class="n">PolynomialFeatures</span>
-<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
-<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">SplineTransformer</span><span class="p">,</span> <span class="n">PolynomialFeatures</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
     <span class="c1"># Expand each feature marginally using splines:</span>
@@ -955,7 +952,8 @@ regression model.</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><style>#sk-container-id-2 {
   /* Definition of color scheme common for light and dark mode */
-  --sklearn-color-text: black;
+  --sklearn-color-text: #000;
+  --sklearn-color-text-muted: #666;
   --sklearn-color-line: gray;
   /* Definition of color scheme for unfitted estimators */
   --sklearn-color-unfitted-level-0: #fff5e6;
@@ -1100,12 +1098,21 @@ clickable and can be expanded/collapsed.
 /* Toggleable label */
 #sk-container-id-2 label.sk-toggleable__label {
   cursor: pointer;
-  display: block;
+  display: flex;
   width: 100%;
   margin-bottom: 0;
   padding: 0.5em;
   box-sizing: border-box;
   text-align: center;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+#sk-container-id-2 label.sk-toggleable__label .caption {
+  font-size: 0.6rem;
+  font-weight: lighter;
+  color: var(--sklearn-color-text-muted);
 }
 
 #sk-container-id-2 label.sk-toggleable__label-arrow:before {
@@ -1258,7 +1265,8 @@ a:visited.sk-estimator-doc-link {
   height: 1em;
   width: 1em;
   text-decoration: none !important;
-  margin-left: 1ex;
+  margin-left: 0.5em;
+  text-align: center;
   /* unfitted */
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
   color: var(--sklearn-color-unfitted-level-1);
@@ -1360,10 +1368,10 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </style><div id="sk-container-id-2" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
                 (&#x27;polynomialfeatures&#x27;,
                  PolynomialFeatures(interaction_only=True)),
-                (&#x27;logisticregression&#x27;, LogisticRegression(max_iter=10000))])</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox" ><label for="sk-estimator-id-2" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;Pipeline<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.pipeline.Pipeline.html">?<span>Documentation for Pipeline</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
+                (&#x27;logisticregression&#x27;, LogisticRegression(max_iter=10000))])</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox" ><label for="sk-estimator-id-2" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>Pipeline</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.pipeline.Pipeline.html">?<span>Documentation for Pipeline</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
                 (&#x27;polynomialfeatures&#x27;,
                  PolynomialFeatures(interaction_only=True)),
-                (&#x27;logisticregression&#x27;, LogisticRegression(max_iter=10000))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" ><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;SplineTransformer<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.SplineTransformer.html">?<span>Documentation for SplineTransformer</span></a></label><div class="sk-toggleable__content fitted"><pre>SplineTransformer()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" ><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;PolynomialFeatures<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">?<span>Documentation for PolynomialFeatures</span></a></label><div class="sk-toggleable__content fitted"><pre>PolynomialFeatures(interaction_only=True)</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(max_iter=10000)</pre></div> </div></div></div></div></div></div></div></div>
+                (&#x27;logisticregression&#x27;, LogisticRegression(max_iter=10000))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" ><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>SplineTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.SplineTransformer.html">?<span>Documentation for SplineTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>SplineTransformer()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" ><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>PolynomialFeatures</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">?<span>Documentation for PolynomialFeatures</span></a></div></label><div class="sk-toggleable__content fitted"><pre>PolynomialFeatures(interaction_only=True)</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(max_iter=10000)</pre></div> </div></div></div></div></div></div></div></div>
 </div>
 <p>Let’s check the decision boundary of the model on the test set.</p>
 <div class="cell docutils container">
@@ -1384,7 +1392,7 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/2c01531f1d5f96d7826ae8fb02d73625d7a159458942c7b2518d077dae0c6d1c.png" src="../../_images/2c01531f1d5f96d7826ae8fb02d73625d7a159458942c7b2518d077dae0c6d1c.png" />
+<img alt="../../_images/80bbcbc2b0731f118346acd6bab062c16518e3474826d77ee8917194c139944b.png" src="../../_images/80bbcbc2b0731f118346acd6bab062c16518e3474826d77ee8917194c139944b.png" />
 </div>
 </div>
 <p>We see that our refined pipeline is capable of capturing the non-linear
@@ -1406,7 +1414,7 @@ here to keep the notebook simple.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.calibration</span> <span class="kn">import</span> <span class="n">CalibrationDisplay</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibrationDisplay</span>
 
 <span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span>
@@ -1420,7 +1428,7 @@ here to keep the notebook simple.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/844e63609091c6c325f9d5c9faf8b03b56646cf21126f21135efa7d640c98b27.png" src="../../_images/844e63609091c6c325f9d5c9faf8b03b56646cf21126f21135efa7d640c98b27.png" />
+<img alt="../../_images/b69be42be04d12531dce82f5910336fbe5cf7115f0331ffb5b83ac388ceca4e5.png" src="../../_images/b69be42be04d12531dce82f5910336fbe5cf7115f0331ffb5b83ac388ceca4e5.png" />
 </div>
 </div>
 <p>We observe that the calibration of the model is far from ideal. Is there a
@@ -1500,9 +1508,9 @@ What can you observe in terms of under-/over-fitting and calibration?</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c762bde102bf5f79a277edc672507cf320e8189305fd4b6415899aa4e4369abf.png" src="../../_images/c762bde102bf5f79a277edc672507cf320e8189305fd4b6415899aa4e4369abf.png" />
-<img alt="../../_images/a958fe5603859d3d28f841c8f3a2c0e8e8d2d6d924718341e68c7612c64a2b4a.png" src="../../_images/a958fe5603859d3d28f841c8f3a2c0e8e8d2d6d924718341e68c7612c64a2b4a.png" />
-<img alt="../../_images/2dc9f1fe703d4ccb76a10ba19ac857f05f9bdec399c40463efb90f7a7dea4549.png" src="../../_images/2dc9f1fe703d4ccb76a10ba19ac857f05f9bdec399c40463efb90f7a7dea4549.png" />
+<img alt="../../_images/1dd22fdb04d390f4d574a52239452d45adbddb40fa01227f4a8e563df20a4f6a.png" src="../../_images/1dd22fdb04d390f4d574a52239452d45adbddb40fa01227f4a8e563df20a4f6a.png" />
+<img alt="../../_images/ddf58ca7cbd53092e43f67434a48d4fdfbf24d2d96dd74c51e3bc7e40e8199fb.png" src="../../_images/ddf58ca7cbd53092e43f67434a48d4fdfbf24d2d96dd74c51e3bc7e40e8199fb.png" />
+<img alt="../../_images/34eb859f1edd38dcc3649a18869a35d9fcd79a6380a6710381df64c07073c2db.png" src="../../_images/34eb859f1edd38dcc3649a18869a35d9fcd79a6380a6710381df64c07073c2db.png" />
 </div>
 </div>
 <p>From the previous exercise, we observe that whether we have an under-fitting
@@ -1531,7 +1539,7 @@ classifier.</p></li>
 decision boundary and the calibration curve.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">ParameterGrid</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParameterGrid</span>
 
 <span class="n">param_grid</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
     <span class="n">ParameterGrid</span><span class="p">(</span>
@@ -1594,8 +1602,8 @@ decision boundary and the calibration curve.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/96ba8451765675409f58a78117b43aaeb66c76e098e3b67794153f93c295b199.png" src="../../_images/96ba8451765675409f58a78117b43aaeb66c76e098e3b67794153f93c295b199.png" />
-<img alt="../../_images/8c63938dfb33a08eafc75843e62e41398727ceaaeb6f14b8c3aa24478d03c73b.png" src="../../_images/8c63938dfb33a08eafc75843e62e41398727ceaaeb6f14b8c3aa24478d03c73b.png" />
+<img alt="../../_images/c7084cd637f3ca24da0ca5a1cb59f767ef94bd6a5b1659bfef3509b9fc2bc3cc.png" src="../../_images/c7084cd637f3ca24da0ca5a1cb59f767ef94bd6a5b1659bfef3509b9fc2bc3cc.png" />
+<img alt="../../_images/ab64dab07d8a400aac716b466c86afcba4884bac6c5ffbdf86505e510e3b24e0.png" src="../../_images/ab64dab07d8a400aac716b466c86afcba4884bac6c5ffbdf86505e510e3b24e0.png" />
 </div>
 </div>
 <p>An obvious observation is that without explicitly creating the interaction
@@ -1631,7 +1639,7 @@ iteration fixed. Those hyperparameters are known to impact the model
 complexity and therefore the under-fitting/over-fitting trade-off.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">()</span>
 
@@ -1688,8 +1696,8 @@ complexity and therefore the under-fitting/over-fitting trade-off.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/7656311dba46977be2cdfc3561927608b80a43ff669ec25a3144aa0a62312370.png" src="../../_images/7656311dba46977be2cdfc3561927608b80a43ff669ec25a3144aa0a62312370.png" />
-<img alt="../../_images/9d6cb9bdf2653d42f01b873513a242e480eb07837e4fd4b0417de01a76ab6a09.png" src="../../_images/9d6cb9bdf2653d42f01b873513a242e480eb07837e4fd4b0417de01a76ab6a09.png" />
+<img alt="../../_images/9c7a086572e648c5ca3b398330960a28823bbbdee32cab6f6b1ffb5a59acfb49.png" src="../../_images/9c7a086572e648c5ca3b398330960a28823bbbdee32cab6f6b1ffb5a59acfb49.png" />
+<img alt="../../_images/a46244ee602241845d199c42556bacf53be8a6b31d80f8174a47478334f5d44c.png" src="../../_images/a46244ee602241845d199c42556bacf53be8a6b31d80f8174a47478334f5d44c.png" />
 </div>
 </div>
 <p>From the boundary decision plots, we observe that all the explored models are
@@ -1738,9 +1746,9 @@ choices of the classification metric.</p>
 <code class="docutils literal notranslate"><span class="pre">max_leaf_nodes</span></code> hyperparameter.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1.axes_divider</span> <span class="kn">import</span> <span class="n">make_axes_locatable</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">ShuffleSplit</span><span class="p">,</span> <span class="n">validation_curve</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1.axes_divider</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">ShuffleSplit</span><span class="p">,</span> <span class="n">validation_curve</span>
 
 <span class="n">spline_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
     <span class="n">SplineTransformer</span><span class="p">(</span><span class="n">n_knots</span><span class="o">=</span><span class="mi">15</span><span class="p">),</span>
@@ -1876,8 +1884,8 @@ Loading validation curve for gbrt with accuracy from disk.
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/e6fbe84c3bfcba394c0dfae655231030fc4132fa9d05ad96c3ff2778e4f93170.png" src="../../_images/e6fbe84c3bfcba394c0dfae655231030fc4132fa9d05ad96c3ff2778e4f93170.png" />
-<img alt="../../_images/6e1cb1722424a75af8afdf3557eb81884948754ab8a73f056e6aacfeedec86f2.png" src="../../_images/6e1cb1722424a75af8afdf3557eb81884948754ab8a73f056e6aacfeedec86f2.png" />
+<img alt="../../_images/0036ea2ef1ac70775dfee31cdc70aa89c7593b55527dfd76d94f2db56cc48905.png" src="../../_images/0036ea2ef1ac70775dfee31cdc70aa89c7593b55527dfd76d94f2db56cc48905.png" />
+<img alt="../../_images/bff55252b027af93e65820335666b17acb82fa6cdf2ee5b9192a326478e3001c.png" src="../../_images/bff55252b027af93e65820335666b17acb82fa6cdf2ee5b9192a326478e3001c.png" />
 </div>
 </div>
 <p>From the previous plots, there are three important observations.</p>
@@ -1902,8 +1910,8 @@ to pursue when using a proper scoring together with a <code class="docutils lite
 setting <code class="docutils literal notranslate"><span class="pre">scoring</span></code> to <code class="docutils literal notranslate"><span class="pre">&quot;neg_log_loss&quot;</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">loguniform</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">RandomizedSearchCV</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">loguniform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomizedSearchCV</span>
 
 <span class="n">param_distributions</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;splinetransformer__n_knots&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span>
@@ -1925,7 +1933,8 @@ setting <code class="docutils literal notranslate"><span class="pre">scoring</sp
 <div class="cell_output docutils container">
 <div class="output text_html"><style>#sk-container-id-3 {
   /* Definition of color scheme common for light and dark mode */
-  --sklearn-color-text: black;
+  --sklearn-color-text: #000;
+  --sklearn-color-text-muted: #666;
   --sklearn-color-line: gray;
   /* Definition of color scheme for unfitted estimators */
   --sklearn-color-unfitted-level-0: #fff5e6;
@@ -2070,12 +2079,21 @@ clickable and can be expanded/collapsed.
 /* Toggleable label */
 #sk-container-id-3 label.sk-toggleable__label {
   cursor: pointer;
-  display: block;
+  display: flex;
   width: 100%;
   margin-bottom: 0;
   padding: 0.5em;
   box-sizing: border-box;
   text-align: center;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+#sk-container-id-3 label.sk-toggleable__label .caption {
+  font-size: 0.6rem;
+  font-weight: lighter;
+  color: var(--sklearn-color-text-muted);
 }
 
 #sk-container-id-3 label.sk-toggleable__label-arrow:before {
@@ -2228,7 +2246,8 @@ a:visited.sk-estimator-doc-link {
   height: 1em;
   width: 1em;
   text-decoration: none !important;
-  margin-left: 1ex;
+  margin-left: 0.5em;
+  text-align: center;
   /* unfitted */
   border: var(--sklearn-color-unfitted-level-1) 1pt solid;
   color: var(--sklearn-color-unfitted-level-1);
@@ -2335,10 +2354,10 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f6bb5b96720&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f06f55530e0&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
-                   random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;RandomizedSearchCV<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>RandomizedSearchCV(cv=ShuffleSplit(n_splits=10, random_state=0, test_size=0.2, train_size=None),
+                   random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RandomizedSearchCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>RandomizedSearchCV(cv=ShuffleSplit(n_splits=10, random_state=0, test_size=0.2, train_size=None),
                    estimator=Pipeline(steps=[(&#x27;splinetransformer&#x27;,
                                               SplineTransformer(n_knots=15)),
                                              (&#x27;polynomialfeatures&#x27;,
@@ -2346,15 +2365,15 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f6bb5b96720&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f06f55530e0&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
-                   random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">best_estimator_: Pipeline</label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
+                   random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>best_estimator_: Pipeline</div></div></label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;splinetransformer&#x27;, SplineTransformer()),
                 (&#x27;polynomialfeatures&#x27;,
                  PolynomialFeatures(interaction_only=True)),
                 (&#x27;logisticregression&#x27;,
                  LogisticRegression(C=np.float64(22.13852451266167),
-                                    max_iter=10000))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;SplineTransformer<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.SplineTransformer.html">?<span>Documentation for SplineTransformer</span></a></label><div class="sk-toggleable__content fitted"><pre>SplineTransformer()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;PolynomialFeatures<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">?<span>Documentation for PolynomialFeatures</span></a></label><div class="sk-toggleable__content fitted"><pre>PolynomialFeatures(interaction_only=True)</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;LogisticRegression<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.5/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(22.13852451266167), max_iter=10000)</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
+                                    max_iter=10000))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>SplineTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.SplineTransformer.html">?<span>Documentation for SplineTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>SplineTransformer()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>PolynomialFeatures</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.PolynomialFeatures.html">?<span>Documentation for PolynomialFeatures</span></a></div></label><div class="sk-toggleable__content fitted"><pre>PolynomialFeatures(interaction_only=True)</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(22.13852451266167), max_iter=10000)</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
 <p>Now that we trained the model, we check if it is well-calibrated on the left-out
 test set.</p>
@@ -2392,7 +2411,7 @@ test set.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/ba7a69453604cf005b907b2113744580c614ac971819626bf06de4ccaae32d4f.png" src="../../_images/ba7a69453604cf005b907b2113744580c614ac971819626bf06de4ccaae32d4f.png" />
+<img alt="../../_images/c0d982d0c1b16db3ec6fd7366ac60383a99b77f9c2774f6c42703bb14a9e864c.png" src="../../_images/c0d982d0c1b16db3ec6fd7366ac60383a99b77f9c2774f6c42703bb14a9e864c.png" />
 </div>
 </div>
 <p>We see that our procedure leads to a well-calibrated model since we used a
@@ -2455,7 +2474,8 @@ cross-validated as expected.</p>
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
   <div class="sidebar-secondary-item">
@@ -2516,8 +2536,8 @@ By Guillaume Lemaitre & Olivier Grisel
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

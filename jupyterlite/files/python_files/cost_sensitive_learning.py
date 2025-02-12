@@ -28,15 +28,13 @@
 # parquet file and check the data that we have at hand.
 
 # %%
+# Needed by pandas and not installed by default in pyodide.
+%pip install -q fastparquet
 
-# Explicitly import pyarrow since it is an optional dependency of pandas to
-# trigger the fetching when using JupyterLite with pyodide kernel. Note this is
-# an unnecessary (but harmless) import if you are not using JupyterLite with
-# pyodide.
-import pyarrow  # noqa: F401
+# %%
 import pandas as pd
 
-credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="pyarrow")
+credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="fastparquet")
 credit_card.info()
 
 # %% [markdown]
@@ -455,7 +453,7 @@ disp = CalibrationDisplay.from_estimator(
     data_test,
     target_test,
     strategy="quantile",
-    n_bins=5,
+    n_bins=3,
     name="Tuned logistic regression",
 )
 _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log")
@@ -466,17 +464,20 @@ _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log
 # Since we have little fraudulent data in our training set, we cannot aford to
 # use a held out calibration set. Instead we use a nested cross-fitting
 # procedure implemented in `CalibratedClassifierCV`: our original training set
-# is splitted 5 times into train and calibration subsets and we train 5
-# classifiers paired with 5 isotonic calibrators, one pair for each split:
+# is splitted 30 times into train and calibration subsets and we train 30
+# classifiers paired with 30 isotonic calibrators, one pair for each split:
 
 # %%
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.model_selection import ShuffleSplit
 
 calibrated_estimator = CalibratedClassifierCV(
-    model.best_estimator_, method="isotonic", cv=5
+    model.best_estimator_,
+    method="isotonic",
+    cv=ShuffleSplit(n_splits=30, test_size=0.2, random_state=42),
 ).fit(data_train, target_train)
 disp = CalibrationDisplay.from_estimator(
-    calibrated_estimator, data_test, target_test, strategy="quantile", n_bins=5
+    calibrated_estimator, data_test, target_test, strategy="quantile", n_bins=3
 )
 _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log")
 
