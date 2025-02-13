@@ -354,6 +354,7 @@ tuned_model = TunedThresholdClassifierCV(
     scoring=business_gain_scorer,
     thresholds=100,
     n_jobs=2,
+    store_cv_results=True,
 )
 tuned_model
 
@@ -392,6 +393,46 @@ print(
 #
 # We see that adjusting the decision threshold increases the gains compared to
 # using the default 0.5 threshold of scikit-learn classifiers.
+
+# %%
+_, ax = plt.subplots()
+ax.semilogy(
+    tuned_model.cv_results_["thresholds"],
+    tuned_model.cv_results_["scores"],
+    color="tab:blue",
+)
+
+# Replace vertical line with a single point for default threshold
+default_score = tuned_model.cv_results_["scores"][
+    np.abs(tuned_model.cv_results_["thresholds"] - 0.5).argmin()
+]
+ax.semilogy(
+    0.5,
+    default_score,
+    "s",  # square marker
+    markersize=10,
+    color="tab:blue",
+    label="Default threshold: 0.5",
+)
+
+ax.semilogy(
+    tuned_model.best_threshold_,
+    tuned_model.best_score_,
+    "o",
+    markersize=10,
+    color="tab:orange",
+    label=(
+        f"Optimal cut-off point for the business metric\n"
+        f"Threshold: {tuned_model.best_threshold_:.2f}"
+    ),
+)
+ax.set(
+    xlabel="Threshold",
+    ylabel="Business metric",
+    title="Business metric in function of the decision threshold",
+)
+_ = ax.legend()
+
 
 # %% [markdown]
 # ### Tuned logistic regression with optimal decision threshold
