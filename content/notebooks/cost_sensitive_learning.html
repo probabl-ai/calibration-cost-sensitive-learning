@@ -681,9 +681,9 @@ numpy array:</p>
 </section>
 <section id="investigate-baseline-policies">
 <h2>Investigate baseline policies<a class="headerlink" href="#investigate-baseline-policies" title="Link to this heading">#</a></h2>
-<p>Before to train a machine learning model, we investigate some baseline policies to
-serve as reference. Also, we prepare our dataset, to have a left-out test set to
-evaluate the performance of our predictive model.</p>
+<p>Before to train a machine learning model, we investigate some baseline
+policies to serve as reference. Also, we prepare our dataset, to have a
+left-out test set to evaluate the performance of our predictive model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
@@ -697,9 +697,9 @@ evaluate the performance of our predictive model.</p>
 </div>
 </div>
 </div>
-<p>The first baseline policy to evaluate is to check the performance of a policy that
-always accepts the transaction. We recall that class “0” is the legitimate class and
-class “1” is the fraudulent class.</p>
+<p>The first baseline policy to evaluate is to check the performance of a policy
+that always accepts the transaction. We recall that class “0” is the
+legitimate class and class “1” is the fraudulent class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.dummy</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyClassifier</span>
@@ -764,9 +764,9 @@ transactions are fraudulent before making the decision to accept or reject:</p>
 </div>
 <p>This perfect model would make a profit of around 251,000€.</p>
 <p>Therefore, we conclude that a predictive model that a model which adapts the
-accept/reject decisions on a per transaction basis should ideally allow us to make a
-profit larger than the ~216,000€ and will be capped by an amount of ~251,000€ of the
-best of our constant baseline policies.</p>
+accept/reject decisions on a per transaction basis should ideally allow us to
+make a profit larger than the ~216,000€ and will be capped by an amount of
+~251,000€ of the best of our constant baseline policies.</p>
 </section>
 <section id="training-predictive-models">
 <h2>Training predictive models<a class="headerlink" href="#training-predictive-models" title="Link to this heading">#</a></h2>
@@ -1718,9 +1718,9 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                 (&#x27;logisticregression&#x27;,
                  LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></div></label><div class="sk-toggleable__content "><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content "><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
-<p>Since our business scorer requires the amount of each transaction, we need to pass
-this information in the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method. The
-:class:<code class="docutils literal notranslate"><span class="pre">~sklearn.model_selection.TunedThresholdClassifierCV</span></code> is in charge of
+<p>Since our business scorer requires the amount of each transaction, we need to
+pass this information in the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method. The
+<code class="docutils literal notranslate"><span class="pre">sklearn.model_selection.TunedThresholdClassifierCV</span></code> is in charge of
 automatically dispatching this metadata to the underlying scorer.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -2160,8 +2160,8 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                 (&#x27;logisticregression&#x27;,
                  LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></div></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
-<p>Let’s compare the decision threshold found by the model compared to our fixed global
-threshold from the previous section.</p>
+<p>Let’s compare the decision threshold found by the model compared to our fixed
+global threshold from the previous section.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tuned_model</span><span class="o">.</span><span class="n">best_threshold_</span>
@@ -2194,6 +2194,9 @@ threshold by computing the value of the business metric on the test set:</p>
 </div>
 <p>We see that adjusting the decision threshold increases the gains compared to
 using the default 0.5 threshold of scikit-learn classifiers.</p>
+<p>Let’s have a look at the relationship between the decision threshold and the
+business metric by inspecting the fitted attributes of the
+<code class="docutils literal notranslate"><span class="pre">TunedThresholdClassifierCV</span></code> instance:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -2248,16 +2251,17 @@ threshold for a problem with a binary outcome can be computed by a
 closed-form formula given the following two assumptions:</p>
 <ul class="simple">
 <li><p>the probabilistic classifier is well-calibrated,</p></li>
-<li><p>the business metric can be decomposed as the sum of entries of a cost (or gain)
-matrix.</p></li>
+<li><p>the business metric can be decomposed as the sum of entries of a cost (or
+gain) matrix.</p></li>
 </ul>
-<p>When defining our business metric, we have already expressed it as a gain matrix. So
-to use the approach described in [1], we only need to check the calibration of our
-model. In the previous section, we already tuned the hyperparameter of the logistic
-regression using a proper scoring rule that should help towards getting a
-well-calibrated model. As a first step, we assume that our classifier is
-well-calibrated. Later, we will add an extra calibration step to check if it improves
-the performance of our model in terms of the business metric.</p>
+<p>When defining our business metric, we have already expressed it as a gain
+matrix. So to use the approach described in [1], we only need to check the
+calibration of our model. In the previous section, we already tuned the
+hyperparameter of the logistic regression using a proper scoring rule that
+should help towards getting a well-calibrated model. As a first step, we
+assume that our classifier is well-calibrated. Later, we will add an extra
+calibration step to check if it improves the performance of our model in
+terms of the business metric.</p>
 <p>The optimal decision threshold proposed by Charles Elkan in [1] is defined as
 follows:</p>
 <div class="cell docutils container">
@@ -2283,8 +2287,8 @@ follows:</p>
 </div>
 </div>
 <p>Let’s plot the distribution of the optimal thresholds for the transactions in
-the train set. In addition, we plot the optimal threshold as a function of the
-transaction amount.</p>
+the train set. In addition, we plot the optimal threshold as a function of
+the transaction amount.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>

@@ -213,9 +213,9 @@ amount = credit_card["Amount"].to_numpy()
 #
 # ## Investigate baseline policies
 #
-# Before to train a machine learning model, we investigate some baseline policies to
-# serve as reference. Also, we prepare our dataset, to have a left-out test set to
-# evaluate the performance of our predictive model.
+# Before to train a machine learning model, we investigate some baseline
+# policies to serve as reference. Also, we prepare our dataset, to have a
+# left-out test set to evaluate the performance of our predictive model.
 
 # %%
 from sklearn.model_selection import train_test_split
@@ -228,9 +228,9 @@ data_train, data_test, target_train, target_test, amount_train, amount_test = (
 
 # %% [markdown]
 #
-# The first baseline policy to evaluate is to check the performance of a policy that
-# always accepts the transaction. We recall that class "0" is the legitimate class and
-# class "1" is the fraudulent class.
+# The first baseline policy to evaluate is to check the performance of a policy
+# that always accepts the transaction. We recall that class "0" is the
+# legitimate class and class "1" is the fraudulent class.
 
 # %%
 from sklearn.dummy import DummyClassifier
@@ -281,9 +281,9 @@ print(f"Benefit of oracle decisions (not reachable):  {business_score:,.2f}€")
 # This perfect model would make a profit of around 251,000€.
 #
 # Therefore, we conclude that a predictive model that a model which adapts the
-# accept/reject decisions on a per transaction basis should ideally allow us to make a
-# profit larger than the ~216,000€ and will be capped by an amount of ~251,000€ of the
-# best of our constant baseline policies.
+# accept/reject decisions on a per transaction basis should ideally allow us to
+# make a profit larger than the ~216,000€ and will be capped by an amount of
+# ~251,000€ of the best of our constant baseline policies.
 
 # %% [markdown]
 #
@@ -360,9 +360,9 @@ tuned_model
 
 # %% [markdown]
 #
-# Since our business scorer requires the amount of each transaction, we need to pass
-# this information in the `fit` method. The
-# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
+# Since our business scorer requires the amount of each transaction, we need to
+# pass this information in the `fit` method. The
+# `sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
 # automatically dispatching this metadata to the underlying scorer.
 
 # %%
@@ -370,8 +370,8 @@ tuned_model.fit(data_train, target_train, amount=amount_train)
 
 # %% [markdown]
 #
-# Let's compare the decision threshold found by the model compared to our fixed global
-# threshold from the previous section.
+# Let's compare the decision threshold found by the model compared to our fixed
+# global threshold from the previous section.
 
 # %%
 tuned_model.best_threshold_
@@ -393,6 +393,10 @@ print(
 #
 # We see that adjusting the decision threshold increases the gains compared to
 # using the default 0.5 threshold of scikit-learn classifiers.
+#
+# Let's have a look at the relationship between the decision threshold and the
+# business metric by inspecting the fitted attributes of the
+# `TunedThresholdClassifierCV` instance:
 
 # %%
 _, ax = plt.subplots()
@@ -433,7 +437,6 @@ ax.set(
 )
 _ = ax.legend()
 
-
 # %% [markdown]
 # ### Tuned logistic regression with optimal decision threshold
 #
@@ -442,16 +445,17 @@ _ = ax.legend()
 # closed-form formula given the following two assumptions:
 #
 # - the probabilistic classifier is well-calibrated,
-# - the business metric can be decomposed as the sum of entries of a cost (or gain)
-#   matrix.
+# - the business metric can be decomposed as the sum of entries of a cost (or
+#   gain) matrix.
 #
-# When defining our business metric, we have already expressed it as a gain matrix. So
-# to use the approach described in [1], we only need to check the calibration of our
-# model. In the previous section, we already tuned the hyperparameter of the logistic
-# regression using a proper scoring rule that should help towards getting a
-# well-calibrated model. As a first step, we assume that our classifier is
-# well-calibrated. Later, we will add an extra calibration step to check if it improves
-# the performance of our model in terms of the business metric.
+# When defining our business metric, we have already expressed it as a gain
+# matrix. So to use the approach described in [1], we only need to check the
+# calibration of our model. In the previous section, we already tuned the
+# hyperparameter of the logistic regression using a proper scoring rule that
+# should help towards getting a well-calibrated model. As a first step, we
+# assume that our classifier is well-calibrated. Later, we will add an extra
+# calibration step to check if it improves the performance of our model in
+# terms of the business metric.
 #
 # The optimal decision threshold proposed by Charles Elkan in [1] is defined as
 # follows:
@@ -478,8 +482,8 @@ def elkan_optimal_threshold(amount):
 # %% [markdown]
 #
 # Let's plot the distribution of the optimal thresholds for the transactions in
-# the train set. In addition, we plot the optimal threshold as a function of the
-# transaction amount.
+# the train set. In addition, we plot the optimal threshold as a function of
+# the transaction amount.
 
 # %%
 _, ax = plt.subplots(ncols=2, figsize=(14, 6))
