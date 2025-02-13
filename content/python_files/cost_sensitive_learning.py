@@ -542,13 +542,20 @@ print(
 # %% [markdown]
 #
 # We see that adjusting the decision threshold increases the gains compared to
-# using the default 0.5 threshold of scikit-learn classifiers but not as
+# using the default 0.5 threshold of scikit-learn classifiers but not as good
+# as the threshold found via `TunedThresholdClassifierCV`.
 #
 # Note that the formula we used to compute the threshold is only valid under
-# the assumption that our model is well-calibrated, we could now check that it
-# was really the case. Since the dataset is very imbalanced, our classifiers
-# predicts very low probability for the fraudulent class most of the time, as a
-# result use plot the calibration curve with a logarithmic scale:
+# the following assumptions:
+#
+# - our model is well-calibrated,
+# - our decisions are thresholded with amount dependent thresholds instead of
+#   using the mean optimal threshold.
+#
+# Let's first focus on calibration. Since the dataset is very imbalanced, our
+# classifiers predicts very low probability for the fraudulent class most of
+# the time, as a result use plot the calibration curve with a logarithmic
+# scale:
 
 # %%
 from sklearn.calibration import CalibrationDisplay
@@ -565,12 +572,23 @@ _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log
 
 # %% [markdown]
 #
-# The calibration looks good but not perfect. Let's attempt to improve it.
-# Since we have little fraudulent data in our training set, we cannot aford to
-# use a held out calibration set. Instead we use a nested cross-fitting
-# procedure implemented in `CalibratedClassifierCV`: our original training set
-# is splitted 30 times into train and calibration subsets and we train 30
-# classifiers paired with 30 isotonic calibrators, one pair for each split:
+# The calibration looks good but not perfect (not exactly on the diagonal). We
+# use a small number of bins because there are very few fraudulent cases in the
+# test data (less than 100 fraud cases per bin).:
+# %%
+target_test.value_counts()
+
+# %% [markdown]
+#
+# If we had a larger dataset, we could use more bins to get a finer grained
+# estimate of the calibration curve.
+#
+# Despite this lack of data, let's attempt to improve the calibration of our
+# classifier. Since we have little fraudulent data, we cannot afford to use a
+# held out calibration set. Instead we use a nested cross-fitting procedure
+# implemented in `CalibratedClassifierCV`: our original training set is
+# splitted 10 times into train and calibration subsets and we train 10
+# classifiers paired with 10 isotonic calibrators, one pair for each split:
 
 # %%
 from sklearn.calibration import CalibratedClassifierCV
@@ -612,9 +630,17 @@ print(
 # %% [markdown]
 #
 # It seems that this extra calibration step did improve the performance of our
-# model in terms of the business metric. However, since we have few fraudulent
-# case, the robustness of this improvement should better be assessed via an
-# outer cross-validation instead of using a single global train test split.
+# model in terms of the business metric. We are now very close to the business
+# metric value obtained with the fixed threshold found by
+# `TunedThresholdClassifierCV` on the uncalibrated model.
+#
+# However, since we have very few fraudulent cases, this result should be
+# confirmed on a larger dataset with more cases. Alternatively the robustness
+# of this improvement should be assessed via an outer cross-validation instead
+# of using a single global train test split.
+#
+# Let's now explore if using a per-transaction variable threshold can further
+# improve this result.
 
 # %% [markdown]
 # ### Variable optimal threshold
