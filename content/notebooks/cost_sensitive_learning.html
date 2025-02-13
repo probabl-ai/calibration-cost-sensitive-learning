@@ -379,8 +379,8 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#investigate-baseline-policies">Investigate baseline policies</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-predictive-models">Training predictive models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logistic-regression-tuned-with-a-proper-scoring-rule">Logistic regression tuned with a proper scoring rule</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tuned-logistic-regression-with-optimal-decision-threshold">Tuned logistic regression with optimal decision threshold</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-the-decision-threshold-by-direct-business-metric-optimization">Setting the decision threshold by direct business metric optimization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tuned-logistic-regression-with-optimal-decision-threshold">Tuned logistic regression with optimal decision threshold</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#variable-optimal-threshold">Variable optimal threshold</a></li>
 </ul>
 </li>
@@ -1256,213 +1256,6 @@ transactions.</p>
 <p>However there is no reason to believe that this particular choice of decision
 threshold would be optimal for the problem at hand.</p>
 </section>
-<section id="tuned-logistic-regression-with-optimal-decision-threshold">
-<h3>Tuned logistic regression with optimal decision threshold<a class="headerlink" href="#tuned-logistic-regression-with-optimal-decision-threshold" title="Link to this heading">#</a></h3>
-<p>From a research paper by Charles Elkan [1], we know that the optimal decision
-threshold for a problem with a binary outcome can be computed by a
-closed-form formula given the following two assumptions:</p>
-<ul class="simple">
-<li><p>the probabilistic classifier is well-calibrated,</p></li>
-<li><p>the business metric can be decomposed as the sum of entries of a cost (or gain)
-matrix.</p></li>
-</ul>
-<p>When defining our business metric, we have already expressed it as a gain matrix. So
-to use the approach described in [1], we only need to check the calibration of our
-model. In the previous section, we already tuned the hyperparameter of the logistic
-regression using a proper scoring rule that should help towards getting a
-well-calibrated model. As a first step, we assume that our classifier is
-well-calibrated. Later, we will add an extra calibration step to check if it improves
-the performance of our model in terms of the business metric.</p>
-<p>The optimal decision threshold proposed by Charles Elkan in [1] is defined as
-follows:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the optimal threshold for a transaction of a given amount.</span>
-
-<span class="sd">    Here the terms are expressed as costs. Therefore, the diagonal entries of the</span>
-<span class="sd">    cost matrix (C_00 and C_11) are negative values and the off-diagonal values</span>
-<span class="sd">    are positive.</span>
-
-<span class="sd">    Note that we can multiply the numerator and the denominator by -1 to yield</span>
-<span class="sd">    the same formula for the entries of a gain matrix. The resulting threshold</span>
-<span class="sd">    would stay unchanged.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">c00</span> <span class="o">=</span> <span class="o">-</span><span class="n">commission_transaction_gain</span> <span class="o">*</span> <span class="n">amount</span>  <span class="c1"># Accepting a legitimate transaction</span>
-    <span class="n">c01</span> <span class="o">=</span> <span class="n">amount</span> <span class="o">+</span> <span class="n">avg_accept_fraud_cost</span>  <span class="c1"># Accepting a fraudulent transaction</span>
-    <span class="n">c10</span> <span class="o">=</span> <span class="n">avg_refuse_legit_cost</span>  <span class="c1"># Refusing a legitimate transaction</span>
-    <span class="n">c11</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Refusing a fraudulent transaction</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">c10</span> <span class="o">-</span> <span class="n">c00</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">c10</span> <span class="o">-</span> <span class="n">c00</span> <span class="o">+</span> <span class="n">c01</span> <span class="o">-</span> <span class="n">c11</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Let’s plot the distribution of the optimal thresholds for the transactions in
-the train set. In addition, we plot the optimal threshold as a function of the
-transaction amount.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-
-<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Optimal threshold&quot;</span><span class="p">,</span>
-    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of transactions&quot;</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Optimal threshold distribution&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">amount_train</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">amount_train</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">1_000</span><span class="p">)</span>
-<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Amount (€)&quot;</span><span class="p">,</span>
-    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Optimal threshold&quot;</span><span class="p">,</span>
-    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Optimal threshold in function of the transaction amount&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../../_images/e97957c12f9ce65fbf760fd004060ac96db75d23515f5b0fea58cd25925972d6.png" src="../../_images/e97957c12f9ce65fbf760fd004060ac96db75d23515f5b0fea58cd25925972d6.png" />
-</div>
-</div>
-<p>We see that the optimal threshold varies from ~0.02 to ~0.33 depending on the
-amount of the transaction. Looking at the optimal threshold as a function of
-the transaction amount, we see that it decreases as the amount of the
-transaction increases. It means that the operator should reject a transaction
-with a large amount unless it is extremely confident that this a legitimate
-transaction. For lower amounts, it is optimal to take more risk and accept
-transactions with higher estimated probability of being fraudulent.</p>
-<p>As a first experiment, we define a decision policy with a constant decision
-threshold computed as the mean of the optimal thresholds computed for the
-transactions in the train set. Let’s check the value of this threshold:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.19305440698357443)
-</pre></div>
-</div>
-</div>
-</div>
-<p>Let’s use this value to change the decision threshold of our logistic
-regression model and evaluate the performance of our model in terms of the
-business metric.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedThresholdClassifier</span>
-
-<span class="n">fixed_elkan_model</span> <span class="o">=</span> <span class="n">FixedThresholdClassifier</span><span class="p">(</span>
-    <span class="n">estimator</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span>
-    <span class="n">threshold</span><span class="o">=</span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
-
-<span class="n">business_score</span> <span class="o">=</span> <span class="n">business_gain_scorer</span><span class="p">(</span>
-    <span class="n">fixed_elkan_model</span><span class="p">,</span> <span class="n">data_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="n">amount_test</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Benefit of logistic regression with a fixed mean theoretical threshold: &quot;</span>
-    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">business_score</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">€&quot;</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with a fixed mean theoretical threshold: 236,756.32€
-</pre></div>
-</div>
-</div>
-</div>
-<p>We see that adjusting the decision threshold increases the gains compared to
-using the default 0.5 threshold of scikit-learn classifiers.</p>
-<p>Note that the formula we used to compute the threshold is only valid under
-the assumption that our model is well-calibrated, we could now check that it
-was really the case. Since the dataset is very imbalanced, our classifiers
-predicts very low probability for the fraudulent class most of the time, as a
-result use plot the calibration curve with a logarithmic scale:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibrationDisplay</span>
-
-<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span>
-    <span class="n">data_test</span><span class="p">,</span>
-    <span class="n">target_test</span><span class="p">,</span>
-    <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span>
-    <span class="n">n_bins</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tuned logistic regression&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">xscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">yscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../../_images/cf8895ee051a0f4e1d731d35201a1b1e5981f3b088e58c4fed5c6163a0cc58bd.png" src="../../_images/cf8895ee051a0f4e1d731d35201a1b1e5981f3b088e58c4fed5c6163a0cc58bd.png" />
-</div>
-</div>
-<p>The calibration looks good but not perfect. Let’s attempt to improve it.
-Since we have little fraudulent data in our training set, we cannot aford to
-use a held out calibration set. Instead we use a nested cross-fitting
-procedure implemented in <code class="docutils literal notranslate"><span class="pre">CalibratedClassifierCV</span></code>: our original training set
-is splitted 30 times into train and calibration subsets and we train 30
-classifiers paired with 30 isotonic calibrators, one pair for each split:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibratedClassifierCV</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">ShuffleSplit</span>
-
-<span class="n">calibrated_estimator</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;isotonic&quot;</span><span class="p">,</span>
-    <span class="n">cv</span><span class="o">=</span><span class="n">ShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span>
-<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
-<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span>
-    <span class="n">calibrated_estimator</span><span class="p">,</span> <span class="n">data_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">3</span>
-<span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">xscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">yscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="../../_images/64bccdbee5172b35d367fa6ced7e07e6fe85ff8e27448abc97030c2d95d4ec7d.png" src="../../_images/64bccdbee5172b35d367fa6ced7e07e6fe85ff8e27448abc97030c2d95d4ec7d.png" />
-</div>
-</div>
-<p>The calibration curve of the resulting model does not look significantly
-better than that of the original logistic regression model.</p>
-<p>Still, let’s see of the cross-fitted calibration procedure can lead to an
-improvement measured with the business metric:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fixed_elkan_model</span> <span class="o">=</span> <span class="n">FixedThresholdClassifier</span><span class="p">(</span>
-    <span class="n">estimator</span><span class="o">=</span><span class="n">calibrated_estimator</span><span class="p">,</span>
-    <span class="n">threshold</span><span class="o">=</span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
-
-<span class="n">business_score</span> <span class="o">=</span> <span class="n">business_gain_scorer</span><span class="p">(</span>
-    <span class="n">fixed_elkan_model</span><span class="p">,</span> <span class="n">data_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="n">amount_test</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Benefit of recalibrated logistic regression with a fixed mean theoretical &quot;</span>
-    <span class="sa">f</span><span class="s2">&quot; threshold:  </span><span class="si">{</span><span class="n">business_score</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">€&quot;</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with a fixed mean theoretical  threshold:  237,948.92€
-</pre></div>
-</div>
-</div>
-</div>
-<p>It seems that this extra calibration step did improve the performance of our
-model in terms of the business metric. However, since we have few fraudulent
-case, the robustness of this improvement should better be assessed via an
-outer cross-validation instead of using a single global train test split.</p>
-</section>
 <section id="setting-the-decision-threshold-by-direct-business-metric-optimization">
 <h3>Setting the decision threshold by direct business metric optimization<a class="headerlink" href="#setting-the-decision-threshold-by-direct-business-metric-optimization" title="Link to this heading">#</a></h3>
 <p>In the previous section, we presented a method to compute the optimal decision
@@ -1476,7 +1269,7 @@ breaks any optimality guarantee.</p>
 threshold by directly optimizing the average business metric. This
 optimization is done through a grid-search over the decision threshold
 involving a cross-validation. The class
-:class:<code class="docutils literal notranslate"><span class="pre">~sklearn.model_selection.TunedThresholdClassifierCV</span></code> is in charge of
+<code class="docutils literal notranslate"><span class="pre">sklearn.model_selection.TunedThresholdClassifierCV</span></code> is in charge of
 performing this optimization.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1487,6 +1280,7 @@ performing this optimization.</p>
     <span class="n">scoring</span><span class="o">=</span><span class="n">business_gain_scorer</span><span class="p">,</span>
     <span class="n">thresholds</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">store_cv_results</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">tuned_model</span>
 </pre></div>
@@ -1913,12 +1707,14 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                                      (&#x27;logisticregression&#x27;,
                                                       LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
-                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>TunedThresholdClassifierCV</div></div><div><a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.TunedThresholdClassifierCV.html">?<span>Documentation for TunedThresholdClassifierCV</span></a><span class="sk-estimator-doc-link ">i<span>Not fitted</span></span></div></label><div class="sk-toggleable__content "><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
+                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;),
+                           store_cv_results=True)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>TunedThresholdClassifierCV</div></div><div><a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.TunedThresholdClassifierCV.html">?<span>Documentation for TunedThresholdClassifierCV</span></a><span class="sk-estimator-doc-link ">i<span>Not fitted</span></span></div></label><div class="sk-toggleable__content "><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
                                                       StandardScaler()),
                                                      (&#x27;logisticregression&#x27;,
                                                       LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
-                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>estimator: Pipeline</div></div></label><div class="sk-toggleable__content "><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
+                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;),
+                           store_cv_results=True)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>estimator: Pipeline</div></div></label><div class="sk-toggleable__content "><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
                 (&#x27;logisticregression&#x27;,
                  LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></div></label><div class="sk-toggleable__content "><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator  sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label  sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link " rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content "><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
@@ -2353,12 +2149,14 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                                      (&#x27;logisticregression&#x27;,
                                                       LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
-                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>TunedThresholdClassifierCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.TunedThresholdClassifierCV.html">?<span>Documentation for TunedThresholdClassifierCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
+                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;),
+                           store_cv_results=True)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>TunedThresholdClassifierCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.TunedThresholdClassifierCV.html">?<span>Documentation for TunedThresholdClassifierCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>TunedThresholdClassifierCV(estimator=Pipeline(steps=[(&#x27;standardscaler&#x27;,
                                                       StandardScaler()),
                                                      (&#x27;logisticregression&#x27;,
                                                       LogisticRegression(C=np.float64(100.0)))]),
                            n_jobs=2,
-                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;))</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>estimator: Pipeline</div></div></label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
+                           scoring=make_scorer(business_gain_func, response_method=&#x27;predict&#x27;),
+                           store_cv_results=True)</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>estimator: Pipeline</div></div></label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;standardscaler&#x27;, StandardScaler()),
                 (&#x27;logisticregression&#x27;,
                  LogisticRegression(C=np.float64(100.0)))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></div></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=np.float64(100.0))</pre></div> </div></div></div></div></div></div></div></div></div></div></div></div></div>
 </div>
@@ -2376,9 +2174,7 @@ threshold from the previous section.</p>
 </div>
 </div>
 </div>
-<p>The resulting threshold value is much lower than the default of 0.5 but quite
-different from the mean optimal threshold computed from the closed-form
-formula.</p>
+<p>The resulting threshold value is much lower than the default of 0.5.</p>
 <p>Now, let’s check the performance of our model with the tuned decision
 threshold by computing the value of the business metric on the test set:</p>
 <div class="cell docutils container">
@@ -2396,9 +2192,294 @@ threshold by computing the value of the business metric on the test set:</p>
 </div>
 </div>
 </div>
-<p>We see that the obtained profit is quite similar (maybe slightly higher) to
-the profit obtained with the previous way of setting a fixed decision
-threshold.</p>
+<p>We see that adjusting the decision threshold increases the gains compared to
+using the default 0.5 threshold of scikit-learn classifiers.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span>
+    <span class="n">tuned_model</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">[</span><span class="s2">&quot;thresholds&quot;</span><span class="p">],</span>
+    <span class="n">tuned_model</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">],</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:blue&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Replace vertical line with a single point for default threshold</span>
+<span class="n">default_score</span> <span class="o">=</span> <span class="n">tuned_model</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">][</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tuned_model</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">[</span><span class="s2">&quot;thresholds&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+<span class="p">]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span>
+    <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">default_score</span><span class="p">,</span>
+    <span class="s2">&quot;s&quot;</span><span class="p">,</span>  <span class="c1"># square marker</span>
+    <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:blue&quot;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Default threshold: 0.5&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span>
+    <span class="n">tuned_model</span><span class="o">.</span><span class="n">best_threshold_</span><span class="p">,</span>
+    <span class="n">tuned_model</span><span class="o">.</span><span class="n">best_score_</span><span class="p">,</span>
+    <span class="s2">&quot;o&quot;</span><span class="p">,</span>
+    <span class="n">markersize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:orange&quot;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Optimal cut-off point for the business metric</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Threshold: </span><span class="si">{</span><span class="n">tuned_model</span><span class="o">.</span><span class="n">best_threshold_</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Threshold&quot;</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Business metric&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Business metric in function of the decision threshold&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/c7bcb11293d967792b5e3d43a4b6b0c438856138c6e1ebb19a183ef33f6fadf5.png" src="../../_images/c7bcb11293d967792b5e3d43a4b6b0c438856138c6e1ebb19a183ef33f6fadf5.png" />
+</div>
+</div>
+</section>
+<section id="tuned-logistic-regression-with-optimal-decision-threshold">
+<h3>Tuned logistic regression with optimal decision threshold<a class="headerlink" href="#tuned-logistic-regression-with-optimal-decision-threshold" title="Link to this heading">#</a></h3>
+<p>From a research paper by Charles Elkan [1], we know that the optimal decision
+threshold for a problem with a binary outcome can be computed by a
+closed-form formula given the following two assumptions:</p>
+<ul class="simple">
+<li><p>the probabilistic classifier is well-calibrated,</p></li>
+<li><p>the business metric can be decomposed as the sum of entries of a cost (or gain)
+matrix.</p></li>
+</ul>
+<p>When defining our business metric, we have already expressed it as a gain matrix. So
+to use the approach described in [1], we only need to check the calibration of our
+model. In the previous section, we already tuned the hyperparameter of the logistic
+regression using a proper scoring rule that should help towards getting a
+well-calibrated model. As a first step, we assume that our classifier is
+well-calibrated. Later, we will add an extra calibration step to check if it improves
+the performance of our model in terms of the business metric.</p>
+<p>The optimal decision threshold proposed by Charles Elkan in [1] is defined as
+follows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the optimal threshold for a transaction of a given amount.</span>
+
+<span class="sd">    Here the terms are expressed as costs. Therefore, the diagonal entries of the</span>
+<span class="sd">    cost matrix (C_00 and C_11) are negative values and the off-diagonal values</span>
+<span class="sd">    are positive.</span>
+
+<span class="sd">    Note that we can multiply the numerator and the denominator by -1 to yield</span>
+<span class="sd">    the same formula for the entries of a gain matrix. The resulting threshold</span>
+<span class="sd">    would stay unchanged.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c00</span> <span class="o">=</span> <span class="o">-</span><span class="n">commission_transaction_gain</span> <span class="o">*</span> <span class="n">amount</span>  <span class="c1"># Accepting a legitimate transaction</span>
+    <span class="n">c01</span> <span class="o">=</span> <span class="n">amount</span> <span class="o">+</span> <span class="n">avg_accept_fraud_cost</span>  <span class="c1"># Accepting a fraudulent transaction</span>
+    <span class="n">c10</span> <span class="o">=</span> <span class="n">avg_refuse_legit_cost</span>  <span class="c1"># Refusing a legitimate transaction</span>
+    <span class="n">c11</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Refusing a fraudulent transaction</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">c10</span> <span class="o">-</span> <span class="n">c00</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">c10</span> <span class="o">-</span> <span class="n">c00</span> <span class="o">+</span> <span class="n">c01</span> <span class="o">-</span> <span class="n">c11</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s plot the distribution of the optimal thresholds for the transactions in
+the train set. In addition, we plot the optimal threshold as a function of the
+transaction amount.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Optimal threshold&quot;</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Number of transactions&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Optimal threshold distribution&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">amount_train</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">amount_train</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">1_000</span><span class="p">)</span>
+<span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+    <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Amount (€)&quot;</span><span class="p">,</span>
+    <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Optimal threshold&quot;</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Optimal threshold in function of the transaction amount&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/e97957c12f9ce65fbf760fd004060ac96db75d23515f5b0fea58cd25925972d6.png" src="../../_images/e97957c12f9ce65fbf760fd004060ac96db75d23515f5b0fea58cd25925972d6.png" />
+</div>
+</div>
+<p>We see that the optimal threshold varies from ~0.02 to ~0.33 depending on the
+amount of the transaction. Looking at the optimal threshold as a function of
+the transaction amount, we see that it decreases as the amount of the
+transaction increases. It means that the operator should reject a transaction
+with a large amount unless it is extremely confident that this a legitimate
+transaction. For lower amounts, it is optimal to take more risk and accept
+transactions with higher estimated probability of being fraudulent.</p>
+<p>As a first experiment, we define a decision policy with a constant decision
+threshold computed as the mean of the optimal thresholds computed for the
+transactions in the train set. Let’s check the value of this threshold:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.19305440698357443)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s use this value to change the decision threshold of our logistic
+regression model and evaluate the performance of our model in terms of the
+business metric.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedThresholdClassifier</span>
+
+<span class="n">fixed_elkan_model</span> <span class="o">=</span> <span class="n">FixedThresholdClassifier</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+
+<span class="n">business_score</span> <span class="o">=</span> <span class="n">business_gain_scorer</span><span class="p">(</span>
+    <span class="n">fixed_elkan_model</span><span class="p">,</span> <span class="n">data_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="n">amount_test</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Benefit of logistic regression with a fixed mean theoretical threshold: &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">business_score</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">€&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of logistic regression with a fixed mean theoretical threshold: 236,756.32€
+</pre></div>
+</div>
+</div>
+</div>
+<p>We see that adjusting the decision threshold increases the gains compared to
+using the default 0.5 threshold of scikit-learn classifiers but not as good
+as the threshold found via <code class="docutils literal notranslate"><span class="pre">TunedThresholdClassifierCV</span></code>.</p>
+<p>Note that the formula we used to compute the threshold is only valid under
+the following assumptions:</p>
+<ul class="simple">
+<li><p>our model is well-calibrated,</p></li>
+<li><p>our decisions are thresholded with amount dependent thresholds instead of
+using the mean optimal threshold.</p></li>
+</ul>
+<p>Let’s first focus on calibration. Since the dataset is very imbalanced, our
+classifiers predicts very low probability for the fraudulent class most of
+the time, as a result use plot the calibration curve with a logarithmic
+scale:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibrationDisplay</span>
+
+<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span>
+    <span class="n">data_test</span><span class="p">,</span>
+    <span class="n">target_test</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span>
+    <span class="n">n_bins</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tuned logistic regression&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">xscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">yscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/cf8895ee051a0f4e1d731d35201a1b1e5981f3b088e58c4fed5c6163a0cc58bd.png" src="../../_images/cf8895ee051a0f4e1d731d35201a1b1e5981f3b088e58c4fed5c6163a0cc58bd.png" />
+</div>
+</div>
+<p>The calibration looks good but not perfect (not exactly on the diagonal). We
+use a small number of bins because there are very few fraudulent cases in the
+test data (less than 100 fraud cases per bin).:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target_test</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Class
+0    142158
+1       246
+Name: count, dtype: int64
+</pre></div>
+</div>
+</div>
+</div>
+<p>If we had a larger dataset, we could use more bins to get a finer grained
+estimate of the calibration curve.</p>
+<p>Despite this lack of data, let’s attempt to improve the calibration of our
+classifier. Since we have little fraudulent data, we cannot afford to use a
+held out calibration set. Instead we use a nested cross-fitting procedure
+implemented in <code class="docutils literal notranslate"><span class="pre">CalibratedClassifierCV</span></code>: our original training set is
+splitted 10 times into train and calibration subsets and we train 10
+classifiers paired with 10 isotonic calibrators, one pair for each split:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibratedClassifierCV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">ShuffleSplit</span>
+
+<span class="n">calibrated_estimator</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">best_estimator_</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;isotonic&quot;</span><span class="p">,</span>
+    <span class="n">cv</span><span class="o">=</span><span class="n">ShuffleSplit</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+<span class="n">disp</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span>
+    <span class="n">calibrated_estimator</span><span class="p">,</span> <span class="n">data_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">3</span>
+<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-7</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">),</span> <span class="n">xscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">yscale</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/8457b7cf83faf7310c4d6e9e6a4285bee1f7664f93876b7faa477992befd6775.png" src="../../_images/8457b7cf83faf7310c4d6e9e6a4285bee1f7664f93876b7faa477992befd6775.png" />
+</div>
+</div>
+<p>The calibration curve of the resulting model does not look significantly
+better than that of the original logistic regression model.</p>
+<p>Still, let’s see of the cross-fitted calibration procedure can lead to an
+improvement measured with the business metric:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fixed_elkan_model</span> <span class="o">=</span> <span class="n">FixedThresholdClassifier</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="n">calibrated_estimator</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="o">=</span><span class="n">elkan_optimal_threshold</span><span class="p">(</span><span class="n">amount_train</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data_train</span><span class="p">,</span> <span class="n">target_train</span><span class="p">)</span>
+
+<span class="n">business_score</span> <span class="o">=</span> <span class="n">business_gain_scorer</span><span class="p">(</span>
+    <span class="n">fixed_elkan_model</span><span class="p">,</span> <span class="n">data_test</span><span class="p">,</span> <span class="n">target_test</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="n">amount_test</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Benefit of recalibrated logistic regression with a fixed mean theoretical &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot; threshold:  </span><span class="si">{</span><span class="n">business_score</span><span class="si">:</span><span class="s2">,.2f</span><span class="si">}</span><span class="s2">€&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with a fixed mean theoretical  threshold:  238,327.63€
+</pre></div>
+</div>
+</div>
+</div>
+<p>It seems that this extra calibration step did improve the performance of our
+model in terms of the business metric. We are now very close to the business
+metric value obtained with the fixed threshold found by
+<code class="docutils literal notranslate"><span class="pre">TunedThresholdClassifierCV</span></code> on the uncalibrated model.</p>
+<p>However, since we have very few fraudulent cases, this result should be
+confirmed on a larger dataset with more cases. Alternatively the robustness
+of this improvement should be assessed via an outer cross-validation instead
+of using a single global train test split.</p>
+<p>Let’s now explore if using a per-transaction variable threshold can further
+improve this result.</p>
 </section>
 <section id="variable-optimal-threshold">
 <h3>Variable optimal threshold<a class="headerlink" href="#variable-optimal-threshold" title="Link to this heading">#</a></h3>
@@ -2473,7 +2554,7 @@ calibration of the underlying classifier:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with optimal variable threshold: 239,280.58€
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Benefit of recalibrated logistic regression with optimal variable threshold: 238,587.92€
 </pre></div>
 </div>
 </div>
@@ -2586,8 +2667,8 @@ Ltd, 2001. <a class="reference external" href="https://cseweb.ucsd.edu/~elkan/re
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#investigate-baseline-policies">Investigate baseline policies</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-predictive-models">Training predictive models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logistic-regression-tuned-with-a-proper-scoring-rule">Logistic regression tuned with a proper scoring rule</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tuned-logistic-regression-with-optimal-decision-threshold">Tuned logistic regression with optimal decision threshold</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-the-decision-threshold-by-direct-business-metric-optimization">Setting the decision threshold by direct business metric optimization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tuned-logistic-regression-with-optimal-decision-threshold">Tuned logistic regression with optimal decision threshold</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#variable-optimal-threshold">Variable optimal threshold</a></li>
 </ul>
 </li>

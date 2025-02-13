@@ -327,7 +327,114 @@ print(
 #
 # However there is no reason to believe that this particular choice of decision
 # threshold would be optimal for the problem at hand.
+
+# ### Setting the decision threshold by direct business metric optimization
 #
+# In the previous section, we presented a method to compute the optimal decision
+# threshold but it relied on the assumption that the probabilistic classifier is
+# well-calibrated and that the business metric can be expressed as a cost matrix.
+#
+# Furthermore, the threshold computed with the closed form formula depends on
+# the amount of the transaction. Since we wanted to used a fixed threshold for
+# all decisions, we naively used the mean optimal threshold. This further
+# breaks any optimality guarantee.
+#
+# To avoid relying on such assumptions, we can instead tune a single decision
+# threshold by directly optimizing the average business metric. This
+# optimization is done through a grid-search over the decision threshold
+# involving a cross-validation. The class
+# `sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
+# performing this optimization.
+
+# %%
+from sklearn.model_selection import TunedThresholdClassifierCV
+
+tuned_model = TunedThresholdClassifierCV(
+    estimator=model.best_estimator_,
+    scoring=business_gain_scorer,
+    thresholds=100,
+    n_jobs=2,
+    store_cv_results=True,
+)
+tuned_model
+
+# %% [markdown]
+#
+# Since our business scorer requires the amount of each transaction, we need to pass
+# this information in the `fit` method. The
+# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
+# automatically dispatching this metadata to the underlying scorer.
+
+# %%
+tuned_model.fit(data_train, target_train, amount=amount_train)
+
+# %% [markdown]
+#
+# Let's compare the decision threshold found by the model compared to our fixed global
+# threshold from the previous section.
+
+# %%
+tuned_model.best_threshold_
+
+# %% [markdown]
+#
+# The resulting threshold value is much lower than the default of 0.5.
+#
+# Now, let's check the performance of our model with the tuned decision
+# threshold by computing the value of the business metric on the test set:
+
+# %%
+print(
+    "Benefit of logistic regression with a tuned threshold: "
+    f"{business_gain_scorer(tuned_model, data_test, target_test, amount=amount_test):,.2f}€"
+)
+
+# %% [markdown]
+#
+# We see that adjusting the decision threshold increases the gains compared to
+# using the default 0.5 threshold of scikit-learn classifiers.
+
+# %%
+_, ax = plt.subplots()
+ax.semilogy(
+    tuned_model.cv_results_["thresholds"],
+    tuned_model.cv_results_["scores"],
+    color="tab:blue",
+)
+
+# Replace vertical line with a single point for default threshold
+default_score = tuned_model.cv_results_["scores"][
+    np.abs(tuned_model.cv_results_["thresholds"] - 0.5).argmin()
+]
+ax.semilogy(
+    0.5,
+    default_score,
+    "s",  # square marker
+    markersize=10,
+    color="tab:blue",
+    label="Default threshold: 0.5",
+)
+
+ax.semilogy(
+    tuned_model.best_threshold_,
+    tuned_model.best_score_,
+    "o",
+    markersize=10,
+    color="tab:orange",
+    label=(
+        f"Optimal cut-off point for the business metric\n"
+        f"Threshold: {tuned_model.best_threshold_:.2f}"
+    ),
+)
+ax.set(
+    xlabel="Threshold",
+    ylabel="Business metric",
+    title="Business metric in function of the decision threshold",
+)
+_ = ax.legend()
+
+
+# %% [markdown]
 # ### Tuned logistic regression with optimal decision threshold
 #
 # From a research paper by Charles Elkan [1], we know that the optimal decision
@@ -350,8 +457,6 @@ print(
 # follows:
 
 # %%
-
-
 def elkan_optimal_threshold(amount):
     """Compute the optimal threshold for a transaction of a given amount.
 
@@ -437,13 +542,20 @@ print(
 # %% [markdown]
 #
 # We see that adjusting the decision threshold increases the gains compared to
-# using the default 0.5 threshold of scikit-learn classifiers.
+# using the default 0.5 threshold of scikit-learn classifiers but not as good
+# as the threshold found via `TunedThresholdClassifierCV`.
 #
 # Note that the formula we used to compute the threshold is only valid under
-# the assumption that our model is well-calibrated, we could now check that it
-# was really the case. Since the dataset is very imbalanced, our classifiers
-# predicts very low probability for the fraudulent class most of the time, as a
-# result use plot the calibration curve with a logarithmic scale:
+# the following assumptions:
+#
+# - our model is well-calibrated,
+# - our decisions are thresholded with amount dependent thresholds instead of
+#   using the mean optimal threshold.
+#
+# Let's first focus on calibration. Since the dataset is very imbalanced, our
+# classifiers predicts very low probability for the fraudulent class most of
+# the time, as a result use plot the calibration curve with a logarithmic
+# scale:
 
 # %%
 from sklearn.calibration import CalibrationDisplay
@@ -460,12 +572,23 @@ _ = disp.ax_.set(xlim=(1e-7, 0.03), ylim=(1e-7, 0.03), xscale="log", yscale="log
 
 # %% [markdown]
 #
-# The calibration looks good but not perfect. Let's attempt to improve it.
-# Since we have little fraudulent data in our training set, we cannot aford to
-# use a held out calibration set. Instead we use a nested cross-fitting
-# procedure implemented in `CalibratedClassifierCV`: our original training set
-# is splitted 30 times into train and calibration subsets and we train 30
-# classifiers paired with 30 isotonic calibrators, one pair for each split:
+# The calibration looks good but not perfect (not exactly on the diagonal). We
+# use a small number of bins because there are very few fraudulent cases in the
+# test data (less than 100 fraud cases per bin).:
+# %%
+target_test.value_counts()
+
+# %% [markdown]
+#
+# If we had a larger dataset, we could use more bins to get a finer grained
+# estimate of the calibration curve.
+#
+# Despite this lack of data, let's attempt to improve the calibration of our
+# classifier. Since we have little fraudulent data, we cannot afford to use a
+# held out calibration set. Instead we use a nested cross-fitting procedure
+# implemented in `CalibratedClassifierCV`: our original training set is
+# splitted 10 times into train and calibration subsets and we train 10
+# classifiers paired with 10 isotonic calibrators, one pair for each split:
 
 # %%
 from sklearn.calibration import CalibratedClassifierCV
@@ -474,7 +597,7 @@ from sklearn.model_selection import ShuffleSplit
 calibrated_estimator = CalibratedClassifierCV(
     model.best_estimator_,
     method="isotonic",
-    cv=ShuffleSplit(n_splits=30, test_size=0.2, random_state=42),
+    cv=ShuffleSplit(n_splits=10, test_size=0.2, random_state=42),
 ).fit(data_train, target_train)
 disp = CalibrationDisplay.from_estimator(
     calibrated_estimator, data_test, target_test, strategy="quantile", n_bins=3
@@ -507,78 +630,19 @@ print(
 # %% [markdown]
 #
 # It seems that this extra calibration step did improve the performance of our
-# model in terms of the business metric. However, since we have few fraudulent
-# case, the robustness of this improvement should better be assessed via an
-# outer cross-validation instead of using a single global train test split.
+# model in terms of the business metric. We are now very close to the business
+# metric value obtained with the fixed threshold found by
+# `TunedThresholdClassifierCV` on the uncalibrated model.
 #
-# ### Setting the decision threshold by direct business metric optimization
+# However, since we have very few fraudulent cases, this result should be
+# confirmed on a larger dataset with more cases. Alternatively the robustness
+# of this improvement should be assessed via an outer cross-validation instead
+# of using a single global train test split.
 #
-# In the previous section, we presented a method to compute the optimal decision
-# threshold but it relied on the assumption that the probabilistic classifier is
-# well-calibrated and that the business metric can be expressed as a cost matrix.
-#
-# Furthermore, the threshold computed with the closed form formula depends on
-# the amount of the transaction. Since we wanted to used a fixed threshold for
-# all decisions, we naively used the mean optimal threshold. This further
-# breaks any optimality guarantee.
-#
-# To avoid relying on such assumptions, we can instead tune a single decision
-# threshold by directly optimizing the average business metric. This
-# optimization is done through a grid-search over the decision threshold
-# involving a cross-validation. The class
-# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
-# performing this optimization.
-
-# %%
-from sklearn.model_selection import TunedThresholdClassifierCV
-
-tuned_model = TunedThresholdClassifierCV(
-    estimator=model.best_estimator_,
-    scoring=business_gain_scorer,
-    thresholds=100,
-    n_jobs=2,
-)
-tuned_model
+# Let's now explore if using a per-transaction variable threshold can further
+# improve this result.
 
 # %% [markdown]
-#
-# Since our business scorer requires the amount of each transaction, we need to pass
-# this information in the `fit` method. The
-# :class:`~sklearn.model_selection.TunedThresholdClassifierCV` is in charge of
-# automatically dispatching this metadata to the underlying scorer.
-
-# %%
-tuned_model.fit(data_train, target_train, amount=amount_train)
-
-# %% [markdown]
-#
-# Let's compare the decision threshold found by the model compared to our fixed global
-# threshold from the previous section.
-
-# %%
-tuned_model.best_threshold_
-
-# %% [markdown]
-#
-# The resulting threshold value is much lower than the default of 0.5 but quite
-# different from the mean optimal threshold computed from the closed-form
-# formula.
-#
-# Now, let's check the performance of our model with the tuned decision
-# threshold by computing the value of the business metric on the test set:
-
-# %%
-print(
-    "Benefit of logistic regression with a tuned threshold: "
-    f"{business_gain_scorer(tuned_model, data_test, target_test, amount=amount_test):,.2f}€"
-)
-
-# %% [markdown]
-#
-# We see that the obtained profit is quite similar (maybe slightly higher) to
-# the profit obtained with the previous way of setting a fixed decision
-# threshold.
-#
 # ### Variable optimal threshold
 #
 # As we previously mentioned, the optimal threshold depends on each the amount
@@ -589,8 +653,6 @@ print(
 # thresholds in the `predict` method:
 
 # %%
-
-
 class VariableThresholdClassifier:
 
     def __init__(self, classifier, variable_threshold):
