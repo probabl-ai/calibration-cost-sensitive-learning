@@ -315,7 +315,7 @@
         "pipliteUrls": [
           "./extensions/@jupyterlite/pyodide-kernel-extension/static/pypi/all.json?sha256=8410129b75a5560182e60e67735d1efad22cde00c42736ad5f8841351d33b617"
         ],
-        "pyodideUrl": "https://cdn.jsdelivr.net/pyodide/v0.27.1/full/pyodide.js"
+        "pyodideUrl": "https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js"
       }
     },
     "settingsOverrides": {
