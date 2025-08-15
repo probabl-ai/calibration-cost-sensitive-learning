@@ -1,0 +1,1936 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Handling prevalence shift in imbalanced classification problems &#8212; Probabilistic calibration of cost-sensitive learning</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'content/notebooks/prevalence_correction';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Cost-sensitive learning to optimize business metrics" href="cost_sensitive_learning.html" />
+    <link rel="prev" title="Imbalanced classification: pitfalls and solutions" href="imbalanced_classification.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.svg" class="logo__image only-light" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
+    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Probabilistic calibration of cost-sensitive learning - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../intro.html">
+                    Probabilistic classification and cost-sensitive learning
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">The problem of imbalanced classification</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="imbalanced_classification.html">Imbalanced classification: pitfalls and solutions</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Handling prevalence shift in imbalanced classification problems</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Cost-sensitive learning</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="cost_sensitive_learning.html">Cost-sensitive learning to optimize business metrics</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Deep-dive into classification metrics</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="classification_metrics.html">Choosing a classification metric</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Deep-dive into calibration</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="build_calibration_curve.html">What is a calibration curve?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="different_calibration_curves.html">Reading calibration curves</a></li>
+<li class="toctree-l1"><a class="reference internal" href="miscalibration_under_over_fit.html">Miscalibration caused by inappropriate hyperparameters</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/probabl-ai/calibration-cost-sensitive-learning" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/probabl-ai/calibration-cost-sensitive-learning/issues/new?title=Issue%20on%20page%20%2Fcontent/notebooks/prevalence_correction.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/content/notebooks/prevalence_correction.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Handling prevalence shift in imbalanced classification problems</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generating-process">Data generating process</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#answers">Answers:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prevalence-shift-induced-by-the-data-acquisition-process">Prevalence shift induced by the data acquisition process</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Answers:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-models-on-observed-test-data">Evaluating models on observed test data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-non-linear-models">Fitting non-linear models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#take-away-messages">Take away messages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#appendix-equivalence-between-the-two-post-hoc-correction-methods">Appendix: equivalence between the two post-hoc correction methods</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="handling-prevalence-shift-in-imbalanced-classification-problems">
+<h1>Handling prevalence shift in imbalanced classification problems<a class="headerlink" href="#handling-prevalence-shift-in-imbalanced-classification-problems" title="Link to this heading">#</a></h1>
+<p>The purpose of this study is to illustrate how to handle extreme class
+imbalance in the common setting where the <strong>data acquisition process itself
+corrupts the prevalence of the rare class</strong>.</p>
+<p>This setting is quite common in practice: for instance, to develop a
+computer-aided diagnosis system, the data acquisition process might collect
+data (feature values) for all known cases of a given rare disease of interest
+(the positive class): <strong>since the positive cases are rare, we don’t want to
+waste any of them</strong> and want include them all in our dataset. However, it
+would be <strong>impossible to collect feature values for all the negative
+subjects</strong> in the target population because they are too many of them: it
+would be too costly and might also cause ethical and privacy issues.</p>
+<p>Instead, we sample negative subjects from the population at random to measure
+their feature values only for those (and check that they do not have the
+disease).</p>
+<p>As a result, <strong>the prevalence of the positive class in the collected dataset
+does not reflect the prevalence of the positive class in the target
+population</strong>. Still, we do want to train a probabilistic model on the finite
+collected data that achieves the best performance possible when deployed on
+the target population. Furthermore, we want to conduct this performance
+evaluation despite the fact that we cannot directly measure the performance
+on the full target population at once. We will therefore need to:</p>
+<ul class="simple">
+<li><p><strong>adapt the training procedure</strong> to take the prevalence shift into account
+to learn a model that yields meaningful probabilistic predictions on the
+target population once deployed;</p></li>
+<li><p><strong>adapt the evaluation procedure</strong> to ensure that our performance
+evaluation computed from a test subset of our observed data points can
+accurately reflect the expected performance of our model once deployed
+despite the prevalence shift.</p></li>
+</ul>
+<p>The lack of match of prevalence between the collected dataset and the
+deployment setting is a result of cost or computational constraints that
+prevent us from training and evaluating our predictive model directly on the
+full target population. It is not the result of a modeling choice of the
+data-scientist.</p>
+<p>Note that the classes are extremely imbalanced in the target population but
+can also be (slightly) imbalanced in the collected dataset. We do not need
+the collected dataset to be perfectly balanced.</p>
+<p>In this study, we will illustrate how to handle such a setting by correcting
+the probabilistic classifier estimated from the observed data to be aligned
+with the target population. We will use synthetic data generated from a known
+data generating process so as to make it possible to check that our proposed
+training and evaluation methods can achieve that objective.</p>
+<section id="data-generating-process">
+<h2>Data generating process<a class="headerlink" href="#data-generating-process" title="Link to this heading">#</a></h2>
+<p>Let’s define a “true” data generating process that represent some fundamental
+mechanism about the world. The true data generating process is generally
+unknown, and the goal of machine learning is to approximate it as closely as
+possible from a finite sample of data points.</p>
+<p>Here, we want to simulate a binary classification problem where the target
+variable is a binary variable with a positive class that is very rare.</p>
+<p>The typical application domain could be medical diagnosis where the feature
+values are physiological measurements and the target variable is a binary
+indicator for the presence of a rare disease of interest. Other application
+domains with extreme imbalance are fraud detection, credit scoring,
+predictive maintenance, etc.</p>
+<p>For the sake of simplicity, we start this study by assuming that the data
+generating process is a linear model with a logistic link function: the
+features influence the probability of developing the disease but we expect
+them to provide only a partial information about the true risk as other
+unobserved factors may also influence disease development. We assume the
+unobserved factors to be independent of the observed features and all
+distribution to be stationary over time.</p>
+<p>We will later relax the linearity assumption but other assumptions will still
+apply.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">expit</span><span class="p">,</span> <span class="n">logit</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>  <span class="c1"># use float32 to save memory</span>
+<span class="n">n_features</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">true_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_features</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">true_intercept</span> <span class="o">=</span> <span class="o">-</span><span class="mi">6</span>  <span class="c1"># This will make the positive class very rare.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_from_linear_model</span><span class="p">(</span><span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
+    <span class="n">true_positive_proba</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">true_intercept</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">true_positive_proba</span><span class="p">)</span>
+    <span class="n">true_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+        <span class="p">[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_positive_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">true_positive_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]]</span>
+    <span class="p">)</span>
+
+    <span class="c1"># create pandas data structures for convenience</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">true_proba</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The world can generate a lot of data from a fixed stationary process. Some of that data
+cannot be accessed at the time of the study but we generate it anyway to be able to
+compute metrics on the future population.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">3_000_000</span>
+<span class="n">X_past</span><span class="p">,</span> <span class="n">y_past</span><span class="p">,</span> <span class="n">true_proba_past</span> <span class="o">=</span> <span class="n">sample_from_linear_model</span><span class="p">(</span>
+    <span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+<span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">,</span> <span class="n">true_proba_future</span> <span class="o">=</span> <span class="n">sample_from_linear_model</span><span class="p">(</span>
+    <span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_past</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># in MB</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(60.000132)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_past</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.int64(10471)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">true_positive_rate_past</span> <span class="o">=</span> <span class="n">y_past</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">true_positive_rate_past</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.003490333333333333)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let us start this study by cheating and compute the metrics obtained from the
+true probabilities computed from the data generating process for the future
+feature values.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">true_positive_rate_future</span> <span class="o">=</span> <span class="n">y_future</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">true_positive_rate_future</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.0035813333333333335)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">true_proba_future</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>count    3.000000e+06
+mean     3.563308e-03
+std      3.685873e-03
+min      3.868309e-05
+25%      1.385324e-03
+50%      2.470968e-03
+75%      4.405791e-03
+max      1.577512e-01
+dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">roc_auc_score</span><span class="p">,</span> <span class="n">log_loss</span>
+
+<span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_future</span><span class="p">,</span> <span class="n">true_proba_future</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261289909972
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_future</span><span class="p">,</span> <span class="n">true_proba_future</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022418940888123372
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_past</span><span class="p">,</span> <span class="n">true_proba_past</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.021913294606625597
+</pre></div>
+</div>
+</div>
+</div>
+<section id="questions">
+<h3>Questions:<a class="headerlink" href="#questions" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>What is the best possible value for the ROC AUC score (in general)?</p></li>
+<li><p>What is the best possible value for the log-loss (in general)?</p></li>
+<li><p>Why cannot we reach these values even when using the true probabilities?</p></li>
+<li><p>What is the name name of the error rate obtained when computed from the
+true probabilities?</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO: write your answers here before scrolling down.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="answers">
+<h3>Answers:<a class="headerlink" href="#answers" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>The best possible value for the ROC AUC score is 1.0.</p></li>
+<li><p>The best possible value for the log-loss is 0.0.</p></li>
+<li><p>We cannot reach these values because the true probabilities reflect some
+inherent uncertainty in the data: the value of the target variable is not
+deterministic given the available features. The outcome can also be
+influenced by unobserved factors that are not captured by the features.</p></li>
+<li><p>The error rate obtained from the true probabilities is called the “Bayes
+error rate” or “irreducible error rate”.</p></li>
+</ul>
+<p>Because we are curious, let’s continue with the cheating and check that a fit
+of logistic regression on the full population (with nearly unlimited data
+points) would be able to approximately recover the true coefficients and
+intercept.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="n">cheating_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ModelComparator</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">context_name</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span> <span class="o">=</span> <span class="n">sample_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context_name</span> <span class="o">=</span> <span class="n">context_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">score_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">predicted_proba</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;Model&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;ROC AUC (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">predicted_proba</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                    <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="sa">f</span><span class="s2">&quot;log-loss (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">log_loss</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                    <span class="n">predicted_proba</span><span class="p">,</span>
+                    <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_linear_data_generating_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span> <span class="o">=</span> <span class="n">true_coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span> <span class="o">=</span> <span class="n">true_intercept</span>
+        <span class="n">oracle_proba</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">oracle_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+            <span class="p">[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">oracle_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">oracle_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="s2">&quot;Data generating model&quot;</span><span class="p">,</span> <span class="n">oracle_proba</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">score_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_linear_model_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">column_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;true_coef&quot;</span><span class="p">):</span>
+            <span class="n">column_data</span><span class="p">[</span><span class="s2">&quot;Data generating model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">column_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">model_name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span>
+                <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">column_data</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="s2">&quot;intercept&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">]),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Comparison of the true and learned model parameters&quot;</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Parameter value&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Parameter name&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="n">population_comparator</span> <span class="o">=</span> <span class="n">ModelComparator</span><span class="p">(</span><span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">,</span> <span class="n">context_name</span><span class="o">=</span><span class="s2">&quot;population&quot;</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">register_linear_data_generating_model</span><span class="p">(</span><span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;LogReg fit on future data&quot;</span><span class="p">,</span> <span class="n">cheating_model</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">plot_linear_model_parameters</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/e743c34b8cee7ff58113cfd3859f4bf4949e6ca7e047080b1d3f002de37594ee.png" src="../../_images/e743c34b8cee7ff58113cfd3859f4bf4949e6ca7e047080b1d3f002de37594ee.png" />
+</div>
+</div>
+<p>We can see that the learned model parameters nearly recover the data
+generating parameters. This is expected since the logistic regression model
+without penalty is well specified for this data generating process and that
+we have a large number of data points.</p>
+</section>
+</section>
+<section id="prevalence-shift-induced-by-the-data-acquisition-process">
+<h2>Prevalence shift induced by the data acquisition process<a class="headerlink" href="#prevalence-shift-induced-by-the-data-acquisition-process" title="Link to this heading">#</a></h2>
+<p>The following code simulate what could happen in practice when working in
+such a setting: we subsample the simulated population to collect all the
+positive cases and a random sample of negatives from the past data. Mere
+mortal data scientists cannot <code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code> from the future, unfortunately.</p>
+<p>We subsample only the negative cases (control group) to reflect the fact that
+the negative data is less interesting than the rare positive cases: as such
+the negative data is in general not archived fully in databases, or even, the
+features of most of the negative cases are not acquired at all in the first
+place.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mask_positive_target</span> <span class="o">=</span> <span class="n">y_past</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="n">X_positive</span> <span class="o">=</span> <span class="n">X_past</span><span class="p">[</span><span class="n">mask_positive_target</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">y_positive</span> <span class="o">=</span> <span class="n">y_past</span><span class="p">[</span><span class="n">mask_positive_target</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">negative_indices</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="o">~</span><span class="n">mask_positive_target</span><span class="p">),</span>
+    <span class="n">size</span><span class="o">=</span><span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_positive</span><span class="p">),</span>
+    <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">X_observed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_positive</span><span class="p">,</span> <span class="n">X_past</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">negative_indices</span><span class="p">]])</span>
+<span class="n">y_observed</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">y_positive</span><span class="p">,</span> <span class="n">y_past</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">negative_indices</span><span class="p">]])</span>
+
+<span class="n">X_observed</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(41884, 5)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">observed_positive_rate</span> <span class="o">=</span> <span class="n">y_observed</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_observed</span><span class="p">)</span>
+<span class="n">observed_positive_rate</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.25)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now that the data is collected, we can train-test split it to reflect what a
+data scientist would do in practice to train and evaluate their model from
+the observed data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
+
+
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X_observed</span><span class="p">,</span> <span class="n">y_observed</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logreg_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+<span class="n">logreg_uncorrected</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Uncorrected LogReg&quot;</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">plot_linear_model_parameters</span><span class="p">()</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><img alt="../../_images/236e7661430a96d36db3fb17feaa268db83ef692f2c047a6291d427d77dd9ed6.png" src="../../_images/236e7661430a96d36db3fb17feaa268db83ef692f2c047a6291d427d77dd9ed6.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">class_weight_for_prevalence_correction</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_positive_rate_past</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="n">true_positive_rate_past</span> <span class="o">/</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+<span class="p">}</span>
+<span class="n">class_weight_for_prevalence_correction</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{0: np.float64(1.3305008249495271), 1: np.float64(0.013904234481009447)}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logreg_weighted</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span>
+    <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight_for_prevalence_correction</span><span class="p">,</span> <span class="o">**</span><span class="n">logreg_params</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Weight-corrected LogReg&quot;</span><span class="p">,</span> <span class="n">logreg_weighted</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">plot_linear_model_parameters</span><span class="p">()</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected LogReg</th>
+      <td>0.728445</td>
+      <td>0.022421</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><img alt="../../_images/d0e8f9d2171125c8cb1cb76a5e4e63aadff8d9b43f93f6a1ae75b6e1df893fb4.png" src="../../_images/d0e8f9d2171125c8cb1cb76a5e4e63aadff8d9b43f93f6a1ae75b6e1df893fb4.png" />
+</div>
+</div>
+<p>Let’s check that we can get exactly the same results using <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> in
+<code class="docutils literal notranslate"><span class="pre">fit</span></code> instead of <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> in the constructor.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sample_weight_for_prevalence_correction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">y_train</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">class_weight_for_prevalence_correction</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">class_weight_for_prevalence_correction</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">logreg_weighted2</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight_for_prevalence_correction</span>
+<span class="p">)</span>
+<span class="n">logreg_weighted2</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">logreg_weighted2</span><span class="o">.</span><span class="n">intercept_</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.11746132, -0.13513052,  0.62930597,  0.11434373, -0.55310262]]),
+ array([-6.0258028]))
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">logreg_weighted</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">logreg_weighted2</span><span class="o">.</span><span class="n">coef_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">logreg_weighted</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">logreg_weighted2</span><span class="o">.</span><span class="n">intercept_</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<p>From the above results, it seems that the uncorrected linear model and the
+weight-corrected linear models only significantly differ by the value of the
+intercept parameter.</p>
+<p>Indeed, it can be shown that the intercept of a logistic regression model can
+be corrected by shifting it by the difference of the logits of the prevalence
+in the target population and the training set.</p>
+<p>See for instance: <a class="reference external" href="https://stats.stackexchange.com/a/68726/2150">https://stats.stackexchange.com/a/68726/2150</a></p>
+<p>Recall that the <code class="docutils literal notranslate"><span class="pre">logit</span></code> function is defined as:</p>
+<div class="math notranslate nohighlight">
+\[ \text{logit}(p) = \log\left(\frac{p}{1 - p}\right) \in \mathbb{R} \text{
+for any } p \in [0, 1] \]</div>
+<p>Let’s implement this intercept correction as follows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit</span>
+
+
+<span class="n">logreg_intercept_corrected</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+
+<span class="n">intercept_shift</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">true_positive_rate_past</span><span class="p">)</span> <span class="o">-</span> <span class="n">logit</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">logreg_intercept_corrected</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">+=</span> <span class="n">intercept_shift</span>
+
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span>
+    <span class="s2">&quot;Intercept-corrected LogReg&quot;</span><span class="p">,</span> <span class="n">logreg_intercept_corrected</span>
+<span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">plot_linear_model_parameters</span><span class="p">()</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected LogReg</th>
+      <td>0.728445</td>
+      <td>0.022421</td>
+    </tr>
+    <tr>
+      <th>Intercept-corrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><img alt="../../_images/968c3e4d17067de7562cb99ae5ead47d33f442398245a4749bfd7d265493609e.png" src="../../_images/968c3e4d17067de7562cb99ae5ead47d33f442398245a4749bfd7d265493609e.png" />
+</div>
+</div>
+<p>We recover an intercept value that is very close to the intercept of the
+data generating process.</p>
+<p>Let’s now consider a more generic post-hoc prevalence correction that does
+not require the base model to be a logistic regression model with an explicit
+<code class="docutils literal notranslate"><span class="pre">intercept_</span></code> parameter.</p>
+<p>Charles Elkan proposed a closed-form formula to correct the predicted
+probabilities of any binary classifier:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">elkan_prevalence_correction</span><span class="p">(</span>
+    <span class="n">uncorrected_positive_proba</span><span class="p">,</span> <span class="n">target_prevalence</span><span class="p">,</span> <span class="n">observed_prevalence</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Post-hoc prevalence correction for binary classifiers.</span>
+
+<span class="sd">    Given a classifier to be trained on a class-conditional subsampled dataset</span>
+<span class="sd">    and an estimate of the prevalence of the positive class in the target</span>
+<span class="sd">    population, estimate the conditional probability of the positive class for</span>
+<span class="sd">    each data point in the test set.</span>
+
+<span class="sd">    This meta-estimator implements the formula of Theorem 2 of [Elkan 2001]:</span>
+
+<span class="sd">    The Foundations of Cost-Sensitive Learning, Charles Elkan, IJCAI 2001</span>
+<span class="sd">    https://cseweb.ucsd.edu/~elkan/rescale.pdf</span>
+
+<span class="sd">    p&#39; = b&#39;(p - pb) / (b - pb + b&#39;p - b&#39;b)</span>
+
+<span class="sd">    with:</span>
+
+<span class="sd">    - p&#39; is the corrected estimate of P_target(y=1|X=x) on the target population.</span>
+<span class="sd">    - p is the observed estimate of P_data(y=1|X=x) on the training set.</span>
+<span class="sd">    - b&#39; is the prevalence of the positive class in the target population.</span>
+<span class="sd">    - b is the observed prevalence of the positive class measured in the</span>
+<span class="sd">      training set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># b&#39;(p - pb)</span>
+    <span class="n">numerator</span> <span class="o">=</span> <span class="n">target_prevalence</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">uncorrected_positive_proba</span> <span class="o">-</span> <span class="p">(</span><span class="n">uncorrected_positive_proba</span> <span class="o">*</span> <span class="n">observed_prevalence</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="c1"># b - pb + b&#39;p - b&#39;b</span>
+    <span class="n">denominator</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">observed_prevalence</span>
+        <span class="o">-</span> <span class="p">(</span><span class="n">uncorrected_positive_proba</span> <span class="o">*</span> <span class="n">observed_prevalence</span><span class="p">)</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">target_prevalence</span> <span class="o">*</span> <span class="n">uncorrected_positive_proba</span><span class="p">)</span>
+        <span class="o">-</span> <span class="p">(</span><span class="n">target_prevalence</span> <span class="o">*</span> <span class="n">observed_prevalence</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">numerator</span> <span class="o">/</span> <span class="n">denominator</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can wrap this correction function into a meta-estimator compatible
+with the scikit-learn API:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">clone</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">PostHocPrevalenceCorrection</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_positive_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_positive_rate</span> <span class="o">=</span> <span class="n">target_positive_rate</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">estimator</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">estimator</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observed_positive_rate_</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">uncorrected_proba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">corrected_positive_proba</span> <span class="o">=</span> <span class="n">elkan_prevalence_correction</span><span class="p">(</span>
+            <span class="n">uncorrected_proba</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_positive_rate</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observed_positive_rate_</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">corrected_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">uncorrected_proba</span><span class="p">)</span>
+        <span class="n">corrected_proba</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">corrected_positive_proba</span>
+        <span class="n">corrected_proba</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">corrected_positive_proba</span>
+        <span class="k">return</span> <span class="n">corrected_proba</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">proba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">proba</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+
+<span class="n">logreg_post_hoc</span> <span class="o">=</span> <span class="n">PostHocPrevalenceCorrection</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">),</span>
+    <span class="n">target_positive_rate</span><span class="o">=</span><span class="n">true_positive_rate_past</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>For a Logistic Regression model, this generic post-hoc imbalance correction
+should be strictly equivalent to our previously introduced post-hoc
+correction of the intercept parameter:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+    <span class="n">logreg_post_hoc</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_future</span><span class="p">),</span>
+    <span class="n">logreg_intercept_corrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_future</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<p>A proof of the mathematical equivalence is given as an appendix at the end of
+this notebook.</p>
+<p>Therefore we should get exactly the same evaluation metric values as before:</p>
+<p>population_comparator.register_model(“Post-hoc corrected LogReg”, logreg_post_hoc)
+population_comparator.score_table()</p>
+<section id="id1">
+<h3>Questions:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>Consider the two kinds of post-hoc prevalence correction presented above:</p>
+<ul class="simple">
+<li><p>what happens when we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>?</p></li>
+<li><p>is it possible to get <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> values that are not in <span class="math notranslate nohighlight">\([0, 1]\)</span> by
+setting extreme values for <code class="docutils literal notranslate"><span class="pre">target_positive_rate</span></code>?</p></li>
+<li><p>why is the ROC-AUC score not affected by any of the post-hoc correction methods?</p></li>
+</ul>
+<p>Recall that the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function is takes any real number as input and
+returns a value in [0, 1]:</p>
+<div class="math notranslate nohighlight">
+\[ \text{expit}(x) = \frac{1}{1 + e^{-x}} \in [0, 1] \text{ for any } x \in
+\mathbb{R} \]</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">expit</span></code> function inverse function is the logit function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># TODO: do not read the solution before writing done your answers ;)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="id2">
+<h3>Answers:<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>When we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>, the intercept
+correction <code class="docutils literal notranslate"><span class="pre">logit(target_positive_rate)</span> <span class="pre">-</span> <span class="pre">y_train.mean()</span></code> will be zero,
+hence no correction is applied.</p></li>
+<li><p>Similarly, setting <span class="math notranslate nohighlight">\(b = b'\)</span> in the formula of the docstring of
+<code class="docutils literal notranslate"><span class="pre">elkan_prevalence_correction</span></code> will cause the expression to simplify to <span class="math notranslate nohighlight">\(p =
+p'\)</span>.</p></li>
+<li><p>Shifting the intercept of a logistic regression model can never make its
+predictions go outside of the [0, 1] interval since is prediction function
+is <code class="docutils literal notranslate"><span class="pre">expit(X</span> <span class="pre">&#64;</span> <span class="pre">coef</span> <span class="pre">+</span> <span class="pre">intercept)</span></code>: the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function is defined for all
+real numbers and maps them to the [0, 1] interval.</p></li>
+<li><p>For <code class="docutils literal notranslate"><span class="pre">elkan_prevalence_correction</span></code>, the result is less obvious but we can
+check empirically that the corrected probabilities are also in [0, 1] by
+tweaking the inputs of the plotting snippet below.</p></li>
+<li><p>Both correction method are monotonic transformations of the predicted
+probabilities, hence they preserve the order of the predictions. As a result,
+the relative ranking of the instances remains unchanged and therefore the ROC-AUC
+score is not affected by any of the post-hoc correction methods.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">target_prevalence</span><span class="p">,</span> <span class="n">observed_prevalence</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),</span>
+    <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),</span>
+    <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+    <span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+<span class="p">]:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">p</span><span class="p">,</span>
+        <span class="n">elkan_prevalence_correction</span><span class="p">(</span>
+            <span class="n">p</span><span class="p">,</span>
+            <span class="n">target_prevalence</span><span class="o">=</span><span class="n">target_prevalence</span><span class="p">,</span>
+            <span class="n">observed_prevalence</span><span class="o">=</span><span class="n">observed_prevalence</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">label</span><span class="o">=</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Target prevalence: </span><span class="si">{</span><span class="n">target_prevalence</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;observed prevalence: </span><span class="si">{</span><span class="n">observed_prevalence</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Observed P(y=1|X=x)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Corrected P(y=1|X=x)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Elkan Prevalence Correction&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/717875079ff810c2ad3518b2e6fafc3bbeed92b514a5168dd639dc5b163b4f92.png" src="../../_images/717875079ff810c2ad3518b2e6fafc3bbeed92b514a5168dd639dc5b163b4f92.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="evaluating-models-on-observed-test-data">
+<h2>Evaluating models on observed test data<a class="headerlink" href="#evaluating-models-on-observed-test-data" title="Link to this heading">#</a></h2>
+<p>As we saw above, we have several ways to correct the predictions of a
+classifier to account for difference of class distribution between the
+observed training data and the target population.</p>
+<p>However, data-scientists do not have access to the future population to
+assess the expected performance of their model on the future population.</p>
+<p>Instead, they can only evaluate the model on the observed test data. However,
+the observed test data: in our case, the number of negatives cases is much
+lower in the observed data (train or test) than in the target population.</p>
+<p>If we naively evaluate the model on the observed test data, we will get
+misleading results: the model will be evaluated on a test set that does not
+reflect the true class prevalence, hence calibration sensitive losses such as
+the log-loss will give very inaccurate estimates of the population log-loss:</p>
+<p>log_loss(y_test, logreg_uncorrected.predict_proba(X_test))</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_future</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_future</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26771874332772677
+</pre></div>
+</div>
+</div>
+</div>
+<p>Therefore, we need to apply the same class ratio correction to the evaluation
+set. Scikit-learn metric functions usually do not provide a <code class="docutils literal notranslate"><span class="pre">class_weight</span></code>
+parameter but they often provide a <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> parameter.</p>
+<p>Let’s evaluate the log-loss of the uncorrected model on the test set with the
+sample weights and check that it correctly estimate the population log-loss
+that same model:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sample_weight_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+    <span class="n">y_test</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_positive_rate_past</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+    <span class="n">true_positive_rate_past</span> <span class="o">/</span> <span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span>
+    <span class="n">y_test</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight_test</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2689377943256687
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_future</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_future</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26771874332772677
+</pre></div>
+</div>
+</div>
+</div>
+<p>The test data is a comparatively small finite set, so the estimation of the
+population log-loss is not perfect but close enough and the weighting definitely
+helps obtain metric values that are aligned with the expected population log-loss.</p>
+<p>Let’s now evaluate one of the corrected models:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span>
+    <span class="n">y_test</span><span class="p">,</span>
+    <span class="n">logreg_intercept_corrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span>
+    <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight_test</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.021907368827423234
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_future</span><span class="p">,</span> <span class="n">logreg_intercept_corrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_future</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420456136417546
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can see that weighting the test observed makes it possible to approximate
+the population log-loss (at least up to 2 to 3 decimal places in this case).</p>
+<p>Let’s improve our evaluation tools to consolidate all scores for all models:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="fitting-non-linear-models">
+<h2>Fitting non-linear models<a class="headerlink" href="#fitting-non-linear-models" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
+
+<span class="n">gbdt_uncorrected</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Uncorrected GBDT&quot;</span><span class="p">,</span> <span class="n">gbdt_uncorrected</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected LogReg</th>
+      <td>0.728445</td>
+      <td>0.022421</td>
+    </tr>
+    <tr>
+      <th>Intercept-corrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+    <tr>
+      <th>Uncorrected GBDT</th>
+      <td>0.722093</td>
+      <td>0.269909</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gbdt_weighted</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight_for_prevalence_correction</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Weight-corrected GBDT&quot;</span><span class="p">,</span> <span class="n">gbdt_weighted</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected LogReg</th>
+      <td>0.728445</td>
+      <td>0.022421</td>
+    </tr>
+    <tr>
+      <th>Intercept-corrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+    <tr>
+      <th>Uncorrected GBDT</th>
+      <td>0.722093</td>
+      <td>0.269909</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected GBDT</th>
+      <td>0.718506</td>
+      <td>0.024407</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gbdt_post_hoc</span> <span class="o">=</span> <span class="n">PostHocPrevalenceCorrection</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">target_positive_rate</span><span class="o">=</span><span class="n">true_positive_rate_past</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Post-hoc corrected GBDT&quot;</span><span class="p">,</span> <span class="n">gbdt_post_hoc</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected LogReg</th>
+      <td>0.728445</td>
+      <td>0.022421</td>
+    </tr>
+    <tr>
+      <th>Intercept-corrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+    <tr>
+      <th>Uncorrected GBDT</th>
+      <td>0.722093</td>
+      <td>0.269909</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected GBDT</th>
+      <td>0.718506</td>
+      <td>0.024407</td>
+    </tr>
+    <tr>
+      <th>Post-hoc corrected GBDT</th>
+      <td>0.722093</td>
+      <td>0.022518</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="take-away-messages">
+<h2>Take away messages<a class="headerlink" href="#take-away-messages" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>It is possible to correct a binary classifier trained on observed data to
+correctly account for differences of prevalence between the training set
+and the target populations.</p></li>
+<li><p>This correction can be achieved either via training the model with
+appropriate class or sample weights or by applying a post-hoc correction
+method to the predicted probabilities.</p></li>
+<li><p>In the case of a linear model, the post-hoc correction can be achieved by
+adjusting the model’s intercept based on the difference of the logits of
+the two prevalence values.</p></li>
+<li><p>For other estimators that do not have an explicit intercept parameter, this
+can be achieved by applying a (monotonic) transformation to the predicted
+probabilities.</p></li>
+<li><p>Since this correction is monotonic, the order of the predicted
+probabilities is preserved and therefore the ROC AUC score is not affected.</p></li>
+<li><p>It is possible to estimate the expected performance of the model on the
+target population only from the finite, prevalence-shifted sample by
+applying the same weight-based correction to the evaluation metrics.</p></li>
+</ul>
+<p>Open question: the weight-based training prevalence correction and the
+post-training closed-form prevalence correction methods can yield slightly
+different results in practice (although both should converge to the Bayes
+optimal classifier as the sample size increases). Are there reasons to favor
+one over the other in the finite sample case?</p>
+</section>
+<section id="appendix-equivalence-between-the-two-post-hoc-correction-methods">
+<h2>Appendix: equivalence between the two post-hoc correction methods<a class="headerlink" href="#appendix-equivalence-between-the-two-post-hoc-correction-methods" title="Link to this heading">#</a></h2>
+<p>In the following, we show that the logit based shift of the intercept is
+equivalent to the Elkan’s formula.</p>
+<p>Let’s first check empirically with matplotlib:</p>
+<p>def logit_prevalence_correction(p, target_prevalence, observed_prevalence):
+corrected_logits = logit(p) + logit(target_prevalence) - logit(observed_prevalence)
+return expit(corrected_logits)</p>
+<p>p = np.linspace(0, 1, 100)</p>
+<p>target_prevalence = 0.01
+observed_prevalence = 0.25
+plt.plot(
+p,
+elkan_prevalence_correction(
+p,
+target_prevalence=target_prevalence,
+observed_prevalence=observed_prevalence,
+),
+label=”Elkan’s formula”,
+)
+plt.plot(
+p,
+logit_prevalence_correction(
+p,
+target_prevalence=target_prevalence,
+observed_prevalence=observed_prevalence,
+),
+linestyle=”–“,
+label=”Difference of prevalence logits”,
+)
+plt.xlabel(“Observed P(y=1|X)”)
+plt.ylabel(“Corrected P(y=1|X)”)
+_ = plt.legend()</p>
+<p>Let’s ask Claude to check that <span class="math notranslate nohighlight">\(p' = \frac{b'(p - pb)}{b - pb + b'p - b'b}\)</span>
+can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expit}(\text{logit}(p) + \text{logit}(b') -
+\text{logit}(b))\)</span> (reusing the notation of [Elkan 2001]):</p>
+<p>Starting with the right-hand side: $<span class="math notranslate nohighlight">\(p' = \text{expit}(\text{logit}(p) +
+\text{logit}(b') - \text{logit}(b))\)</span>$</p>
+<p>Recall that:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\text{logit}(x) = \ln\left(\frac{x}{1-x}\right)\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\text{expit}(x) = \frac{e^x}{1 + e^x} = \frac{1}{1 + e^{-x}}\)</span></p></li>
+</ul>
+<p>Expand the argument of expit:</p>
+<div class="math notranslate nohighlight">
+\[\text{logit}(p) + \text{logit}(b') - \text{logit}(b) =
+\ln\left(\frac{p}{1-p}\right) + \ln\left(\frac{b'}{1-b'}\right) -
+\ln\left(\frac{b}{1-b}\right)\]</div>
+<p>Using logarithm properties: $<span class="math notranslate nohighlight">\(= \ln\left[\frac{p}{1-p} \times \frac{b'}{1-b'}
+\times \frac{1-b}{b}\right] = \ln\left[\frac{p \cdot b' \cdot (1-b)}{(1-p)
+\cdot (1-b') \cdot b}\right]\)</span>$</p>
+<p>Apply expit function:</p>
+<div class="math notranslate nohighlight">
+\[p' = \frac{1}{1 + e^{-\ln\left[\frac{p \cdot b' \cdot (1-b)}{(1-p) \cdot
+(1-b') \cdot b}\right]}}\]</div>
+<p>Since <span class="math notranslate nohighlight">\(e^{-\ln(x)} = \frac{1}{x}\)</span>: $<span class="math notranslate nohighlight">\(p' = \frac{1}{1 + \frac{(1-p) \cdot
+(1-b') \cdot b}{p \cdot b' \cdot (1-b)}}\)</span>$</p>
+<p>Multiplying numerator and denominator by <span class="math notranslate nohighlight">\(p \cdot b' \cdot (1-b)\)</span>: $<span class="math notranslate nohighlight">\(p' =
+\frac{p \cdot b' \cdot (1-b)}{p \cdot b' \cdot (1-b) + (1-p) \cdot (1-b')
+\cdot b}\)</span>$</p>
+<p>Expand the denominator:</p>
+<div class="math notranslate nohighlight">
+\[p \cdot b' \cdot (1-b) + (1-p) \cdot (1-b') \cdot b$$ $$= pb'(1-b) +
+(1-p)(1-b')b$$ $$= pb' - pb'b + b - pb - b'b + pb'b\]</div>
+<p>The <span class="math notranslate nohighlight">\(pb'b\)</span> terms cancel: $<span class="math notranslate nohighlight">\(= pb' + b - pb - b'b\)</span><span class="math notranslate nohighlight">\( \)</span><span class="math notranslate nohighlight">\(= b'p - pb + b - b'b\)</span><span class="math notranslate nohighlight">\(
+\)</span><span class="math notranslate nohighlight">\(= b - pb + b'p - b'b\)</span>$</p>
+<p>Simplify the numerator:</p>
+<div class="math notranslate nohighlight">
+\[p \cdot b' \cdot (1-b) = pb'(1-b) = pb' - pb'b = b'p - b'pb = b'(p - pb)\]</div>
+<p>Therefore: $<span class="math notranslate nohighlight">\(p' = \frac{b'(p - pb)}{b - pb + b'p - b'b}\)</span>$</p>
+<p>This matches exactly the formula of [Elkan 2001], completing the proof.
+<span class="math notranslate nohighlight">\(\square\)</span></p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./content/notebooks"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="imbalanced_classification.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Imbalanced classification: pitfalls and solutions</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cost_sensitive_learning.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Cost-sensitive learning to optimize business metrics</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generating-process">Data generating process</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#answers">Answers:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prevalence-shift-induced-by-the-data-acquisition-process">Prevalence shift induced by the data acquisition process</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Answers:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-models-on-observed-test-data">Evaluating models on observed test data</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-non-linear-models">Fitting non-linear models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#take-away-messages">Take away messages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#appendix-equivalence-between-the-two-post-hoc-correction-methods">Appendix: equivalence between the two post-hoc correction methods</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Guillaume Lemaitre & Olivier Grisel
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
