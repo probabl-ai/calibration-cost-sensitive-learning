@@ -50,6 +50,9 @@
 # with the target population. We will use synthetic data generated from a known
 # data generating process so as to make it possible to check that our proposed
 # training and evaluation methods can achieve that objective.
+#
+# <img src="../images/prevalence_correction_diagram.svg" width="800"
+# alt="Prevalence Correction Diagram"/>
 
 # %% [markdown]
 # ## Data generating process
