@@ -927,8 +927,25 @@ population_comparator_nonlinear.register_models(
 from sklearn.ensemble import HistGradientBoostingClassifier
 
 # TODO: implement me before scrolling to read and execute the solution!
-
-
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Solution below:
 
 # %%
