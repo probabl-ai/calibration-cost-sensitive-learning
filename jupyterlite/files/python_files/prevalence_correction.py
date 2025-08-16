@@ -1093,16 +1093,23 @@ _ = plt.legend()
 # Since $e^{-\ln(x)} = \frac{1}{x}$: $$p' = \frac{1}{1 + \frac{(1-p) \cdot
 # (1-b') \cdot b}{p \cdot b' \cdot (1-b)}}$$
 #
-# Multiplying numerator and denominator by $p \cdot b' \cdot (1-b)$: $$p' =
-# \frac{p \cdot b' \cdot (1-b)}{p \cdot b' \cdot (1-b) + (1-p) \cdot (1-b')
+# Multiplying numerator and denominator by $p \cdot b' \cdot (1-b)$:
+#
+# $$p' = \frac{p \cdot b' \cdot (1-b)}{p \cdot b' \cdot (1-b) + (1-p) \cdot (1-b')
 # \cdot b}$$
 #
 # Expand the denominator:
 #
-# $$p \cdot b' \cdot (1-b) + (1-p) \cdot (1-b') \cdot b$$ $$= pb'(1-b) +
-# (1-p)(1-b')b$$ $$= pb' - pb'b + b - pb - b'b + pb'b$$
+# $$p \cdot b' \cdot (1-b) + (1-p) \cdot (1-b') \cdot b$$
 #
-# The $pb'b$ terms cancel: $$= pb' + b - pb - b'b$$ $$= b'p - pb + b - b'b$$
+# $$= pb'(1-b) + (1-p)(1-b')b$$
+#
+# $$= pb' - pb'b + b - pb - b'b + pb'b$$
+#
+# The $pb'b$ terms cancel:
+#
+# $$= pb' + b - pb - b'b$$
+#
 # $$= b - pb + b'p - b'b$$
 #
 # Simplify the numerator:
