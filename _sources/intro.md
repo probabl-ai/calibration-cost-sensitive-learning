@@ -11,7 +11,7 @@ and how to derive optimal decision policies for a user specified cost model.
 
 - [Video of the presentation made at PyData Paris 2024](https://www.youtube.com/watch?v=-gYnfA0e5ic)
 
-### Notebooks [![Launch JupyterLite](/images/jupyterlite_badge.svg 'Our JupyterLite website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite/tree)
+### Notebooks [![Launch JupyterLite](/images/jupyterlite_badge.svg 'Our JupyterLite website')](https://probabl-ai.github.io/calibration-cost-sensitive-learning/jupyterlite/lab)
 
 ```{tableofcontents}
 ```
