@@ -214,24 +214,22 @@ class ModelComparator:
         self.sample_weight = sample_weight
         self.context_name = context_name
         self.models = {}
-        self.evaluation_records = []
+        self.evaluation_records = {}
 
     def score_model(self, model_name, predicted_proba):
-        self.evaluation_records.append(
-            {
-                "Model": model_name,
-                f"ROC AUC ({self.context_name})": roc_auc_score(
-                    self.y,
-                    predicted_proba[:, 1],
-                    sample_weight=self.sample_weight,
-                ),
-                f"log-loss ({self.context_name})": log_loss(
-                    self.y,
-                    predicted_proba,
-                    sample_weight=self.sample_weight,
-                ),
-            }
-        )
+        self.evaluation_records[model_name] = {
+            "Model": model_name,
+            f"ROC AUC ({self.context_name})": roc_auc_score(
+                self.y,
+                predicted_proba[:, 1],
+                sample_weight=self.sample_weight,
+            ),
+            f"log-loss ({self.context_name})": log_loss(
+                self.y,
+                predicted_proba,
+                sample_weight=self.sample_weight,
+            ),
+        }
         return self
 
     def register_linear_data_generating_model(self, true_coef, true_intercept):
@@ -249,8 +247,15 @@ class ModelComparator:
         self.score_model(model_name, model.predict_proba(self.X))
         return self
 
+    def register_models(self, models):
+        for model_name, model in models.items():
+            self.register_model(model_name, model)
+        return self
+
     def score_table(self):
-        return pd.DataFrame(self.evaluation_records).round(6).set_index("Model")
+        return (
+            pd.DataFrame(self.evaluation_records.values()).round(6).set_index("Model")
+        )
 
     def plot_linear_model_parameters(self):
         column_data = {}
@@ -696,7 +701,13 @@ log_loss(y_future, logreg_intercept_corrected.predict_proba(X_future))
 # Let's improve our evaluation tools to consolidate all scores for all models:
 
 # %%
-# TODO
+
+weighted_test_set_comparator = ModelComparator(
+    X_test, y_test, context_name="weighted test set", sample_weight=sample_weight_test
+).register_models(population_comparator.models)
+weighted_test_set_comparator.score_table().merge(
+    population_comparator.score_table(), on="Model"
+)
 
 
 # %% [markdown]
