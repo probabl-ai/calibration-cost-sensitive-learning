@@ -82,6 +82,7 @@
 # %%
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from scipy.special import expit, logit
 
 rng = np.random.default_rng(0)
@@ -166,19 +167,10 @@ log_loss(y_past, true_proba_past)
 #   true probabilities?
 
 # %%
-# TODO: write your answers here before scrolling down.
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+# Write your answers below before scrolling down.
+
+
+# Do not read the answers before thinking by yourself!
 
 # %% [markdown]
 #
@@ -566,14 +558,11 @@ population_comparator.score_table()
 # The `expit` function inverse function is the logit function.
 
 # %%
-#
-#
-#
-#
-#
-#
-#
-# TODO: do not read the solution before writing done your answers ;)
+# %%
+# Write your answers below before scrolling down.
+
+
+# Do not read the answers before thinking by yourself!
 
 # %% [markdown]
 #
@@ -598,8 +587,6 @@ population_comparator.score_table()
 #   score is not affected by any of the post-hoc correction methods.
 
 # %%
-import matplotlib.pyplot as plt
-
 p = np.linspace(0, 1, 100)
 for target_prevalence, observed_prevalence in [
     (0.01, 0.25),
@@ -837,25 +824,11 @@ population_comparator_nonlinear.register_models(
 # What can you conclude from the above results? Is this expected?
 
 # %%
-# TODO: write your answer here before reading the answers below.
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+# %%
+# Write your answers below before scrolling down.
+
+
+# Do not read the answers before thinking by yourself!
 
 # %% [markdown]
 # ### Answers
@@ -895,13 +868,10 @@ population_comparator_nonlinear.register_models(
 # %%
 from sklearn.ensemble import HistGradientBoostingClassifier
 
-# TODO: implement me before scrolling to read the solution!
-#
-#
-#
-#
-#
-#
+# TODO: implement me before scrolling to read and execute the solution!
+
+
+# Solution below:
 
 # %%
 # ### Solution
@@ -928,6 +898,24 @@ population_comparator_nonlinear.register_models(
     }
 )
 population_comparator_nonlinear.score_table()
+
+# %% [markdown]
+#
+# ### Analysis of the results
+#
+# - The uncorrected GBDT model achieves near perfect ranking power (measured by
+#   ROC AUC) but fails to yield well calibrated predicted probabilities because
+#   of the prevalence shift of its training set compared to the target
+#   population and as a result, the log-loss is poor.
+# - The post-hoc corrected GBDT model achieves near-perfect overall performance
+#   (both in terms of ROC-AUC and log-loss): it effectively approximates the
+#   optimal (Bayes) classifier very well.
+# - The weight-corrected GBDT model shows similar ranking power and its
+#   log-loss is also improved compared to the uncorrected model. However, its
+#   log-loss is slightly lower than that of the post-hoc corrected model. This
+#   is not expected and might be caused by [bugs in the implementation of
+#   weight-based fitting in scikit-learn](
+#   https://github.com/scikit-learn/scikit-learn/pull/29641#issuecomment-3154174234).
 
 # %% [markdown]
 #
