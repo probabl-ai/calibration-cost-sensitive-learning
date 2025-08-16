@@ -820,6 +820,8 @@ X_train_nonlinear, X_test_nonlinear, y_train_nonlinear, y_test_nonlinear = (
 )
 # %% [markdown]
 #
+# ## Failure of logisitic regression models on non-linear classification
+#
 # Let's check that linear models perform sub-optimally on this dataset, even
 # after prevalence correction.
 
@@ -889,19 +891,19 @@ population_comparator_nonlinear.register_models(
 # The results show that all three variants of the linear models fail to perform
 # correctly on this task:
 #
-# - All three models have ROC-AUC scores close to 0.5, indicating no better
-#   than random performance. This is expected because the direction of the
+# - All three models have ROC-AUC scores barely above to 0.5, indicating nearly
+#   useless ranking performance. This is expected because the direction of the
 #   impact of feature #4 on the target variable depends on whether other
 #   features are above or below certain thresholds. Linear models are not able
 #   to capture such complex relationships and are therefore mis-specified for
 #   this problem class.
-# - The uncorrected variant has the worst log-loss because in addition of near
-#   random ranking power, it also over predict the positive class (bad
+# - The uncorrected variant has the worst log-loss because in addition of very
+#   poor ranking power, it also over predicts the positive class (bad
 #   calibration).
-# - The log-loss of the corrected models is significantly lower, indicating
-#   better calibration. Still, their lack of ranking power make them unable to
-#   reach the optimal performance quantified by the log-loss measured for the
-#   data generating model.
+# - The log-loss of the prevalence-corrected models is significantly lower,
+#   indicating better calibration. Still, their lack of ranking power make them
+#   unable to reach the optimal performance quantified by the log-loss measured
+#   for the data generating model.
 #
 # %% [markdown]
 #
@@ -976,13 +978,15 @@ population_comparator_nonlinear.score_table()
 #
 # - It is possible to correct a binary classifier trained on observed data to
 #   correctly account for differences of prevalence between the training set
-#   and the target populations.
-# - This correction can be achieved either via training the model with
-#   appropriate class or sample weights or by applying a post-hoc correction
-#   method to the predicted probabilities.
-# - In the case of a linear model, the post-hoc correction can be achieved by
-#   adjusting the model's intercept based on the difference of the logits of
-#   the two prevalence values.
+#   and the target populations (assuming the sampling process is independent of
+#   the features conditionally on the target variable).
+# - This correction can be achieved in two ways:
+#      - by **training the model with appropriate weights**,
+#      - or by applying a **post-hoc correction method** to the predicted
+#   probabilities.
+# - In the case of a logistic regression model, the post-hoc correction can be
+#   achieved by adjusting the model's intercept based on the difference of the
+#   logits of the two prevalence values.
 # - For other estimators that do not have an explicit intercept parameter, this
 #   can be achieved by applying a (monotonic) transformation to the predicted
 #   probabilities.
