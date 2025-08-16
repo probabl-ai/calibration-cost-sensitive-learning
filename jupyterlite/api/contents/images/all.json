@@ -1,0 +1,29 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2025-08-16T17:31:16.563816Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2025-08-16T17:28:33.154156Z",
+      "mimetype": "image/svg+xml",
+      "name": "prevalence_correction_diagram.svg",
+      "path": "images/prevalence_correction_diagram.svg",
+      "size": 174654,
+      "type": "file",
+      "writable": true
+    }
+  ],
+  "created": "2025-08-16T17:31:16.563816Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2025-08-16T17:31:16.563816Z",
+  "mimetype": null,
+  "name": "images",
+  "path": "images",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}

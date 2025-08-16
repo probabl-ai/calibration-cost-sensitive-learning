@@ -50,6 +50,9 @@
 # with the target population. We will use synthetic data generated from a known
 # data generating process so as to make it possible to check that our proposed
 # training and evaluation methods can achieve that objective.
+#
+# <img src="../images/prevalence_correction_diagram.svg" width="800"
+# alt="Prevalence Correction Diagram"/>
 
 # %% [markdown]
 # ## Data generating process
@@ -82,6 +85,7 @@
 # %%
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from scipy.special import expit, logit
 
 rng = np.random.default_rng(0)
@@ -166,7 +170,8 @@ log_loss(y_past, true_proba_past)
 #   true probabilities?
 
 # %%
-# TODO: write your answers here before scrolling down.
+
+# Write your answers below before scrolling down.
 #
 #
 #
@@ -179,6 +184,14 @@ log_loss(y_past, true_proba_past)
 #
 #
 #
+#
+#
+#
+#
+#
+#
+#
+# Do not read the answers before thinking by yourself!
 
 # %% [markdown]
 #
@@ -214,24 +227,22 @@ class ModelComparator:
         self.sample_weight = sample_weight
         self.context_name = context_name
         self.models = {}
-        self.evaluation_records = []
+        self.evaluation_records = {}
 
     def score_model(self, model_name, predicted_proba):
-        self.evaluation_records.append(
-            {
-                "Model": model_name,
-                f"ROC AUC ({self.context_name})": roc_auc_score(
-                    self.y,
-                    predicted_proba[:, 1],
-                    sample_weight=self.sample_weight,
-                ),
-                f"log-loss ({self.context_name})": log_loss(
-                    self.y,
-                    predicted_proba,
-                    sample_weight=self.sample_weight,
-                ),
-            }
-        )
+        self.evaluation_records[model_name] = {
+            "Model": model_name,
+            f"ROC AUC ({self.context_name})": roc_auc_score(
+                self.y,
+                predicted_proba[:, 1],
+                sample_weight=self.sample_weight,
+            ),
+            f"log-loss ({self.context_name})": log_loss(
+                self.y,
+                predicted_proba,
+                sample_weight=self.sample_weight,
+            ),
+        }
         return self
 
     def register_linear_data_generating_model(self, true_coef, true_intercept):
@@ -249,8 +260,15 @@ class ModelComparator:
         self.score_model(model_name, model.predict_proba(self.X))
         return self
 
+    def register_models(self, models):
+        for model_name, model in models.items():
+            self.register_model(model_name, model)
+        return self
+
     def score_table(self):
-        return pd.DataFrame(self.evaluation_records).round(6).set_index("Model")
+        return (
+            pd.DataFrame(self.evaluation_records.values()).round(6).set_index("Model")
+        )
 
     def plot_linear_model_parameters(self):
         column_data = {}
@@ -561,6 +579,9 @@ population_comparator.score_table()
 # The `expit` function inverse function is the logit function.
 
 # %%
+# %%
+
+# Write your answers below before scrolling down.
 #
 #
 #
@@ -568,7 +589,19 @@ population_comparator.score_table()
 #
 #
 #
-# TODO: do not read the solution before writing done your answers ;)
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not read the answers before thinking by yourself!
 
 # %% [markdown]
 #
@@ -593,8 +626,6 @@ population_comparator.score_table()
 #   score is not affected by any of the post-hoc correction methods.
 
 # %%
-import matplotlib.pyplot as plt
-
 p = np.linspace(0, 1, 100)
 for target_prevalence, observed_prevalence in [
     (0.01, 0.25),
@@ -693,41 +724,256 @@ log_loss(y_future, logreg_intercept_corrected.predict_proba(X_future))
 # We can see that weighting the test observed makes it possible to approximate
 # the population log-loss (at least up to 2 to 3 decimal places in this case).
 #
-# Let's improve our evaluation tools to consolidate all scores for all models:
+# Let's consolidate all scores for all models into a single table:
 
 # %%
-# TODO
 
+weighted_test_set_comparator = ModelComparator(
+    X_test, y_test, context_name="weighted test set", sample_weight=sample_weight_test
+).register_models(population_comparator.models)
+weighted_test_set_comparator.score_table().merge(
+    population_comparator.score_table(), on="Model"
+)
 
 # %% [markdown]
 #
+# This confirms that the all the prevalence corrected models perform well when
+# evaluated on the weighted test set and that furthermore, their metric values
+# approximate well enough their expected population counterparts (up to 3
+# decimal places).
+
+# %% [markdown]
+#
+# ## Non-linear data generating process
+#
+# We will now check that the same prevalence correction methods can be applied
+# to non-linear models applied to non-linear classification problems.
+#
+# Let's start by defining a a non-linear data generating process with a low
+# prevalence of the positive class.
+
+
+# %%
+def sample_from_nonlinear_model(n_samples, seed):
+    rng = np.random.default_rng(seed)
+    X = rng.normal(size=(n_samples, n_features)).astype(dtype)
+
+    logits = X[:, 4].copy()
+    logits *= np.where((X[:, 0] > 0), -1, 1)
+    logits *= np.where((X[:, 0] < -1) & (X[:, 1] > 1), -1, 1)
+    true_positive_proba = expit(logits - 6)
+
+    y = rng.binomial(n=1, p=true_positive_proba)
+    true_proba = np.hstack(
+        [1 - true_positive_proba[:, np.newaxis], true_positive_proba[:, np.newaxis]]
+    )
+
+    # create pandas data structures for convenience
+    X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
+    y = pd.Series(y, name="target")
+    return X, y, true_proba
+
+
+X_past_nonlinear, y_past_nonlinear, true_proba_past_nonlinear = (
+    sample_from_nonlinear_model(n_samples, seed=0)
+)
+X_future_nonlinear, y_future_nonlinear, true_proba_future_nonlinear = (
+    sample_from_nonlinear_model(n_samples, seed=1)
+)
+
+y_past_nonlinear.sum(), y_past_nonlinear.mean()
+# %%
+population_comparator_nonlinear = ModelComparator(
+    X_future_nonlinear, y_future_nonlinear, context_name="nonlinear population"
+).score_model("Data generating model", true_proba_future_nonlinear)
+population_comparator_nonlinear.score_table()
+
+# %% [markdown]
+#
+# Let's subsample to simulate the prevalence shift introduced at data
+# acquisition time and split the observed data.
+# %%
+mask_positive_target_nonlinear = y_past_nonlinear == 1
+X_positive_nonlinear = X_past_nonlinear[mask_positive_target_nonlinear].copy()
+y_positive_nonlinear = y_past_nonlinear[mask_positive_target_nonlinear].copy()
+
+rng = np.random.default_rng(0)
+negative_indices_nonlinear = rng.choice(
+    np.flatnonzero(~mask_positive_target_nonlinear),
+    size=3 * len(y_positive_nonlinear),
+    replace=False,
+)
+
+X_observed_nonlinear = pd.concat(
+    [X_positive_nonlinear, X_past_nonlinear.iloc[negative_indices_nonlinear]]
+)
+y_observed_nonlinear = pd.concat(
+    [y_positive_nonlinear, y_past_nonlinear.iloc[negative_indices_nonlinear]]
+)
+
+X_observed_nonlinear.shape
+# %%
+y_observed_nonlinear.mean()
+
+# %%
+X_train_nonlinear, X_test_nonlinear, y_train_nonlinear, y_test_nonlinear = (
+    train_test_split(
+        X_observed_nonlinear, y_observed_nonlinear, test_size=0.5, random_state=0
+    )
+)
+# %% [markdown]
+#
+# ## Failure of logisitic regression models on non-linear classification
+#
+# Let's check that linear models perform sub-optimally on this dataset, even
+# after prevalence correction.
+
+# %%
+logreg_uncorrected_nonlinear = LogisticRegression(**logreg_params).fit(
+    X_train_nonlinear, y_train_nonlinear
+)
+
+logreg_intercept_corrected_nonlinear = LogisticRegression(**logreg_params).fit(
+    X_train_nonlinear,
+    y_train_nonlinear,
+)
+logreg_intercept_corrected_nonlinear.intercept_ += logit(
+    y_past_nonlinear.mean()
+) - logit(y_train.mean())
+
+class_weight_for_prevalence_correction_nonlinear = {
+    0: (1 - y_past_nonlinear.mean()) / (1 - y_train.mean()),
+    1: (y_past_nonlinear.mean() / y_train.mean()),
+}
+logreg_weighted_nonlinear = LogisticRegression(
+    class_weight=class_weight_for_prevalence_correction_nonlinear, **logreg_params
+).fit(X_train_nonlinear, y_train_nonlinear)
+
+# %%
+population_comparator_nonlinear.register_models(
+    {
+        "Uncorrected LogReg": logreg_uncorrected_nonlinear,
+        "Intercept-corrected LogReg": logreg_intercept_corrected_nonlinear,
+        "Weight-corrected LogReg": logreg_weighted_nonlinear,
+    }
+).score_table()
+
+# %% [markdown]
+#
+# ### Question
+#
+# What can you conclude from the above results? Is this expected?
+
+# %%
+# %%
+# Write your answers below before scrolling down.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not read the answers before thinking by yourself!
+
+# %% [markdown]
+# ### Answers
+#
+# The results show that all three variants of the linear models fail to perform
+# correctly on this task:
+#
+# - All three models have ROC-AUC scores barely above to 0.5, indicating nearly
+#   useless ranking performance. This is expected because the direction of the
+#   impact of feature #4 on the target variable depends on whether other
+#   features are above or below certain thresholds. Linear models are not able
+#   to capture such complex relationships and are therefore mis-specified for
+#   this problem class.
+# - The uncorrected variant has the worst log-loss because in addition of very
+#   poor ranking power, it also over predicts the positive class (bad
+#   calibration).
+# - The log-loss of the prevalence-corrected models is significantly lower,
+#   indicating better calibration. Still, their lack of ranking power make them
+#   unable to reach the optimal performance quantified by the log-loss measured
+#   for the data generating model.
+#
+# %% [markdown]
+#
 # ## Fitting non-linear models
+#
+# ### Exercise
+#
+# Fit 3 different variants of the gradient boosting classification model to the
+# training data for the non-linear classification problem:
+# - One without any kind of prevalence correction;
+# - One with weight-based prevalence correction;
+# - One with the Elkan post-hoc prevalence correction.
+#
+# Then score them all on the population comparator for the non-linear
+# classification problem and analyse the results.
 
 # %%
 from sklearn.ensemble import HistGradientBoostingClassifier
 
-gbdt_uncorrected = HistGradientBoostingClassifier(random_state=0).fit(X_train, y_train)
-population_comparator.register_model("Uncorrected GBDT", gbdt_uncorrected)
-population_comparator.score_table()
+# TODO: implement me before scrolling to read and execute the solution!
+
+
+# Solution below:
 
 # %%
+# ### Solution
+gbdt_uncorrected = HistGradientBoostingClassifier(random_state=0).fit(
+    X_train_nonlinear, y_train_nonlinear
+)
+
 gbdt_weighted = HistGradientBoostingClassifier(
     random_state=0,
-    class_weight=class_weight_for_prevalence_correction,
-).fit(X_train, y_train)
-# %%
-population_comparator.register_model("Weight-corrected GBDT", gbdt_weighted)
-population_comparator.score_table()
+    class_weight=class_weight_for_prevalence_correction_nonlinear,
+).fit(X_train_nonlinear, y_train_nonlinear)
 
-# %%
 gbdt_post_hoc = PostHocPrevalenceCorrection(
     estimator=HistGradientBoostingClassifier(random_state=0),
-    target_positive_rate=true_positive_rate_past,
-).fit(X_train, y_train)
+    target_positive_rate=y_past_nonlinear.mean(),
+).fit(X_train_nonlinear, y_train_nonlinear)
 
 # %%
-population_comparator.register_model("Post-hoc corrected GBDT", gbdt_post_hoc)
-population_comparator.score_table()
+population_comparator_nonlinear.register_models(
+    {
+        "Uncorrected GBDT": gbdt_uncorrected,
+        "Weight-corrected GBDT": gbdt_weighted,
+        "Post-hoc corrected GBDT": gbdt_post_hoc,
+    }
+)
+population_comparator_nonlinear.score_table()
+
+# %% [markdown]
+#
+# ### Analysis of the results
+#
+# - The uncorrected GBDT model achieves near perfect ranking power (measured by
+#   ROC AUC) but fails to yield well calibrated predicted probabilities because
+#   of the prevalence shift of its training set compared to the target
+#   population and as a result, the log-loss is poor.
+# - The post-hoc corrected GBDT model achieves near-perfect overall performance
+#   (both in terms of ROC-AUC and log-loss): it effectively approximates the
+#   optimal (Bayes) classifier very well.
+# - The weight-corrected GBDT model shows similar ranking power and its
+#   log-loss is also improved compared to the uncorrected model. However, its
+#   log-loss is slightly lower than that of the post-hoc corrected model. This
+#   is not expected and might be caused by [bugs in the implementation of
+#   weight-based fitting in scikit-learn](
+#   https://github.com/scikit-learn/scikit-learn/pull/29641#issuecomment-3154174234).
 
 # %% [markdown]
 #
@@ -735,13 +981,15 @@ population_comparator.score_table()
 #
 # - It is possible to correct a binary classifier trained on observed data to
 #   correctly account for differences of prevalence between the training set
-#   and the target populations.
-# - This correction can be achieved either via training the model with
-#   appropriate class or sample weights or by applying a post-hoc correction
-#   method to the predicted probabilities.
-# - In the case of a linear model, the post-hoc correction can be achieved by
-#   adjusting the model's intercept based on the difference of the logits of
-#   the two prevalence values.
+#   and the target populations (assuming the sampling process is independent of
+#   the features conditionally on the target variable).
+# - This correction can be achieved in two ways:
+#      - by **training the model with appropriate weights**,
+#      - or by applying a **post-hoc correction method** to the predicted
+#   probabilities.
+# - In the case of a logistic regression model, the post-hoc correction can be
+#   achieved by adjusting the model's intercept based on the difference of the
+#   logits of the two prevalence values.
 # - For other estimators that do not have an explicit intercept parameter, this
 #   can be achieved by applying a (monotonic) transformation to the predicted
 #   probabilities.
