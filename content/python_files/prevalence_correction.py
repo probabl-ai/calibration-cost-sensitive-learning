@@ -167,9 +167,27 @@ log_loss(y_past, true_proba_past)
 #   true probabilities?
 
 # %%
+
 # Write your answers below before scrolling down.
-
-
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Do not read the answers before thinking by yourself!
 
 # %% [markdown]
@@ -559,9 +577,27 @@ population_comparator.score_table()
 
 # %%
 # %%
+
 # Write your answers below before scrolling down.
-
-
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Do not read the answers before thinking by yourself!
 
 # %% [markdown]
@@ -826,8 +862,25 @@ population_comparator_nonlinear.register_models(
 # %%
 # %%
 # Write your answers below before scrolling down.
-
-
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 # Do not read the answers before thinking by yourself!
 
 # %% [markdown]
