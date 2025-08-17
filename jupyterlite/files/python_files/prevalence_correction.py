@@ -221,6 +221,12 @@ from sklearn.linear_model import LogisticRegression
 
 cheating_model = LogisticRegression(penalty=None).fit(X_future, y_future)
 
+# %% [markdown]
+#
+# Now let's compare the true and learned model parameters with the help of a
+# utility class that we will reuse throughout this notebook. Feel free to skip
+# over the details of the implementation, the method names and their outputs
+# should be self-explanatory.
 
 # %%
 class ModelComparator:
