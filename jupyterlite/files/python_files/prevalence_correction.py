@@ -565,6 +565,7 @@ np.allclose(
 #
 # Therefore we should get exactly the same evaluation metric values as before:
 
+# %%
 population_comparator.register_model("Post-hoc corrected LogReg", logreg_post_hoc)
 population_comparator.score_table()
 

@@ -1283,8 +1283,76 @@ correction of the intercept parameter:</p>
 <p>A proof of the mathematical equivalence is given as an appendix at the end of
 this notebook.</p>
 <p>Therefore we should get exactly the same evaluation metric values as before:</p>
-<p>population_comparator.register_model(“Post-hoc corrected LogReg”, logreg_post_hoc)
-population_comparator.score_table()</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Post-hoc corrected LogReg&quot;</span><span class="p">,</span> <span class="n">logreg_post_hoc</span><span class="p">)</span>
+<span class="n">population_comparator</span><span class="o">.</span><span class="n">score_table</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC (population)</th>
+      <th>log-loss (population)</th>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Data generating model</th>
+      <td>0.728526</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>LogReg fit on future data</th>
+      <td>0.728519</td>
+      <td>0.022419</td>
+    </tr>
+    <tr>
+      <th>Uncorrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.267719</td>
+    </tr>
+    <tr>
+      <th>Weight-corrected LogReg</th>
+      <td>0.728445</td>
+      <td>0.022421</td>
+    </tr>
+    <tr>
+      <th>Intercept-corrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+    <tr>
+      <th>Post-hoc corrected LogReg</th>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
 <section id="id1">
 <h3>Questions:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>Consider the two kinds of post-hoc prevalence correction presented above:</p>
@@ -1560,6 +1628,13 @@ this case).</p>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
+      <td>0.730392</td>
+      <td>0.021907</td>
+      <td>0.728478</td>
+      <td>0.022420</td>
+    </tr>
+    <tr>
+      <th>Post-hoc corrected LogReg</th>
       <td>0.730392</td>
       <td>0.021907</td>
       <td>0.728478</td>
