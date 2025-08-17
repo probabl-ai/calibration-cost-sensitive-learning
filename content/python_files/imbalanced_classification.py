@@ -302,25 +302,26 @@ _ = display.ax_.set(
 # %% [markdown]
 #
 # We observe that the logistic regression is well calibrated as the curve is close to
-# the diagonal line. It therefore means that the probabilities estimated by the model
-# are close to the true probabilities.
+# the diagonal line. This is a direct consequence of the fact that the probabilities
+# estimated by the model are close to the true probabilities.
 #
-# ## From probabilities to predicted outcomes (and to operational decisions)
+# ## From predicted probabilities to predicted outcomes (and to operational decisions)
 #
 # Up to this point of the notebook, we have not encountered any real issues due to the
-# fact that our dataset is imbalanced: with enough samples, a well-specified model
+# fact that our dataset is imbalanced: with enough data points, a well-specified model
 # minimizing a strictly proper scoring rule, everything seems to be fine.
 #
 # However, practitioners have been complaining for many years regarding the above
-# setting. Indeed, the issue comes from when one seeks to translate the estimated
+# setting. Indeed, practical issue often arise when naively translating the estimated
 # probabilities into predicted classification outcomes.
 #
 # In classification, the predicted outcomes correspond to the classes of the target. As
-# a general rule, the estimated probabilities of the classifier are processed to provide
-# a single outcome for each sample. In general the most probable class is selected. For
-# binary classification, it means that the probability is thresholded with a decision
-# cut-off value set at 0.5. In scikit-learn, it corresponds to the `predict` method.
-# Let's check the link between the `predict_proba` and `predict` methods.
+# a general rule, the estimated probabilities of the classifier are processed to predict
+# a single binary outcome for each sample. In general the most probable class is
+# selected. For binary classification, it means that the predicted class probability is
+# thresholded with a decision cut-off value set at 0.5. In scikit-learn, this happens
+# in the `predict` method. Let's check the link between the `predict_proba` and
+# `predict` methods.
 
 # %%
 y_pred = model.predict(X)
