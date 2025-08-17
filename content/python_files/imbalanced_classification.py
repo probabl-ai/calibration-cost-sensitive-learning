@@ -746,7 +746,11 @@ print(classification_report(y, model.predict(X)))
 # %% [markdown]
 #
 # As expected, we observe that the model is well calibrated because modifying the
-# decision cut-off threshold does not impact the calibration of the model.
+# decision cut-off threshold does not impact the values returned by the `predict_proba`
+# method: the calibration curve remains unchanged.
+#
+# However, it does impact the binary values returned by the `predict` method and
+# therefore the confusion matrix.
 #
 # With the selected threshold, we expect to have a minimum level of precision of 10%
 # which is exactly what we observe.
@@ -766,9 +770,11 @@ def maximize_recall_under_constrained_precision(y_true, y_pred, precision_level)
     precision, recall = precision_score(y_true, y_pred), recall_score(y_true, y_pred)
 
     if precision < precision_level:
-        # under a certain precision level, we cannot accept the model and thus return
-        # the worst possible score.
+        # We reject any model that does not meet the required precision level
+        # by returning the worst possible score.
         return -np.inf
+
+    # Otherwise, we want to select the cut-off threshold that maximizes the recall.
     return recall
 
 
