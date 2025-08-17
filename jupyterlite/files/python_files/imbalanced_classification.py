@@ -340,10 +340,11 @@ print(classification_report(y, model.predict(X)))
 # therefore boost the estimated probabilities related to those rare events.
 #
 # Let's use `imbalanced-learn` to resample the dataset before training a logistic
-# regression model.
+# regression model. When running this notebook under jupyterlite, it is necessary
+# to pip install imbalanced-learn first:
 
 # %%
-# %pip install -q imbalanced-learn  # needed for jupyterlite
+# %pip install -q imbalanced-learn
 
 # %%
 from imblearn.pipeline import make_pipeline

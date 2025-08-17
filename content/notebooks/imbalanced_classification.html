@@ -907,10 +907,11 @@ frequencies. This means that we artificially increase the number of samples of t
 rare event and thus the likelihood of the rare event to be detected is higher. We
 therefore boost the estimated probabilities related to those rare events.</p>
 <p>Let’s use <code class="docutils literal notranslate"><span class="pre">imbalanced-learn</span></code> to resample the dataset before training a logistic
-regression model.</p>
+regression model. When running this notebook under jupyterlite, it is necessary
+to pip install imbalanced-learn first:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -q imbalanced-learn  # needed for jupyterlite
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -q imbalanced-learn
 </pre></div>
 </div>
 </div>
