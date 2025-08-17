@@ -301,8 +301,8 @@ _ = display.ax_.set(
 
 # %% [markdown]
 #
-# We observe that the logistic regression is well calibrated as the curve is close to
-# the diagonal line. This is a direct consequence of the fact that the probabilities
+# We observe that our logistic regression model is well calibrated as the curve is close
+# to the diagonal line. This is a direct consequence of the fact that the probabilities
 # estimated by the model are close to the true probabilities.
 #
 # ## From predicted probabilities to predicted outcomes (and to operational decisions)
@@ -319,9 +319,9 @@ _ = display.ax_.set(
 # a general rule, the estimated probabilities of the classifier are processed to predict
 # a single binary outcome for each sample. In general the most probable class is
 # selected. For binary classification, it means that the predicted class probability is
-# thresholded with a decision cut-off value set at 0.5. In scikit-learn, this happens
-# in the `predict` method. Let's check the link between the `predict_proba` and
-# `predict` methods.
+# thresholded with a decision cut-off value set at 0.5. In scikit-learn, this happens in
+# the `predict` method. Let's check the link between the `predict_proba` and `predict`
+# methods.
 
 # %%
 y_pred = model.predict(X)
@@ -331,9 +331,10 @@ np.allclose(y_pred, y_proba[:, 1] > 0.5)
 
 # %% [markdown]
 #
-# Predicted outcomes come with a set of metrics. We derive those metrics from the
-# confusion matrix indicating the number of true positives, true negatives, false
-# positives and false negatives.
+# Discrete binary classification outcomes are typically evaluated with dedicated
+# metrics. Those binary classification metrics for discrete prediction outcomes are all
+# derived from the confusion matrix: indicating the number of true positives, true
+# negatives, false positives and false negatives.
 
 # %%
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -343,9 +344,8 @@ _ = display.ax_.set_title("Confusion matrix of the unpenalized logistic regressi
 
 # %% [markdown]
 #
-# From the confusion matrix above, we can already understand what bothers practitioners
-# in practice: the number of true positives and thus the number of rare events detected
-# is zero.
+# From the confusion matrix above, we can already understand what bothers practitioners:
+# the total number of positive predictions is very close to zero.
 #
 # One could interpret that our model is therefore not able to detect rare events and
 # thus useless. In general, instead of using the confusion matrix, practitioners use
@@ -359,10 +359,10 @@ print(classification_report(y, model.predict(X)))
 
 # %% [markdown]
 #
-# As expected, the precision and recall for the class of interest is null.
+# As expected, the precision and recall for the class of interest are degenerate.
 #
-# In the next section, we present the usual solutions used by practitioners to deal with
-# this problem.
+# In the next section, we present the solutions promoted by many practitioners to deal
+# with this problem.
 #
 # ## What people naively do and why you should not do it
 #
@@ -372,8 +372,10 @@ print(classification_report(y, model.predict(X)))
 #
 # One way to counter this issue is to resample the dataset and balance the class
 # frequencies. This means that we artificially increase the number of samples of the
-# rare event and thus the likelihood of the rare event to be detected is higher. We
-# therefore boost the estimated probabilities related to those rare events.
+# rare event and thus the likelihood of the rare event to be detected is higher. When
+# fitting a model on such a resampled dataset, we therefore artificially boost the
+# estimated probabilities for the positive class (as it became less rare in the new
+# dataset).
 #
 # Let's use `imbalanced-learn` to resample the dataset before training a logistic
 # regression model.
@@ -382,8 +384,8 @@ print(classification_report(y, model.predict(X)))
 from imblearn.pipeline import make_pipeline
 from imblearn.under_sampling import RandomUnderSampler
 
-# keep a 0.7 ratio between the number of samples of the rare event and the number of
-# samples of the majority event.
+# Enforce a 0.7 ratio between the number of data points of the two positive and negative
+# classes.
 model = make_pipeline(
     RandomUnderSampler(sampling_strategy=0.7, random_state=0),
     LogisticRegression(penalty=None),
@@ -457,10 +459,11 @@ _ = display.ax_.legend(loc="upper right")
 # %% [markdown]
 #
 # We observe that the coefficients related to the features are close to the true
-# coefficients of the generative model. However, the intercept is completely off. It
-# translates into an uncalibrated model as seen in the calibration curve: our model
-# becomes too confident at predicting the rare event which is not surprising because it
-# is exactly what we were seeking for.
+# coefficients of the generative model. However, the intercept is completely off. This
+# results in an uncalibrated model as seen in the calibration curve: our model becomes
+# too confident at predicting the (originally) rare event which is not surprising
+# because it is exactly what we intended to do by under-sampling the data points from
+# the negative class.
 #
 # ### Exercise
 #
@@ -473,6 +476,23 @@ _ = display.ax_.legend(loc="upper right")
 
 # %%
 from sklearn.calibration import CalibratedClassifierCV
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Write your code above before reading the solution.
 
 # %% [markdown]
 #
@@ -509,7 +529,7 @@ print(classification_report(y, calibrated_model.predict(X)))
 # %% [markdown]
 #
 # So in terms of calibration, we see that the `CalibratedClassifierCV` is able to
-# calibrate the model. When looking at the confusion matrix, and the classification
+# re-calibrate the model. When looking at the confusion matrix, and the classification
 # report, we see that we reverted the effect of the resampling and we are back to square
 # one.
 #
@@ -518,25 +538,26 @@ print(classification_report(y, calibrated_model.predict(X)))
 # Resampling acts by artificially shifting the class distribution such that rare events
 # are more likely during the training process. It impacts the predicted outcomes and for
 # the simple case where we have a well-defined linear model, it is equivalent to
-# shifting the intercept. However, the estimated probabilities are completely off the
-# original true probabilities.
+# shifting the intercept. However, the class probabilities predicted by the model
+# trained on resampled data are completely off compared to the true probabilities.
 #
 # Therefore, it tells us that we should be careful with the choice of evaluation metrics
 # and how it interacts with the choice of the decision cut-off threshold.
 #
 # Ranking metrics (e.g. ROC AUC) and probabilistic metrics (e.g. log loss) that assess
 # both ranking and calibration of the predictive model at the same time are good choices
-# but do not reflect on the choice of the decision cut-off threshold.
+# but they completely ignore the choice of the decision cut-off threshold.
 #
 # "Thresholded" metrics (e.g. precision, recall) are impacted by the decision cut-off
-# threshold. Therefore, looking such metrics only for a single decision cut-off
-# is not informative enough. It is required to look at those metrics by varying the
-# decision cut-off threshold.
+# threshold. Therefore, looking such metrics only for a single decision cut-off: can be
+# misleading: the performance metrics can be bad, not because the underlying model is
+# bad but instead because the default choice of the cut-off makes no sense for highly
+# imbalanced classification problems. It is recommended to look at how those metrics
+# change when varying the decision cut-off threshold.
 #
-# The next section focuses on setting the decision cut-off threshold when the evaluation
-# metric of interest is a "thresholded" metric.
+# Let's explore this further in the next section.
 #
-# ## Choosing the decision cut-off threshold when "thresholded" metrics are used
+# ## Assessing the impact of the decision cut-off on "thresholded" metrics
 #
 # In this section, we show two useful meta-estimators available in scikit-learn to set
 # the decision cut-off threshold to change the predicted outcomes of a classifier.
