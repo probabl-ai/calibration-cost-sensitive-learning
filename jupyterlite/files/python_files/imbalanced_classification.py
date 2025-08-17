@@ -343,6 +343,9 @@ print(classification_report(y, model.predict(X)))
 # regression model.
 
 # %%
+# %pip install -q imbalanced-learn  # needed for jupyterlite
+
+# %%
 from imblearn.pipeline import make_pipeline
 from imblearn.under_sampling import RandomUnderSampler
 
