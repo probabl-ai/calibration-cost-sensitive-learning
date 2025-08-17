@@ -93,9 +93,10 @@ print(f"Class counts:\n {y.value_counts()}\n")
 #
 # ## Learning a predictive model
 #
-# Here, we know that our generative process is a linear relationship between the
-# features and the target. Therefore, a linear predictive model is perfectly suited to
-# learn the true model. We therefore train a logistic regression model.
+# Here, we know that our generative process was intentionally crafted to sample the
+# target variable from the prediction function of a logistic regression model.
+# Therefore, fitting a logistic regression model on this data might be able to recover
+# the true model.
 
 # %%
 from sklearn.linear_model import LogisticRegression
@@ -126,8 +127,9 @@ _ = ax.set(
 # %% [markdown]
 #
 # We observe that the learned model is able to recover the true model coefficients.
-# However, be aware that it is not necessarily the case. Let's do a small exercise that
-# illustrates when one of the assumptions to recover the true model is not met.
+# However, be aware that it is not necessarily always the case. Let's do a small
+# exercise that illustrates when one of the assumptions to recover the true model is not
+# met.
 #
 # ### Exercise
 #
@@ -138,6 +140,26 @@ _ = ax.set(
 # Do you recover the true model coefficients? If not, what is the reason?
 
 # %%
+# TODO: write your code here!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Do not scroll too quickly!
 
 # %% [markdown]
 #
