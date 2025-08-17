@@ -8,38 +8,39 @@
 #
 # The first issue is related to a large difference between the class frequencies in the
 # target variable. It means that the event of interest to predict is rare. As an
-# example, in fraud detection, the event of interest is a fraud and is much less common
-# than legitimate transactions. In this notebook, we first focus on studying this use
-# case that researchers have not addressed properly in the scientific literature except
-# in recent works.
+# example, in fraud detection, the event of interest is a fraudulent transaction and is
+# much less common than legitimate transactions. A large class imbalance can result in
+# degenerate predictive model performance when evaluated naively. In this notebook, we
+# first focus on studying this use case that is often not correctly addressed in many
+# educational resources.
 #
-# The second issue is related to the fact that the data acquisition process do not
-# reflect the true class balance. This means that the class frequencies in the target
-# variable are not representative of the true class balance. As an example, for medical
-# diagnosis, the data acquisition process may be biased towards patients with a rare
-# disease by collecting equal numbers of patients with the disease and equal numbers of
-# patients without the disease. Therefore, there is a need to correct this bias. In the
-# next notebook, we will focus on this issue.
+# The second issue is related to the fact that the data acquisition itself process might
+# not reflect the true class balance. This means that the class frequencies in the
+# target variable are not representative of the true class balance. As an example, for
+# medical diagnosis, the data acquisition process may be biased towards patients with a
+# rare disease by collecting equal numbers of patients with the disease and equal
+# numbers of patients without the disease. Therefore, there is a need to correct this
+# bias. This will be the focus of the next notebook.
 #
 # ## Class imbalance: representative data acquisition with rare events of interest
 #
 # In real-world applications, we commonly need to predict rare events, e.g. frauds, rare
 # diseases, rare climatic events, etc. Simplifying this problem to a binary outcome, it
-# means that the probability for this rare event to happen is rather low in comparison
-# to the probability of the rare event not to happen.
+# means that the probability for the event of interest is low, typically lower than
+# a few percents.
 #
 # To cover the implications of class imbalance, we first generate a synthetic dataset
-# for which we control the success rate of the positive class. We define the generative
-# process below as follows:
+# for which we control the rate of the positive class. We define the generative process
+# below as follows:
 #
 # - We generate a vector of coefficients `true_coef` of shape `(n_features,)` where each
 #   element is a standard normal random variable. In short, it is the true model that we
 #   would like to learn.
 # - We generate a matrix of features `X` of shape `(n_samples, n_features)` where each
 #   column is a standard normal random variable.
-# - We compute the linear predictor `Z` as the dot product of the features and the
+# - We compute the linear predictor `z` as the dot product of the features and the
 #   vector of coefficients `true_coef`.
-# - We transform the linear predictor `Z` into class probabilities using the sigmoid
+# - We transform the linear predictor `z` into class probabilities using the sigmoid
 #   function. To create rare positive events, we shift the intercept of the sigmoid
 #   function.
 # - Finally, we generate a binary target variable `y` where we sample each event by
@@ -66,11 +67,13 @@ y = pd.Series(y, name="target")
 
 # %% [markdown]
 #
-# Let's look at the true target and especially the class frequencies and absolute
-# counts.
+# Let's look at the true target and especially the relative class frequencies and
+# absolute counts.
 
 # %%
-print(f"Class frequencies:\n {y.value_counts(normalize=True) * 100}")
+print(f"Relative class frequencies:\n {y.value_counts(normalize=True) * 100}")
+
+# %%
 print(f"Class counts:\n {y.value_counts()}\n")
 
 # %% [markdown]
@@ -78,14 +81,15 @@ print(f"Class counts:\n {y.value_counts()}\n")
 # Looking at the true target distribution, we therefore observe that the probability for
 # a sample to be the positive class with label 1 is rare (~2.5%). Regarding absolute
 # counts, because we generated 1,000,000 samples, the number of events of interest is
-# rather high (25,000).
+# high enough to train a machine learning model (25,000).
 #
 # A particular challenge when dealing with real-world class imbalance is that the number
 # of available samples of the rare event can be usually low even with a large number of
 # samples. Therefore, it is always important to check the absolute counts of the rare
 # event and if the dataset contains less than 1,000 samples of the rare event, then you
-# are exactly in the same situation as having a dataset with a low number of samples
-# with all related challenges (e.g. large variance of the estimator, weak signal, etc.).
+# will face the usual challenges of training a machine learning model on a dataset with
+# a small number of data points: large variance of the estimator, weak signal,
+# catastrophic overfitting, etc.
 #
 # ## Learning a predictive model
 #
