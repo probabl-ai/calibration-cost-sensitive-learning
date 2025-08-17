@@ -47,6 +47,7 @@
 #   probability of the positive class we previously computed.
 
 # %%
+import matplotlib.pyplot as plt  # needed for pandas in jupyterlite.
 import numpy as np
 import pandas as pd
 from scipy.special import expit
@@ -342,8 +343,8 @@ print(classification_report(y, model.predict(X)))
 # regression model.
 
 # %%
-from imblearn.under_sampling import RandomUnderSampler
 from imblearn.pipeline import make_pipeline
+from imblearn.under_sampling import RandomUnderSampler
 
 # keep a 0.7 ratio between the number of samples of the rare event and the number of
 # samples of the majority event.
@@ -652,7 +653,6 @@ fig_plotly.show()
 
 # %%
 from sklearn.model_selection import FixedThresholdClassifier
-
 
 # %% [markdown]
 #
