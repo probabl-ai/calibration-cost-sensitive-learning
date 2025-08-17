@@ -394,6 +394,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-setting">Problem setting</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generating-process">Data generating process</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#answers">Answers:</a></li>
@@ -406,7 +407,7 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-models-on-observed-test-data">Evaluating models on observed test data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-linear-data-generating-process">Non-linear data generating process</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-of-logisitic-regression-models-on-non-linear-classification">Failure of logisitic regression models on non-linear classification</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-of-logistic-regression-models-on-nonlinear-classification">Failure of logistic regression models on nonlinear classification</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Answers</a></li>
 </ul>
@@ -435,13 +436,16 @@ document.write(`
 <p>The purpose of this study is to illustrate how to handle extreme class
 imbalance in the common setting where the <strong>data acquisition process itself
 corrupts the prevalence of the rare class</strong>.</p>
-<p>This setting is quite common in practice: for instance, to develop a
-computer-aided diagnosis system, the data acquisition process might collect
-data (feature values) for all known cases of a given rare disease of interest
+<section id="problem-setting">
+<h2>Problem setting<a class="headerlink" href="#problem-setting" title="Link to this heading">#</a></h2>
+<p>This setting is quite common in practice: let’s consider the development of a
+computer-aided diagnosis system to detect a rare disease that is best treated
+as early as possible. The data acquisition process might collect data
+(feature values) for all known historical cases of the disease of interest
 (the positive class): <strong>since the positive cases are rare, we don’t want to
-waste any of them</strong> and want include them all in our dataset. However, it
+waste any of them</strong> and want to include them all in our dataset. However, it
 would be <strong>impossible to collect feature values for all the negative
-subjects</strong> in the target population because they are too many of them: it
+subjects</strong> in the target population because there are too many of them: it
 would be too costly and might also cause ethical and privacy issues.</p>
 <p>Instead, we sample negative subjects from the population at random to measure
 their feature values only for those (and check that they do not have the
@@ -462,6 +466,9 @@ evaluation computed from a test subset of our observed data points can
 accurately reflect the expected performance of our model once deployed
 despite the prevalence shift.</p></li>
 </ul>
+<p><img
+ src="https://raw.githubusercontent.com/probabl-ai/calibration-cost-sensitive-learning/refs/heads/main/content/images/prevalence_correction_diagram.svg"
+ width="800" alt="Prevalence correction diagram" /></p>
 <p>The lack of match of prevalence between the collected dataset and the
 deployment setting is a result of cost or computational constraints that
 prevent us from training and evaluating our predictive model directly on the
@@ -475,14 +482,13 @@ the probabilistic classifier estimated from the observed data to be aligned
 with the target population. We will use synthetic data generated from a known
 data generating process so as to make it possible to check that our proposed
 training and evaluation methods can achieve that objective.</p>
-<p><img src="https://raw.githubusercontent.com/probabl-ai/calibration-cost-sensitive-learning/refs/heads/main/content/images/prevalence_correction_diagram.svg"
- width="800" alt="Prevalence correction diagram" /></p>
+</section>
 <section id="data-generating-process">
 <h2>Data generating process<a class="headerlink" href="#data-generating-process" title="Link to this heading">#</a></h2>
-<p>Let’s define a “true” data generating process that represent some fundamental
-mechanism about the world. The true data generating process is generally
-unknown, and the goal of machine learning is to approximate it as closely as
-possible from a finite sample of data points.</p>
+<p>Let’s define a “true” data generating process that represents some
+fundamental mechanism about the world. The true data generating process is
+generally unknown, and the goal of machine learning is to approximate it as
+closely as possible from a finite sample of data points.</p>
 <p>Here, we want to simulate a binary classification problem where the target
 variable is a binary variable with a positive class that is very rare.</p>
 <p>The typical application domain could be medical diagnosis where the feature
@@ -493,10 +499,10 @@ predictive maintenance, etc.</p>
 <p>For the sake of simplicity, we start this study by assuming that the data
 generating process is a linear model with a logistic link function: the
 features influence the probability of developing the disease but we expect
-them to provide only a partial information about the true risk as other
+them to provide only partial information about the true risk as other
 unobserved factors may also influence disease development. We assume the
 unobserved factors to be independent of the observed features and all
-distribution to be stationary over time.</p>
+distributions to be stationary over time.</p>
 <p>We will later relax the linearity assumption but other assumptions will still
 apply.</p>
 <div class="cell docutils container">
@@ -531,9 +537,9 @@ apply.</p>
 </div>
 </div>
 </div>
-<p>The world can generate a lot of data from a fixed stationary process. Some of that data
-cannot be accessed at the time of the study but we generate it anyway to be able to
-compute metrics on the future population.</p>
+<p>The world can generate a lot of data from a fixed stationary process. Some of
+that data cannot be accessed at the time of the study but we generate it
+anyway to be able to compute metrics on the future population.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">3_000_000</span>
@@ -664,7 +670,7 @@ dtype: float64
 <li><p>What is the best possible value for the ROC AUC score (in general)?</p></li>
 <li><p>What is the best possible value for the log-loss (in general)?</p></li>
 <li><p>Why cannot we reach these values even when using the true probabilities?</p></li>
-<li><p>What is the name name of the error rate obtained when computed from the
+<li><p>What is the name of the error rate obtained when computed from the
 true probabilities?</p></li>
 </ul>
 <div class="cell docutils container">
@@ -813,13 +819,13 @@ we have a large number of data points.</p>
 </section>
 <section id="prevalence-shift-induced-by-the-data-acquisition-process">
 <h2>Prevalence shift induced by the data acquisition process<a class="headerlink" href="#prevalence-shift-induced-by-the-data-acquisition-process" title="Link to this heading">#</a></h2>
-<p>The following code simulate what could happen in practice when working in
+<p>The following code simulates what could happen in practice when working in
 such a setting: we subsample the simulated population to collect all the
 positive cases and a random sample of negatives from the past data. Mere
 mortal data scientists cannot <code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code> from the future, unfortunately.</p>
 <p>We subsample only the negative cases (control group) to reflect the fact that
-the negative data is less interesting than the rare positive cases: as such
-the negative data is in general not archived fully in databases, or even, the
+the negative data is less interesting than the rare positive cases: as such,
+the negative data is in general not archived fully in databases, or even the
 features of most of the negative cases are not acquired at all in the first
 place.</p>
 <div class="cell docutils container">
@@ -1381,8 +1387,9 @@ observed training data and the target population.</p>
 <p>However, data-scientists do not have access to the future population to
 assess the expected performance of their model on the future population.</p>
 <p>Instead, they can only evaluate the model on the observed test data. However,
-the observed test data: in our case, the number of negatives cases is much
-lower in the observed data (train or test) than in the target population.</p>
+the observed test data has a different class distribution: in our case, the
+number of negative cases is much lower in the observed data (train or test)
+than in the target population.</p>
 <p>If we naively evaluate the model on the observed test data, we will get
 misleading results: the model will be evaluated on a test set that does not
 reflect the true class prevalence, hence calibration sensitive losses such as
@@ -1475,8 +1482,9 @@ helps obtain metric values that are aligned with the expected population log-los
 </div>
 </div>
 </div>
-<p>We can see that weighting the test observed makes it possible to approximate
-the population log-loss (at least up to 2 to 3 decimal places in this case).</p>
+<p>We can see that weighting the test observed data makes it possible to
+approximate the population log-loss (at least up to 2 to 3 decimal places in
+this case).</p>
 <p>Let’s consolidate all scores for all models into a single table:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1554,7 +1562,7 @@ the population log-loss (at least up to 2 to 3 decimal places in this case).</p>
 </table>
 </div></div></div>
 </div>
-<p>This confirms that the all the prevalence corrected models perform well when
+<p>This confirms that all the prevalence corrected models perform well when
 evaluated on the weighted test set and that furthermore, their metric values
 approximate well enough their expected population counterparts (up to 3
 decimal places).</p>
@@ -1563,7 +1571,7 @@ decimal places).</p>
 <h2>Non-linear data generating process<a class="headerlink" href="#non-linear-data-generating-process" title="Link to this heading">#</a></h2>
 <p>We will now check that the same prevalence correction methods can be applied
 to non-linear models applied to non-linear classification problems.</p>
-<p>Let’s start by defining a a non-linear data generating process with a low
+<p>Let’s start by defining a nonlinear data generating process with a low
 prevalence of the positive class.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1707,8 +1715,8 @@ acquisition time and split the observed data.</p>
 </div>
 </div>
 </section>
-<section id="failure-of-logisitic-regression-models-on-non-linear-classification">
-<h2>Failure of logisitic regression models on non-linear classification<a class="headerlink" href="#failure-of-logisitic-regression-models-on-non-linear-classification" title="Link to this heading">#</a></h2>
+<section id="failure-of-logistic-regression-models-on-nonlinear-classification">
+<h2>Failure of logistic regression models on nonlinear classification<a class="headerlink" href="#failure-of-logistic-regression-models-on-nonlinear-classification" title="Link to this heading">#</a></h2>
 <p>Let’s check that linear models perform sub-optimally on this dataset, even
 after prevalence correction.</p>
 <div class="cell docutils container">
@@ -2054,39 +2062,52 @@ one over the other in the finite sample case?</p>
 <p>In the following, we show that the logit based shift of the intercept is
 equivalent to the Elkan’s formula.</p>
 <p>Let’s first check empirically with matplotlib:</p>
-<p>def logit_prevalence_correction(p, target_prevalence, observed_prevalence):
-corrected_logits = logit(p) + logit(target_prevalence) - logit(observed_prevalence)
-return expit(corrected_logits)</p>
-<p>p = np.linspace(0, 1, 100)</p>
-<p>target_prevalence = 0.01
-observed_prevalence = 0.25
-plt.plot(
-p,
-elkan_prevalence_correction(
-p,
-target_prevalence=target_prevalence,
-observed_prevalence=observed_prevalence,
-),
-label=”Elkan’s formula”,
-)
-plt.plot(
-p,
-logit_prevalence_correction(
-p,
-target_prevalence=target_prevalence,
-observed_prevalence=observed_prevalence,
-),
-linestyle=”–“,
-label=”Difference of prevalence logits”,
-)
-plt.xlabel(“Observed P(y=1|X)”)
-plt.ylabel(“Corrected P(y=1|X)”)
-_ = plt.legend()</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">logit_prevalence_correction</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">target_prevalence</span><span class="p">,</span> <span class="n">observed_prevalence</span><span class="p">):</span>
+    <span class="n">corrected_logits</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="n">logit</span><span class="p">(</span><span class="n">target_prevalence</span><span class="p">)</span> <span class="o">-</span> <span class="n">logit</span><span class="p">(</span><span class="n">observed_prevalence</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">expit</span><span class="p">(</span><span class="n">corrected_logits</span><span class="p">)</span>
+
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="n">target_prevalence</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">observed_prevalence</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">p</span><span class="p">,</span>
+    <span class="n">elkan_prevalence_correction</span><span class="p">(</span>
+        <span class="n">p</span><span class="p">,</span>
+        <span class="n">target_prevalence</span><span class="o">=</span><span class="n">target_prevalence</span><span class="p">,</span>
+        <span class="n">observed_prevalence</span><span class="o">=</span><span class="n">observed_prevalence</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Elkan&#39;s formula&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">p</span><span class="p">,</span>
+    <span class="n">logit_prevalence_correction</span><span class="p">(</span>
+        <span class="n">p</span><span class="p">,</span>
+        <span class="n">target_prevalence</span><span class="o">=</span><span class="n">target_prevalence</span><span class="p">,</span>
+        <span class="n">observed_prevalence</span><span class="o">=</span><span class="n">observed_prevalence</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Difference of prevalence logits&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Observed P(y=1|X)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Corrected P(y=1|X)&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../../_images/e9d6cff40922c98827a2bd82c70153ff2fc8d5420abaa56bb75adcce76df2fba.png" src="../../_images/e9d6cff40922c98827a2bd82c70153ff2fc8d5420abaa56bb75adcce76df2fba.png" />
+</div>
+</div>
 <p>Let’s ask Claude to check that <span class="math notranslate nohighlight">\(p' = \frac{b'(p - pb)}{b - pb + b'p - b'b}\)</span>
 can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expit}(\text{logit}(p) + \text{logit}(b') -
 \text{logit}(b))\)</span> (reusing the notation of [Elkan 2001]):</p>
-<p>Starting with the right-hand side: $<span class="math notranslate nohighlight">\(p' = \text{expit}(\text{logit}(p) +
-\text{logit}(b') - \text{logit}(b))\)</span>$</p>
+<p>Starting with the right-hand side:</p>
+<div class="math notranslate nohighlight">
+\[p' = \text{expit}(\text{logit}(p) + \text{logit}(b') - \text{logit}(b))\]</div>
 <p>Recall that:</p>
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(\text{logit}(x) = \ln\left(\frac{x}{1-x}\right)\)</span></p></li>
@@ -2097,9 +2118,11 @@ can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expi
 \[\text{logit}(p) + \text{logit}(b') - \text{logit}(b) =
 \ln\left(\frac{p}{1-p}\right) + \ln\left(\frac{b'}{1-b'}\right) -
 \ln\left(\frac{b}{1-b}\right)\]</div>
-<p>Using logarithm properties: $<span class="math notranslate nohighlight">\(= \ln\left[\frac{p}{1-p} \times \frac{b'}{1-b'}
+<p>Using logarithm properties:</p>
+<div class="math notranslate nohighlight">
+\[= \ln\left[\frac{p}{1-p} \times \frac{b'}{1-b'}
 \times \frac{1-b}{b}\right] = \ln\left[\frac{p \cdot b' \cdot (1-b)}{(1-p)
-\cdot (1-b') \cdot b}\right]\)</span>$</p>
+\cdot (1-b') \cdot b}\right]\]</div>
 <p>Apply expit function:</p>
 <div class="math notranslate nohighlight">
 \[p' = \frac{1}{1 + e^{-\ln\left[\frac{p \cdot b' \cdot (1-b)}{(1-p) \cdot
@@ -2197,6 +2220,7 @@ can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expi
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-setting">Problem setting</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generating-process">Data generating process</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#questions">Questions:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#answers">Answers:</a></li>
@@ -2209,7 +2233,7 @@ can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expi
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluating-models-on-observed-test-data">Evaluating models on observed test data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-linear-data-generating-process">Non-linear data generating process</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-of-logisitic-regression-models-on-non-linear-classification">Failure of logisitic regression models on non-linear classification</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-of-logistic-regression-models-on-nonlinear-classification">Failure of logistic regression models on nonlinear classification</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#question">Question</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Answers</a></li>
 </ul>

@@ -6,13 +6,16 @@
 # imbalance in the common setting where the **data acquisition process itself
 # corrupts the prevalence of the rare class**.
 #
-# This setting is quite common in practice: for instance, to develop a
-# computer-aided diagnosis system, the data acquisition process might collect
-# data (feature values) for all known cases of a given rare disease of interest
+# ## Problem setting
+#
+# This setting is quite common in practice: let's consider the development of a
+# computer-aided diagnosis system to detect a rare disease that is best treated
+# as early as possible. The data acquisition process might collect data
+# (feature values) for all known historical cases of the disease of interest
 # (the positive class): **since the positive cases are rare, we don't want to
-# waste any of them** and want include them all in our dataset. However, it
+# waste any of them** and want to include them all in our dataset. However, it
 # would be **impossible to collect feature values for all the negative
-# subjects** in the target population because they are too many of them: it
+# subjects** in the target population because there are too many of them: it
 # would be too costly and might also cause ethical and privacy issues.
 #
 # Instead, we sample negative subjects from the population at random to measure
@@ -35,6 +38,10 @@
 #   accurately reflect the expected performance of our model once deployed
 #   despite the prevalence shift.
 #
+# <img
+#  src="https://raw.githubusercontent.com/probabl-ai/calibration-cost-sensitive-learning/refs/heads/main/content/images/prevalence_correction_diagram.svg"
+#  width="800" alt="Prevalence correction diagram" />
+#
 # The lack of match of prevalence between the collected dataset and the
 # deployment setting is a result of cost or computational constraints that
 # prevent us from training and evaluating our predictive model directly on the
@@ -50,17 +57,14 @@
 # with the target population. We will use synthetic data generated from a known
 # data generating process so as to make it possible to check that our proposed
 # training and evaluation methods can achieve that objective.
-#
-# <img src="https://raw.githubusercontent.com/probabl-ai/calibration-cost-sensitive-learning/refs/heads/main/content/images/prevalence_correction_diagram.svg"
-#  width="800" alt="Prevalence correction diagram" />
 
 # %% [markdown]
 # ## Data generating process
 #
-# Let's define a "true" data generating process that represent some fundamental
-# mechanism about the world. The true data generating process is generally
-# unknown, and the goal of machine learning is to approximate it as closely as
-# possible from a finite sample of data points.
+# Let's define a "true" data generating process that represents some
+# fundamental mechanism about the world. The true data generating process is
+# generally unknown, and the goal of machine learning is to approximate it as
+# closely as possible from a finite sample of data points.
 #
 # Here, we want to simulate a binary classification problem where the target
 # variable is a binary variable with a positive class that is very rare.
@@ -74,10 +78,10 @@
 # For the sake of simplicity, we start this study by assuming that the data
 # generating process is a linear model with a logistic link function: the
 # features influence the probability of developing the disease but we expect
-# them to provide only a partial information about the true risk as other
+# them to provide only partial information about the true risk as other
 # unobserved factors may also influence disease development. We assume the
 # unobserved factors to be independent of the observed features and all
-# distribution to be stationary over time.
+# distributions to be stationary over time.
 #
 # We will later relax the linearity assumption but other assumptions will still
 # apply.
@@ -113,9 +117,9 @@ def sample_from_linear_model(true_coef, true_intercept, n_samples, seed):
 
 # %% [markdown]
 #
-# The world can generate a lot of data from a fixed stationary process. Some of that data
-# cannot be accessed at the time of the study but we generate it anyway to be able to
-# compute metrics on the future population.
+# The world can generate a lot of data from a fixed stationary process. Some of
+# that data cannot be accessed at the time of the study but we generate it
+# anyway to be able to compute metrics on the future population.
 
 # %%
 n_samples = 3_000_000
@@ -166,7 +170,7 @@ log_loss(y_past, true_proba_past)
 # - What is the best possible value for the ROC AUC score (in general)?
 # - What is the best possible value for the log-loss (in general)?
 # - Why cannot we reach these values even when using the true probabilities?
-# - What is the name name of the error rate obtained when computed from the
+# - What is the name of the error rate obtained when computed from the
 #   true probabilities?
 
 # %%
@@ -307,14 +311,14 @@ population_comparator.plot_linear_model_parameters()
 #
 # ## Prevalence shift induced by the data acquisition process
 #
-# The following code simulate what could happen in practice when working in
+# The following code simulates what could happen in practice when working in
 # such a setting: we subsample the simulated population to collect all the
 # positive cases and a random sample of negatives from the past data. Mere
 # mortal data scientists cannot `pd.read_csv` from the future, unfortunately.
 #
 # We subsample only the negative cases (control group) to reflect the fact that
-# the negative data is less interesting than the rare positive cases: as such
-# the negative data is in general not archived fully in databases, or even, the
+# the negative data is less interesting than the rare positive cases: as such,
+# the negative data is in general not archived fully in databases, or even the
 # features of most of the negative cases are not acquired at all in the first
 # place.
 
@@ -659,8 +663,9 @@ _ = plt.legend()
 # assess the expected performance of their model on the future population.
 #
 # Instead, they can only evaluate the model on the observed test data. However,
-# the observed test data: in our case, the number of negatives cases is much
-# lower in the observed data (train or test) than in the target population.
+# the observed test data has a different class distribution: in our case, the
+# number of negative cases is much lower in the observed data (train or test)
+# than in the target population.
 #
 # If we naively evaluate the model on the observed test data, we will get
 # misleading results: the model will be evaluated on a test set that does not
@@ -718,8 +723,9 @@ log_loss(y_future, logreg_intercept_corrected.predict_proba(X_future))
 
 # %% [markdown]
 #
-# We can see that weighting the test observed makes it possible to approximate
-# the population log-loss (at least up to 2 to 3 decimal places in this case).
+# We can see that weighting the test observed data makes it possible to
+# approximate the population log-loss (at least up to 2 to 3 decimal places in
+# this case).
 #
 # Let's consolidate all scores for all models into a single table:
 
@@ -734,7 +740,7 @@ weighted_test_set_comparator.score_table().merge(
 
 # %% [markdown]
 #
-# This confirms that the all the prevalence corrected models perform well when
+# This confirms that all the prevalence corrected models perform well when
 # evaluated on the weighted test set and that furthermore, their metric values
 # approximate well enough their expected population counterparts (up to 3
 # decimal places).
@@ -746,7 +752,7 @@ weighted_test_set_comparator.score_table().merge(
 # We will now check that the same prevalence correction methods can be applied
 # to non-linear models applied to non-linear classification problems.
 #
-# Let's start by defining a a non-linear data generating process with a low
+# Let's start by defining a nonlinear data generating process with a low
 # prevalence of the positive class.
 
 
@@ -820,7 +826,7 @@ X_train_nonlinear, X_test_nonlinear, y_train_nonlinear, y_test_nonlinear = (
 )
 # %% [markdown]
 #
-# ## Failure of logisitic regression models on non-linear classification
+# ## Failure of logistic regression models on nonlinear classification
 #
 # Let's check that linear models perform sub-optimally on this dataset, even
 # after prevalence correction.
@@ -1029,6 +1035,7 @@ population_comparator_nonlinear.score_table()
 #
 # Let's first check empirically with matplotlib:
 
+# %%
 
 def logit_prevalence_correction(p, target_prevalence, observed_prevalence):
     corrected_logits = logit(p) + logit(target_prevalence) - logit(observed_prevalence)
@@ -1069,8 +1076,9 @@ _ = plt.legend()
 # can be rewritten as $p' = \text{expit}(\text{logit}(p) + \text{logit}(b') -
 # \text{logit}(b))$ (reusing the notation of [Elkan 2001]):
 #
-# Starting with the right-hand side: $$p' = \text{expit}(\text{logit}(p) +
-# \text{logit}(b') - \text{logit}(b))$$
+# Starting with the right-hand side:
+#
+# $$p' = \text{expit}(\text{logit}(p) + \text{logit}(b') - \text{logit}(b))$$
 #
 # Recall that:
 #
@@ -1083,7 +1091,9 @@ _ = plt.legend()
 # \ln\left(\frac{p}{1-p}\right) + \ln\left(\frac{b'}{1-b'}\right) -
 # \ln\left(\frac{b}{1-b}\right)$$
 #
-# Using logarithm properties: $$= \ln\left[\frac{p}{1-p} \times \frac{b'}{1-b'}
+# Using logarithm properties:
+# 
+# $$= \ln\left[\frac{p}{1-p} \times \frac{b'}{1-b'}
 # \times \frac{1-b}{b}\right] = \ln\left[\frac{p \cdot b' \cdot (1-b)}{(1-p)
 # \cdot (1-b') \cdot b}\right]$$
 #
