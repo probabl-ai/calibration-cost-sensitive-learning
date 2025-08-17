@@ -813,16 +813,20 @@ intercept.</p>
 </div>
 <p>We can see that the learned model parameters nearly recover the data
 generating parameters. This is expected since the logistic regression model
-without penalty is well specified for this data generating process and that
-we have a large number of data points.</p>
+without penalty is well specified for this data generating process, the
+logistic regression model is trained by minimizing a strictly proper scoring
+rule (namely the log-loss), we have a large number of data points and the
+features are uncorrelated.</p>
+<p>Unfortunately, mere mortal data scientists cannot <code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code> from the
+future, so instead we will simulate the data acquisition process and train
+our models only from the past observed data.</p>
 </section>
 </section>
 <section id="prevalence-shift-induced-by-the-data-acquisition-process">
 <h2>Prevalence shift induced by the data acquisition process<a class="headerlink" href="#prevalence-shift-induced-by-the-data-acquisition-process" title="Link to this heading">#</a></h2>
 <p>The following code simulates what could happen in practice when working in
 such a setting: we subsample the simulated population to collect all the
-positive cases and a random sample of negatives from the past data. Mere
-mortal data scientists cannot <code class="docutils literal notranslate"><span class="pre">pd.read_csv</span></code> from the future, unfortunately.</p>
+positive cases and a random sample of negatives from the past data.</p>
 <p>We subsample only the negative cases (control group) to reflect the fact that
 the negative data is less interesting than the rare positive cases: as such,
 the negative data is in general not archived fully in databases, or even the
@@ -1288,7 +1292,8 @@ population_comparator.score_table()</p>
 <li><p>what happens when we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>?</p></li>
 <li><p>is it possible to get <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> values that are not in <span class="math notranslate nohighlight">\([0, 1]\)</span> by
 setting extreme values for <code class="docutils literal notranslate"><span class="pre">target_positive_rate</span></code>?</p></li>
-<li><p>why is the ROC-AUC score not affected by any of the post-hoc correction methods?</p></li>
+<li><p>why is the ROC-AUC score not affected by any of the post-hoc correction
+methods?</p></li>
 </ul>
 <p>Recall that the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function is takes any real number as input and
 returns a value in [0, 1]:</p>
@@ -1328,8 +1333,8 @@ returns a value in [0, 1]:</p>
 <h3>Answers:<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>When we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>, the intercept
-correction <code class="docutils literal notranslate"><span class="pre">logit(target_positive_rate)</span> <span class="pre">-</span> <span class="pre">y_train.mean()</span></code> will be zero,
-hence no correction is applied.</p></li>
+correction <code class="docutils literal notranslate"><span class="pre">logit(target_positive_rate)</span> <span class="pre">-</span> <span class="pre">logit(y_train.mean())</span></code> will be
+zero, hence no correction is applied.</p></li>
 <li><p>Similarly, setting <span class="math notranslate nohighlight">\(b = b'\)</span> in the formula of the docstring of
 <code class="docutils literal notranslate"><span class="pre">elkan_prevalence_correction</span></code> will cause the expression to simplify to <span class="math notranslate nohighlight">\(p =
 p'\)</span>.</p></li>
@@ -1341,9 +1346,10 @@ real numbers and maps them to the [0, 1] interval.</p></li>
 check empirically that the corrected probabilities are also in [0, 1] by
 tweaking the inputs of the plotting snippet below.</p></li>
 <li><p>Both correction method are monotonic transformations of the predicted
-probabilities, hence they preserve the order of the predictions. As a result,
-the relative ranking of the instances remains unchanged and therefore the ROC-AUC
-score is not affected by any of the post-hoc correction methods.</p></li>
+probabilities, hence they preserve the order of the predictions. As a
+result, the relative ranking of the instances remains unchanged and
+therefore the ROC-AUC score is not affected by any of the post-hoc
+correction methods.</p></li>
 </ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1451,8 +1457,9 @@ that same model:</p>
 </div>
 </div>
 <p>The test data is a comparatively small finite set, so the estimation of the
-population log-loss is not perfect but close enough and the weighting definitely
-helps obtain metric values that are aligned with the expected population log-loss.</p>
+population log-loss is not perfect but close enough and the weighting
+definitely helps obtain metric values that are aligned with the expected
+population log-loss.</p>
 <p>Let’s now evaluate one of the corrected models:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1731,11 +1738,11 @@ after prevalence correction.</p>
 <span class="p">)</span>
 <span class="n">logreg_intercept_corrected_nonlinear</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">+=</span> <span class="n">logit</span><span class="p">(</span>
     <span class="n">y_past_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="p">)</span> <span class="o">-</span> <span class="n">logit</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="p">)</span> <span class="o">-</span> <span class="n">logit</span><span class="p">(</span><span class="n">y_train_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 
 <span class="n">class_weight_for_prevalence_correction_nonlinear</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_past_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
-    <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="n">y_past_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_past_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="n">y_past_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">y_train_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
 <span class="p">}</span>
 <span class="n">logreg_weighted_nonlinear</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span>
     <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight_for_prevalence_correction_nonlinear</span><span class="p">,</span> <span class="o">**</span><span class="n">logreg_params</span>
@@ -1995,7 +2002,7 @@ classification problem and analyse the results.</p>
     <tr>
       <th>Weight-corrected GBDT</th>
       <td>0.750700</td>
-      <td>0.035204</td>
+      <td>0.035170</td>
     </tr>
     <tr>
       <th>Post-hoc corrected GBDT</th>

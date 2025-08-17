@@ -304,8 +304,14 @@ population_comparator.plot_linear_model_parameters()
 #
 # We can see that the learned model parameters nearly recover the data
 # generating parameters. This is expected since the logistic regression model
-# without penalty is well specified for this data generating process and that
-# we have a large number of data points.
+# without penalty is well specified for this data generating process, the
+# logistic regression model is trained by minimizing a strictly proper scoring
+# rule (namely the log-loss), we have a large number of data points and the
+# features are uncorrelated.
+#
+# Unfortunately, mere mortal data scientists cannot `pd.read_csv` from the
+# future, so instead we will simulate the data acquisition process and train
+# our models only from the past observed data.
 
 # %% [markdown]
 #
@@ -313,8 +319,7 @@ population_comparator.plot_linear_model_parameters()
 #
 # The following code simulates what could happen in practice when working in
 # such a setting: we subsample the simulated population to collect all the
-# positive cases and a random sample of negatives from the past data. Mere
-# mortal data scientists cannot `pd.read_csv` from the future, unfortunately.
+# positive cases and a random sample of negatives from the past data.
 #
 # We subsample only the negative cases (control group) to reflect the fact that
 # the negative data is less interesting than the rare positive cases: as such,
@@ -571,7 +576,8 @@ population_comparator.score_table()
 # - what happens when we pass `target_positive_rate=y_train.mean()`?
 # - is it possible to get `predict_proba` values that are not in $[0, 1]$ by
 #   setting extreme values for `target_positive_rate`?
-# - why is the ROC-AUC score not affected by any of the post-hoc correction methods?
+# - why is the ROC-AUC score not affected by any of the post-hoc correction
+#   methods?
 #
 # Recall that the `expit` function is takes any real number as input and
 # returns a value in [0, 1]:
@@ -609,8 +615,8 @@ population_comparator.score_table()
 # ### Answers:
 #
 # - When we pass `target_positive_rate=y_train.mean()`, the intercept
-#   correction `logit(target_positive_rate) - y_train.mean()` will be zero,
-#   hence no correction is applied.
+#   correction `logit(target_positive_rate) - logit(y_train.mean())` will be
+#   zero, hence no correction is applied.
 # - Similarly, setting $b = b'$ in the formula of the docstring of
 #   `elkan_prevalence_correction` will cause the expression to simplify to $p =
 #   p'$.
@@ -622,9 +628,10 @@ population_comparator.score_table()
 #   check empirically that the corrected probabilities are also in [0, 1] by
 #   tweaking the inputs of the plotting snippet below.
 # - Both correction method are monotonic transformations of the predicted
-#   probabilities, hence they preserve the order of the predictions. As a result,
-#   the relative ranking of the instances remains unchanged and therefore the ROC-AUC
-#   score is not affected by any of the post-hoc correction methods.
+#   probabilities, hence they preserve the order of the predictions. As a
+#   result, the relative ranking of the instances remains unchanged and
+#   therefore the ROC-AUC score is not affected by any of the post-hoc
+#   correction methods.
 
 # %%
 p = np.linspace(0, 1, 100)
@@ -706,8 +713,9 @@ log_loss(y_future, logreg_uncorrected.predict_proba(X_future))
 # %% [markdown]
 #
 # The test data is a comparatively small finite set, so the estimation of the
-# population log-loss is not perfect but close enough and the weighting definitely
-# helps obtain metric values that are aligned with the expected population log-loss.
+# population log-loss is not perfect but close enough and the weighting
+# definitely helps obtain metric values that are aligned with the expected
+# population log-loss.
 #
 # Let's now evaluate one of the corrected models:
 
@@ -842,11 +850,11 @@ logreg_intercept_corrected_nonlinear = LogisticRegression(**logreg_params).fit(
 )
 logreg_intercept_corrected_nonlinear.intercept_ += logit(
     y_past_nonlinear.mean()
-) - logit(y_train.mean())
+) - logit(y_train_nonlinear.mean())
 
 class_weight_for_prevalence_correction_nonlinear = {
-    0: (1 - y_past_nonlinear.mean()) / (1 - y_train.mean()),
-    1: (y_past_nonlinear.mean() / y_train.mean()),
+    0: (1 - y_past_nonlinear.mean()) / (1 - y_train_nonlinear.mean()),
+    1: (y_past_nonlinear.mean() / y_train_nonlinear.mean()),
 }
 logreg_weighted_nonlinear = LogisticRegression(
     class_weight=class_weight_for_prevalence_correction_nonlinear, **logreg_params
@@ -1037,6 +1045,7 @@ population_comparator_nonlinear.score_table()
 
 # %%
 
+
 def logit_prevalence_correction(p, target_prevalence, observed_prevalence):
     corrected_logits = logit(p) + logit(target_prevalence) - logit(observed_prevalence)
     return expit(corrected_logits)
@@ -1092,7 +1101,7 @@ _ = plt.legend()
 # \ln\left(\frac{b}{1-b}\right)$$
 #
 # Using logarithm properties:
-# 
+#
 # $$= \ln\left[\frac{p}{1-p} \times \frac{b'}{1-b'}
 # \times \frac{1-b}{b}\right] = \ln\left[\frac{p \cdot b' \cdot (1-b)}{(1-p)
 # \cdot (1-b') \cdot b}\right]$$
