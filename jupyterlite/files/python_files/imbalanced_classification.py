@@ -558,6 +558,9 @@ precision_scores, precision_thresholds = precision_curve_scorer(model, X, y)
 recall_scores, recall_thresholds = recall_curve_scorer(model, X, y)
 
 # %%
+# %pip install -q plotly
+
+# %%
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
