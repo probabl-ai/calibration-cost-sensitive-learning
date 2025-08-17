@@ -128,15 +128,14 @@ _ = ax.set(
 # %% [markdown]
 #
 # We observe that the learned model is able to recover the true model coefficients.
-# However, be aware that it is not necessarily always the case. Let's do a small
-# exercise that illustrates when one of the assumptions to recover the true model is not
-# met.
+# However, be aware that it is not always necessarily the case, as illustrated in the
+# following exercise.
 #
 # ### Exercise
 #
-# Below, write a small function that embeds the generative process that we defined
-# above. This time only generate 10,000 samples, train a logistic regression model and
-# check the learned model coefficients.
+# Write a small function that embeds the generative process that we defined above. This
+# time only generate 10,000 samples, train a logistic regression model and check the
+# learned model coefficients.
 #
 # Do you recover the true model coefficients? If not, what is the reason?
 
@@ -210,32 +209,23 @@ _ = ax.set(
 #
 # We observe that we have a larger difference between the coefficients of the true
 # generative process and the learned model. The reason is that the coefficients of the
-# generative process can be recovered under the following assumptions:
+# generative process can only be recovered if the following assumptions are met:
 #
-# - An infinite number of samples is available. Therefore, with a larger number of
-#   samples, the coefficients of the predictive model will get closer to the true
+# - We have access to an unlimited number of training data points. As the sample size
+#   increases, the coefficients of the predictive model will get closer to the true
 #   coefficients.
 # - The predictive model should be well specified. In other words, if our predictive
 #   model is not flexible enough then it will underfit and not recover all the signal of
 #   the true model.
+# - The training process converges to a minimum of a strictly proper scoring rule.
 #
-# We need to study an additional assumption regarding the probabilities estimated by our
-# predictive model.
+# Let us explain the meaning of that last assumption. We are interested in assessing
+# the quality of the probabilistic predictions made by our model:
 
 # %%
 y_proba = model.predict_proba(X)
 y_proba = pd.DataFrame(y_proba, columns=["p_hat(y=0)", "p_hat(y=1)"])
 y_proba
-
-# %% [markdown]
-#
-# Our predictive model estimates the probabilities of the class of interest (i.e.
-# `p_hat(y=1)`). However, we estimate those numbers and they do not necessarily reflect
-# the true probabilities. Here, we can compute the mean of the estimated probabilities
-# and check if we are close to the true probability of the positive class.
-
-# %%
-y_proba.mean() * 100
 
 # %%
 _ = y_proba.plot.hist(
@@ -252,19 +242,38 @@ _ = (
 
 # %% [markdown]
 #
-# For our example, we are indeed close to the true frequency. The reason is that the
-# algorithm used `LogisticRegression` minimizes a "strictly proper" scoring rule. If we
-# do not use such a loss function, there are no theoretical guarantees that the
-# estimated probabilities will be close to the true probabilities.
+# Our predictive model estimates the probabilities of the class of interest (i.e.
+# `p_hat(y=1)`). However, those probabilistic predictions do not necessarily reflect the
+# true probabilities.
 #
-# To conclude, the three above conditions work together: the strictly proper scoring
-# rule provides the right objective, the well-specified model ensures the true
-# coefficients exist within the model's parameter space, and infinite samples allow the
-# optimization to converge to the global optimum that corresponds to these true
-# coefficients.
+# First, we can quickly compute the (marginal) mean of the estimated probabilities and
+# check if we are close to the true probability of the positive class.
+
+# %%
+y_proba.mean() * 100
+
+# %%
+y.value_counts(normalize=True) * 100
+
+# %% [markdown]
 #
-# With these information, we would expect our classifier to be well calibrated. We can
-# check that by plotting the calibration curve.
+# This confirms that the probabilistic predictions of our model are meaningful, at least
+# from a marginal point of view.
+#
+# The reason is that the training algorithm used by `LogisticRegression` successfully
+# minimized the log-loss which is a "strictly proper" scoring rule. A strictly proper
+# scoring rule is minimized if and only if the predicted probabilities are equal to the
+# probabilities of the data generating process.
+#
+# The three above conditions work together: the strictly proper scoring rule provides
+# the right objective from a probabilistic prediction point of view, the well-specified
+# model ensures the true coefficients exist within the model's parameter space, and the
+# unbounded sample size prevents overfitting: the optimum reached on the training set
+# matches the expected optimum on the test set.
+#
+# Since our classifier has successfully converged to the parameters of the data
+# generating process, we would expect our classifier to be well calibrated. We can check
+# that by plotting the calibration curve.
 
 # %%
 from sklearn.calibration import CalibrationDisplay
@@ -274,9 +283,9 @@ _ = display.ax_.set_title("Calibration curve of the unpenalized logistic regress
 
 # %% [markdown]
 #
-# Since we have rare events, only a few samples have high probability and the
-# quantile-based strategy will not show a curve on the right side of the plot. Let's
-# zoom in on the plot to see the curve.
+# Since we have rare events, most data points have low predicted probabilities for the
+# positive class and the quantile-based strategy will not show a curve on the right-hand
+# side of the plot. Let's zoom in on the plot to better see the curve.
 
 # %%
 display.plot()
