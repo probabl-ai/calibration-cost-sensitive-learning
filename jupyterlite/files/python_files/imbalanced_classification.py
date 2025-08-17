@@ -558,7 +558,7 @@ precision_scores, precision_thresholds = precision_curve_scorer(model, X, y)
 recall_scores, recall_thresholds = recall_curve_scorer(model, X, y)
 
 # %%
-# %pip install -q plotly
+# %pip install -q plotly nbformat
 
 # %%
 import plotly.graph_objects as go
