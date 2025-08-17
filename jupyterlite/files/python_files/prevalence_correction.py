@@ -758,7 +758,8 @@ weighted_test_set_comparator.score_table().merge(
 # ## Non-linear data generating process
 #
 # We will now check that the same prevalence correction methods can be applied
-# to non-linear models applied to non-linear classification problems.
+# to non-linear models applied to classification problems with a non-linear
+# decision boundary.
 #
 # Let's start by defining a nonlinear data generating process with a low
 # prevalence of the positive class.
