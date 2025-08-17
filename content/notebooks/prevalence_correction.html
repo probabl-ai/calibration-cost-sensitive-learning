@@ -413,6 +413,7 @@ document.write(`
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-non-linear-models">Fitting non-linear models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-the-results">Analysis of the results</a></li>
 </ul>
 </li>
@@ -1894,10 +1895,12 @@ classification problem and analyse the results.</p>
 </div>
 </div>
 </div>
+</section>
+<section id="solution">
+<h3>Solution<a class="headerlink" href="#solution" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ### Solution</span>
-<span class="n">gbdt_uncorrected</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gbdt_uncorrected</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
     <span class="n">X_train_nonlinear</span><span class="p">,</span> <span class="n">y_train_nonlinear</span>
 <span class="p">)</span>
 
@@ -2213,6 +2216,7 @@ can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expi
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#fitting-non-linear-models">Fitting non-linear models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-of-the-results">Analysis of the results</a></li>
 </ul>
 </li>

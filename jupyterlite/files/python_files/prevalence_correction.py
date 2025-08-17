@@ -944,8 +944,10 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 #
 # Solution below:
 
-# %%
+# %% [markdown]
 # ### Solution
+
+# %%
 gbdt_uncorrected = HistGradientBoostingClassifier(random_state=0).fit(
     X_train_nonlinear, y_train_nonlinear
 )
