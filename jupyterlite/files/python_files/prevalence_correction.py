@@ -1116,7 +1116,9 @@ _ = plt.legend()
 #
 # $$p \cdot b' \cdot (1-b) = pb'(1-b) = pb' - pb'b = b'p - b'pb = b'(p - pb)$$
 #
-# Therefore: $$p' = \frac{b'(p - pb)}{b - pb + b'p - b'b}$$
+# Therefore:
+#
+# $$p' = \frac{b'(p - pb)}{b - pb + b'p - b'b}$$
 #
 # This matches exactly the formula of [Elkan 2001], completing the proof.
 # $\square$
