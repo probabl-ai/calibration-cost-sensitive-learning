@@ -634,7 +634,7 @@ population_comparator.score_table()
 # - For `elkan_prevalence_correction`, the result is less obvious but we can
 #   check empirically that the corrected probabilities are also in [0, 1] by
 #   tweaking the inputs of the plotting snippet below.
-# - Both correction method are monotonic transformations of the predicted
+# - Both correction methods are monotonic transformations of the predicted
 #   probabilities, hence they preserve the order of the predictions. As a
 #   result, the relative ranking of the instances remains unchanged and
 #   therefore the ROC-AUC score is not affected by any of the post-hoc
