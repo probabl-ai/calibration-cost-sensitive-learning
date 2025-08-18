@@ -58,9 +58,9 @@ n_samples, n_features = 1_000_000, 5
 
 true_coef = rng.normal(size=n_features)
 X = rng.normal(size=(n_samples, n_features))
-Z = X @ true_coef
+z = X @ true_coef
 intercept = -4
-y = rng.binomial(n=1, p=expit(Z + intercept))
+y = rng.binomial(n=1, p=expit(z + intercept))
 
 # create pandas data structures for convenience
 X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
@@ -156,9 +156,9 @@ def generate_imbalanced_dataset(n_samples=10_000, n_features=5, seed=0):
 
     true_coef = rng.normal(size=n_features)
     X = rng.normal(size=(n_samples, n_features))
-    Z = X @ true_coef
+    z = X @ true_coef
     intercept = -4
-    y = rng.binomial(n=1, p=expit(Z + intercept))
+    y = rng.binomial(n=1, p=expit(z + intercept))
 
     # create pandas data structures for convenience
     X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
