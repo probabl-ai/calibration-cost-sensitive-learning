@@ -8,38 +8,39 @@
 #
 # The first issue is related to a large difference between the class frequencies in the
 # target variable. It means that the event of interest to predict is rare. As an
-# example, in fraud detection, the event of interest is a fraud and is much less common
-# than legitimate transactions. In this notebook, we first focus on studying this use
-# case that researchers have not addressed properly in the scientific literature except
-# in recent works.
+# example, in fraud detection, the event of interest is a fraudulent transaction and is
+# much less common than legitimate transactions. A large class imbalance can result in
+# degenerate predictive model performance when evaluated naively. In this notebook, we
+# first focus on studying this use case that is often not correctly addressed in many
+# educational resources.
 #
-# The second issue is related to the fact that the data acquisition process do not
-# reflect the true class balance. This means that the class frequencies in the target
-# variable are not representative of the true class balance. As an example, for medical
-# diagnosis, the data acquisition process may be biased towards patients with a rare
-# disease by collecting equal numbers of patients with the disease and equal numbers of
-# patients without the disease. Therefore, there is a need to correct this bias. In the
-# next notebook, we will focus on this issue.
+# The second issue is related to the fact that the data acquisition process itself might
+# not reflect the true class balance. This means that the class frequencies in the
+# target variable are not representative of the true class balance. As an example, for
+# medical diagnosis, the data acquisition process may be biased towards patients with a
+# rare disease by collecting equal numbers of patients with the disease and equal
+# numbers of patients without the disease. Therefore, there is a need to correct this
+# bias. This will be the focus of the next notebook.
 #
 # ## Class imbalance: representative data acquisition with rare events of interest
 #
 # In real-world applications, we commonly need to predict rare events, e.g. frauds, rare
 # diseases, rare climatic events, etc. Simplifying this problem to a binary outcome, it
-# means that the probability for this rare event to happen is rather low in comparison
-# to the probability of the rare event not to happen.
+# means that the probability for the event of interest is low, typically lower than
+# a few percents.
 #
 # To cover the implications of class imbalance, we first generate a synthetic dataset
-# for which we control the success rate of the positive class. We define the generative
-# process below as follows:
+# for which we control the rate of the positive class. We define the generative process
+# below as follows:
 #
 # - We generate a vector of coefficients `true_coef` of shape `(n_features,)` where each
 #   element is a standard normal random variable. In short, it is the true model that we
 #   would like to learn.
 # - We generate a matrix of features `X` of shape `(n_samples, n_features)` where each
 #   column is a standard normal random variable.
-# - We compute the linear predictor `Z` as the dot product of the features and the
+# - We compute the linear predictor `z` as the dot product of the features and the
 #   vector of coefficients `true_coef`.
-# - We transform the linear predictor `Z` into class probabilities using the sigmoid
+# - We transform the linear predictor `z` into class probabilities using the sigmoid
 #   function. To create rare positive events, we shift the intercept of the sigmoid
 #   function.
 # - Finally, we generate a binary target variable `y` where we sample each event by
@@ -57,9 +58,9 @@ n_samples, n_features = 1_000_000, 5
 
 true_coef = rng.normal(size=n_features)
 X = rng.normal(size=(n_samples, n_features))
-Z = X @ true_coef
+z = X @ true_coef
 intercept = -4
-y = rng.binomial(n=1, p=expit(Z + intercept))
+y = rng.binomial(n=1, p=expit(z + intercept))
 
 # create pandas data structures for convenience
 X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
@@ -67,11 +68,13 @@ y = pd.Series(y, name="target")
 
 # %% [markdown]
 #
-# Let's look at the true target and especially the class frequencies and absolute
-# counts.
+# Let's look at the true target and especially the relative class frequencies and
+# absolute counts.
 
 # %%
-print(f"Class frequencies:\n {y.value_counts(normalize=True) * 100}")
+print(f"Relative class frequencies:\n {y.value_counts(normalize=True) * 100}")
+
+# %%
 print(f"Class counts:\n {y.value_counts()}\n")
 
 # %% [markdown]
@@ -79,20 +82,22 @@ print(f"Class counts:\n {y.value_counts()}\n")
 # Looking at the true target distribution, we therefore observe that the probability for
 # a sample to be the positive class with label 1 is rare (~2.5%). Regarding absolute
 # counts, because we generated 1,000,000 samples, the number of events of interest is
-# rather high (25,000).
+# high enough to train a machine learning model (25,000).
 #
 # A particular challenge when dealing with real-world class imbalance is that the number
-# of available samples of the rare event can be usually low even with a large number of
+# of available samples of the rare event is usually low even with a large number of
 # samples. Therefore, it is always important to check the absolute counts of the rare
 # event and if the dataset contains less than 1,000 samples of the rare event, then you
-# are exactly in the same situation as having a dataset with a low number of samples
-# with all related challenges (e.g. large variance of the estimator, weak signal, etc.).
+# will face the usual challenges of training a machine learning model on a dataset with
+# a small number of data points: large variance of the estimator, weak signal,
+# catastrophic overfitting, etc.
 #
 # ## Learning a predictive model
 #
-# Here, we know that our generative process is a linear relationship between the
-# features and the target. Therefore, a linear predictive model is perfectly suited to
-# learn the true model. We therefore train a logistic regression model.
+# Here, we know that our generative process was intentionally crafted to sample the
+# target variable from the prediction function of a logistic regression model.
+# Therefore, fitting a logistic regression model on this data might be able to recover
+# the true model.
 
 # %%
 from sklearn.linear_model import LogisticRegression
@@ -123,18 +128,22 @@ _ = ax.set(
 # %% [markdown]
 #
 # We observe that the learned model is able to recover the true model coefficients.
-# However, be aware that it is not necessarily the case. Let's do a small exercise that
-# illustrates when one of the assumptions to recover the true model is not met.
+# However, be aware that it is not always necessarily the case, as illustrated in the
+# following exercise.
 #
 # ### Exercise
 #
-# Below, write a small function that embeds the generative process that we defined
-# above. This time only generate 10,000 samples, train a logistic regression model and
-# check the learned model coefficients.
+# Write a small function that embeds the generative process that we defined above. This
+# time only generate 10,000 samples, train a logistic regression model and check the
+# learned model coefficients.
 #
 # Do you recover the true model coefficients? If not, what is the reason?
 
 # %%
+# TODO: write your code here!
+
+
+# Do not scroll too quickly!
 
 # %% [markdown]
 #
@@ -147,9 +156,9 @@ def generate_imbalanced_dataset(n_samples=10_000, n_features=5, seed=0):
 
     true_coef = rng.normal(size=n_features)
     X = rng.normal(size=(n_samples, n_features))
-    Z = X @ true_coef
+    z = X @ true_coef
     intercept = -4
-    y = rng.binomial(n=1, p=expit(Z + intercept))
+    y = rng.binomial(n=1, p=expit(z + intercept))
 
     # create pandas data structures for convenience
     X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
@@ -184,32 +193,24 @@ _ = ax.set(
 #
 # We observe that we have a larger difference between the coefficients of the true
 # generative process and the learned model. The reason is that the coefficients of the
-# generative process can be recovered under the following assumptions:
+# generative process can only be recovered if the following assumptions are met:
 #
-# - An infinite number of samples is available. Therefore, with a larger number of
-#   samples, the coefficients of the predictive model will get closer to the true
+# - We have access to an unlimited number of labeled training data points. As the sample
+#   size increases, the coefficients of the predictive model will get closer to the true
 #   coefficients.
 # - The predictive model should be well specified. In other words, if our predictive
 #   model is not flexible enough then it will underfit and not recover all the signal of
 #   the true model.
+# - The training process converges to a minimum of a strictly proper scoring rule
+#   computed on the training set.
 #
-# We need to study an additional assumption regarding the probabilities estimated by our
-# predictive model.
+# Let us explain the meaning of this last assumption. We are interested in assessing the
+# quality of the probabilistic predictions made by our model:
 
 # %%
 y_proba = model.predict_proba(X)
 y_proba = pd.DataFrame(y_proba, columns=["p_hat(y=0)", "p_hat(y=1)"])
 y_proba
-
-# %% [markdown]
-#
-# Our predictive model estimates the probabilities of the class of interest (i.e.
-# `p_hat(y=1)`). However, we estimate those numbers and they do not necessarily reflect
-# the true probabilities. Here, we can compute the mean of the estimated probabilities
-# and check if we are close to the true probability of the positive class.
-
-# %%
-y_proba.mean() * 100
 
 # %%
 _ = y_proba.plot.hist(
@@ -226,19 +227,38 @@ _ = (
 
 # %% [markdown]
 #
-# For our example, we are indeed close to the true frequency. The reason is that the
-# algorithm used `LogisticRegression` minimizes a "strictly proper" scoring rule. If we
-# do not use such a loss function, there are no theoretical guarantees that the
-# estimated probabilities will be close to the true probabilities.
+# Our predictive model estimates the probabilities of the class of interest (i.e.
+# `p_hat(y=1)`). However, those probabilistic predictions do not necessarily reflect the
+# true probabilities.
 #
-# To conclude, the three above conditions work together: the strictly proper scoring
-# rule provides the right objective, the well-specified model ensures the true
-# coefficients exist within the model's parameter space, and infinite samples allow the
-# optimization to converge to the global optimum that corresponds to these true
-# coefficients.
+# First, we can quickly compute the (marginal) mean of the estimated probabilities and
+# check if we are close to the true probability of the positive class.
+
+# %%
+y_proba.mean() * 100
+
+# %%
+y.value_counts(normalize=True) * 100
+
+# %% [markdown]
 #
-# With these information, we would expect our classifier to be well calibrated. We can
-# check that by plotting the calibration curve.
+# This confirms that the probabilistic predictions of our model are meaningful, at least
+# from a marginal point of view.
+#
+# The reason is that the learning algorithm used by `LogisticRegression` successfully
+# minimized the log-loss on the training set. The log-loss is a "strictly proper"
+# scoring rule. A strictly proper scoring rule is minimized if and only if the model
+# predictions exactly match the data generating process.
+#
+# The three above conditions work together: the strictly proper scoring rule provides
+# the right objective from a probabilistic prediction point of view, the well-specified
+# model ensures the true coefficients exist within the model's parameter space, and the
+# unbounded sample size prevents overfitting: the optimum reached on the training set
+# matches the expected optimum on the test set.
+#
+# Since our classifier has successfully converged to the parameters of the data
+# generating process, we would expect our classifier to be well calibrated. We can check
+# that by plotting the calibration curve.
 
 # %%
 from sklearn.calibration import CalibrationDisplay
@@ -248,9 +268,9 @@ _ = display.ax_.set_title("Calibration curve of the unpenalized logistic regress
 
 # %% [markdown]
 #
-# Since we have rare events, only a few samples have high probability and the
-# quantile-based strategy will not show a curve on the right side of the plot. Let's
-# zoom in on the plot to see the curve.
+# Since we have rare events, most data points have low predicted probabilities for the
+# positive class and the quantile-based strategy will not show a curve on the right-hand
+# side of the plot. Let's zoom in on the plot to better see the curve.
 
 # %%
 display.plot()
@@ -266,26 +286,27 @@ _ = display.ax_.set(
 
 # %% [markdown]
 #
-# We observe that the logistic regression is well calibrated as the curve is close to
-# the diagonal line. It therefore means that the probabilities estimated by the model
-# are close to the true probabilities.
+# We observe that our logistic regression model is well calibrated as the curve is close
+# to the diagonal line. This is a direct consequence of the fact that the probabilities
+# estimated by the model are close to the true probabilities.
 #
-# ## From probabilities to predicted outcomes (and to operational decisions)
+# ## From predicted probabilities to predicted outcomes (and to operational decisions)
 #
 # Up to this point of the notebook, we have not encountered any real issues due to the
-# fact that our dataset is imbalanced: with enough samples, a well-specified model
+# fact that our dataset is imbalanced: with enough data points, a well-specified model
 # minimizing a strictly proper scoring rule, everything seems to be fine.
 #
 # However, practitioners have been complaining for many years regarding the above
-# setting. Indeed, the issue comes from when one seeks to translate the estimated
+# setting. Indeed, practical issue often arise when naively translating the estimated
 # probabilities into predicted classification outcomes.
 #
 # In classification, the predicted outcomes correspond to the classes of the target. As
-# a general rule, the estimated probabilities of the classifier are processed to provide
-# a single outcome for each sample. In general the most probable class is selected. For
-# binary classification, it means that the probability is thresholded with a decision
-# cut-off value set at 0.5. In scikit-learn, it corresponds to the `predict` method.
-# Let's check the link between the `predict_proba` and `predict` methods.
+# a general rule, the estimated probabilities of the classifier are processed to predict
+# a single binary outcome for each sample. In general the most probable class is
+# selected. For binary classification, it means that the predicted class probability is
+# thresholded with a decision cut-off value set at 0.5. In scikit-learn, this happens in
+# the `predict` method. Let's check the link between the `predict_proba` and `predict`
+# methods.
 
 # %%
 y_pred = model.predict(X)
@@ -295,9 +316,10 @@ np.allclose(y_pred, y_proba[:, 1] > 0.5)
 
 # %% [markdown]
 #
-# Predicted outcomes come with a set of metrics. We derive those metrics from the
-# confusion matrix indicating the number of true positives, true negatives, false
-# positives and false negatives.
+# Discrete binary classification outcomes are typically evaluated with dedicated
+# metrics. Those binary classification metrics for discrete prediction outcomes are all
+# derived from the confusion matrix: indicating the number of true positives, true
+# negatives, false positives and false negatives.
 
 # %%
 from sklearn.metrics import ConfusionMatrixDisplay
@@ -307,12 +329,10 @@ _ = display.ax_.set_title("Confusion matrix of the unpenalized logistic regressi
 
 # %% [markdown]
 #
-# From the confusion matrix above, we can already understand what bothers practitioners
-# in practice: the number of true positives and thus the number of rare events detected
-# is zero.
+# From the confusion matrix above, we can already understand what bothers practitioners:
+# the total number of positive predictions is very close to zero.
 #
-# One could interpret that our model is therefore not able to detect rare events and
-# thus useless. In general, instead of using the confusion matrix, practitioners use
+# One might interpret this to mean that our model is therefore not able to detect rare events and is thus useless. In general, instead of using the confusion matrix, practitioners use
 # different metrics such as the precision, recall, etc. Let's check the classification
 # report available in scikit-learn that provides a summary of the metrics.
 
@@ -323,21 +343,26 @@ print(classification_report(y, model.predict(X)))
 
 # %% [markdown]
 #
-# As expected, the precision and recall for the class of interest is null.
+# As expected, the precision and recall for the class of interest are degenerate.
 #
-# In the next section, we present the usual solutions used by practitioners to deal with
-# this problem.
+# In the next section, we present a popular "solution" implemented by many practitioners
+# to deal with this problem.
 #
 # ## What people naively do and why you should not do it
 #
-# The reason for not having any true positives in the confusion matrix is that the
-# estimated probabilities by the model for rare events are low because as previously
-# shown, those events are rare!
+# One of the reasons for not having any true positives in the confusion matrix is that
+# the estimated probabilities for rare events are low because, as previously shown,
+# those events are rare. The second reason is that the features we have access to are
+# not very predictive: a large proportion of the variability of the target is
+# unexplained by the features but instead attributed to unobserved and independent
+# factors.
 #
-# One way to counter this issue is to resample the dataset and balance the class
-# frequencies. This means that we artificially increase the number of samples of the
-# rare event and thus the likelihood of the rare event to be detected is higher. We
-# therefore boost the estimated probabilities related to those rare events.
+# One way to counter the issue of degenerate classification metrics is to resample the
+# dataset and balance the class frequencies. This means that we artificially increase
+# the number of samples of the rare event and thus the likelihood of the rare event to
+# be detected is higher. When fitting a model on such a resampled dataset, we therefore
+# artificially boost the estimated probabilities for the positive class (as it became
+# less rare in the resampled data).
 #
 # Let's use `imbalanced-learn` to resample the dataset before training a logistic
 # regression model. When running this notebook under jupyterlite, it is necessary
@@ -350,9 +375,9 @@ print(classification_report(y, model.predict(X)))
 from imblearn.pipeline import make_pipeline
 from imblearn.under_sampling import RandomUnderSampler
 
-# keep a 0.7 ratio between the number of samples of the rare event and the number of
-# samples of the majority event.
-model = make_pipeline(
+# Enforce a 0.7 ratio between the number of data points of the two positive and negative
+# classes.
+undersampling_model = make_pipeline(
     RandomUnderSampler(sampling_strategy=0.7, random_state=0),
     LogisticRegression(penalty=None),
 ).fit(X, y)
@@ -363,7 +388,7 @@ model = make_pipeline(
 # classification report.
 
 # %%
-display = ConfusionMatrixDisplay.from_estimator(model, X, y)
+display = ConfusionMatrixDisplay.from_estimator(undersampling_model, X, y)
 _ = display.ax_.set_title("Confusion matrix of the under-sampled logistic regression")
 
 # %%
@@ -376,7 +401,11 @@ print(classification_report(y, model.predict(X)))
 #
 # So we might be tempted to conclude that we did the right thing by resampling the
 # dataset. However, here we only looked at the "thresholded" metrics. We should study
-# the calibration of the model and we can have a look at the coefficients also.
+# the calibration of the model.
+#
+# Since we are working with synthetic data and we have access to the true coefficients
+# of the data generating process, we can also compare the learned coefficients to the
+# true coefficients.
 #
 # ### Exercise
 #
@@ -385,6 +414,23 @@ print(classification_report(y, model.predict(X)))
 # the model is well calibrated. What do you observe?
 
 # %%
+# TODO: write your code here.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not scroll too quickly ;)
 
 
 # %% [markdown]
@@ -396,7 +442,10 @@ comparison_coef = pd.DataFrame(
     {
         "Data generating model": np.hstack((intercept, true_coef)),
         "Model trained on under-sampled data": np.hstack(
-            (model[-1].intercept_, model[-1].coef_.flatten())
+            (
+                undersampling_model[-1].intercept_,
+                undersampling_model[-1].coef_.flatten(),
+            )
         ),
     },
     index=np.hstack(["intercept", model.feature_names_in_]),
@@ -410,25 +459,24 @@ _ = ax.set(
 
 # %%
 display = CalibrationDisplay.from_estimator(
-    model,
+    undersampling_model,
     X,
     y,
     n_bins=20,
     strategy="quantile",
     name="Model trained on under-sampled data",
 )
-display.ax_.set_title(
-    "Calibration curve of the under-sampled logistic regression"
-)
+display.ax_.set_title("Calibration curve of the under-sampled logistic regression")
 _ = display.ax_.legend(loc="upper right")
 
 # %% [markdown]
 #
 # We observe that the coefficients related to the features are close to the true
-# coefficients of the generative model. However, the intercept is completely off. It
-# translates into an uncalibrated model as seen in the calibration curve: our model
-# becomes too confident at predicting the rare event which is not surprising because it
-# is exactly what we were seeking for.
+# coefficients of the generative model. However, the intercept is completely off. This
+# results in an uncalibrated model as seen in the calibration curve: our model becomes
+# too confident at predicting the (originally) rare event which is not surprising
+# because it is exactly what we intended to do by under-sampling the data points from
+# the negative class.
 #
 # ### Exercise
 #
@@ -442,12 +490,31 @@ _ = display.ax_.legend(loc="upper right")
 # %%
 from sklearn.calibration import CalibratedClassifierCV
 
+
+# TODO: write your code here.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not scroll too quickly ;)
+
 # %% [markdown]
 #
 # ### Solution
 
 # %%
-calibrated_model = CalibratedClassifierCV(model, method="isotonic")
+calibrated_model = CalibratedClassifierCV(undersampling_model, method="isotonic")
 calibrated_model.fit(X, y)
 
 # %%
@@ -477,7 +544,7 @@ print(classification_report(y, calibrated_model.predict(X)))
 # %% [markdown]
 #
 # So in terms of calibration, we see that the `CalibratedClassifierCV` is able to
-# calibrate the model. When looking at the confusion matrix, and the classification
+# re-calibrate the model. When looking at the confusion matrix, and the classification
 # report, we see that we reverted the effect of the resampling and we are back to square
 # one.
 #
@@ -486,25 +553,26 @@ print(classification_report(y, calibrated_model.predict(X)))
 # Resampling acts by artificially shifting the class distribution such that rare events
 # are more likely during the training process. It impacts the predicted outcomes and for
 # the simple case where we have a well-defined linear model, it is equivalent to
-# shifting the intercept. However, the estimated probabilities are completely off the
-# original true probabilities.
+# shifting the intercept. However, the class probabilities predicted by the model
+# trained on resampled data are completely off compared to the true probabilities.
 #
 # Therefore, it tells us that we should be careful with the choice of evaluation metrics
 # and how it interacts with the choice of the decision cut-off threshold.
 #
 # Ranking metrics (e.g. ROC AUC) and probabilistic metrics (e.g. log loss) that assess
 # both ranking and calibration of the predictive model at the same time are good choices
-# but do not reflect on the choice of the decision cut-off threshold.
+# but they completely ignore the choice of the decision cut-off threshold.
 #
 # "Thresholded" metrics (e.g. precision, recall) are impacted by the decision cut-off
-# threshold. Therefore, looking such metrics only for a single decision cut-off
-# is not informative enough. It is required to look at those metrics by varying the
-# decision cut-off threshold.
+# threshold. Therefore, looking such metrics only for a single decision cut-off: can be
+# misleading: the performance metrics can be bad, not because the underlying model is
+# bad but instead because the default choice of the cut-off makes no sense for highly
+# imbalanced classification problems. It is recommended to look at how those metrics
+# change when varying the decision cut-off threshold.
 #
-# The next section focuses on setting the decision cut-off threshold when the evaluation
-# metric of interest is a "thresholded" metric.
+# Let's explore this further in the next section.
 #
-# ## Choosing the decision cut-off threshold when "thresholded" metrics are used
+# ## Assessing the impact of the decision cut-off on "thresholded" metrics
 #
 # In this section, we show two useful meta-estimators available in scikit-learn to set
 # the decision cut-off threshold to change the predicted outcomes of a classifier.
@@ -636,17 +704,17 @@ fig_plotly.show()
 #
 # Using these curves, we now can make a choice regarding a specific trade-off between
 # the level of recall and precision for our classifier. Let's expose a possible use
-# case: our model could be used for medical diagnosis and in this particular setting,
-# we could imagine that physicians reviewing cases of rare diseases expect a certain
-# level of precision of the computer-aided diagnosis system. Otherwise, the system
-# will show too many false positive cases, tiring the physicians, leading to potential
-# errors. However, while expecting a certain level of precision, we also would like our
-# computer-aided diagnosis system to maximize the recall level.
+# case: our model could be used for predictive maintenance and in this particular
+# setting, we could imagine that operators reviewing cases of rare failures expect a
+# certain level of precision of the automated failure detection system. Otherwise, the
+# system will show too many false positive cases, tiring the operators, leading to
+# potential errors. However, while expecting a certain level of precision, we also would
+# like our automated failure detection system to maximize the recall level.
 #
 # Thus, by looking at the precision-recall curve above, we could impose a minimum level
-# of precision of 10%. It means that it would define an horizontal line at 0.05 on the
-# y-axis. We will consider all points above this line and seek for the maximum recall
-# and deduce the corresponding threshold that is 0.07.
+# of precision of 10%. You can mentally draw an horizontal line at 0.1 on the y-axis and
+# then consider all points above this line and seek for the maximum recall and deduce
+# the corresponding optimal threshold. In this case we should find 0.07.
 #
 # ### Exercise
 #
@@ -660,6 +728,24 @@ fig_plotly.show()
 
 # %%
 from sklearn.model_selection import FixedThresholdClassifier
+
+# TODO: write your code here.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not scroll too quickly ;)
 
 # %% [markdown]
 #
@@ -686,9 +772,7 @@ _ = display.ax_.set(
 
 # %%
 display = ConfusionMatrixDisplay.from_estimator(model, X, y)
-_ = display.ax_.set_title(
-    "Confusion matrix of the fixed threshold logistic regression"
-)
+_ = display.ax_.set_title("Confusion matrix of the fixed threshold logistic regression")
 
 # %%
 print(classification_report(y, model.predict(X)))
@@ -696,7 +780,11 @@ print(classification_report(y, model.predict(X)))
 # %% [markdown]
 #
 # As expected, we observe that the model is well calibrated because modifying the
-# decision cut-off threshold does not impact the calibration of the model.
+# decision cut-off threshold does not impact the values returned by the `predict_proba`
+# method: the calibration curve remains unchanged.
+#
+# However, it does impact the binary values returned by the `predict` method and
+# therefore the confusion matrix.
 #
 # With the selected threshold, we expect to have a minimum level of precision of 10%
 # which is exactly what we observe.
@@ -704,7 +792,8 @@ print(classification_report(y, model.predict(X)))
 # While it is an interesting exercise, setting the threshold manually is not the best
 # practice. It would be better to use the `TunedThresholdClassifierCV` meta-estimator to
 # tune the decision cut-off threshold to maximize a specific metric or a specific
-# trade-off using cross-validation.
+# trade-off using cross-validation to avoid depending too much on a single train/test
+# split.
 #
 # Below, we show a case where we want to maximize the recall score but such that the
 # model reach a minimum precision score. We therefore need to create a custom function
@@ -716,16 +805,19 @@ def maximize_recall_under_constrained_precision(y_true, y_pred, precision_level)
     precision, recall = precision_score(y_true, y_pred), recall_score(y_true, y_pred)
 
     if precision < precision_level:
-        # under a certain precision level, we cannot accept the model and thus return
-        # the worst possible score.
+        # We reject any model that does not meet the required precision level
+        # by returning the worst possible score.
         return -np.inf
+
+    # Otherwise, we want to select the cut-off threshold that maximizes the recall.
     return recall
 
 
 # %%
 from sklearn.model_selection import TunedThresholdClassifierCV
 
-# create a scorer that maximizes the recall but such that the precision is at least 0.1
+# Create a scorer that maximizes the recall but such that the precision is at
+# least 0.1.
 scoring = make_scorer(maximize_recall_under_constrained_precision, precision_level=0.1)
 model = TunedThresholdClassifierCV(
     estimator=LogisticRegression(penalty=None), scoring=scoring, n_jobs=-1
@@ -733,9 +825,7 @@ model = TunedThresholdClassifierCV(
 
 # %%
 display = ConfusionMatrixDisplay.from_estimator(model, X, y)
-_ = display.ax_.set_title(
-    "Confusion matrix of the tuned threshold logistic regression"
-)
+_ = display.ax_.set_title("Confusion matrix of the tuned threshold logistic regression")
 
 # %%
 print(classification_report(y, model.predict(X)))
@@ -759,3 +849,24 @@ float(model.best_threshold_)
 # with the `TunedThresholdClassifierCV` meta-estimator. To see an example, refer to the
 # notebook entitled "Cost-sensitive learning to optimize a business metrics" from this
 # course.
+
+# %% [markdown]
+#
+# ## Take away
+#
+# - When working on imbalanced classification problems, using the default decision
+#   threshold of 0.5 can lead to seemingly disappointing classification performance when
+#   evaluating the model using metrics derived from the confusion matrix (accuracy,
+#   precision, recall, F1 score, Matthews correlation coefficient, ...).
+# - Resampling the training set, can improve those metrics but at the cost of breaking
+#   the calibration of the predicted probabilities.
+# - Instead, we recommend to evaluate and tune the hyper-parameters the models using
+#   threshold-independent metrics (such as ROC-AUC, log-loss) and then plot the
+#   thresholded prediction metrics for many choices of the cut-off threshold.
+# - Then, we can use the `TunedThresholdClassifierCV` meta-estimator to find the best
+#   decision threshold for an explicitly defined trade-off between precision and recall.
+# - In later notebooks, we will explore how to deal with a prevalence shift between the
+#   available training data and the target deployment setting, how to incorporate
+#   business-defined costs into the threshold tuning process and dive deeper into the
+#   interplay between ranking performance, calibration and various choices of evaluation
+#   metrics.

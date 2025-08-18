@@ -398,7 +398,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-probabilities-to-predicted-outcomes-and-to-operational-decisions">From probabilities to predicted outcomes (and to operational decisions)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-predicted-probabilities-to-predicted-outcomes-and-to-operational-decisions">From predicted probabilities to predicted outcomes (and to operational decisions)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-people-naively-do-and-why-you-should-not-do-it">What people naively do and why you should not do it</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Exercise</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Solution</a></li>
@@ -406,11 +406,12 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Solution</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-the-decision-cut-off-threshold-when-thresholded-metrics-are-used">Choosing the decision cut-off threshold when “thresholded” metrics are used</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assessing-the-impact-of-the-decision-cut-off-on-thresholded-metrics">Assessing the impact of the decision cut-off on “thresholded” metrics</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Exercise</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Solution</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#take-away">Take away</a></li>
 </ul>
             </nav>
         </div>
@@ -429,35 +430,36 @@ in the target variable creates additional challenges for the classification prob
 We focus on two particular issues related to imbalanced classification.</p>
 <p>The first issue is related to a large difference between the class frequencies in the
 target variable. It means that the event of interest to predict is rare. As an
-example, in fraud detection, the event of interest is a fraud and is much less common
-than legitimate transactions. In this notebook, we first focus on studying this use
-case that researchers have not addressed properly in the scientific literature except
-in recent works.</p>
-<p>The second issue is related to the fact that the data acquisition process do not
-reflect the true class balance. This means that the class frequencies in the target
-variable are not representative of the true class balance. As an example, for medical
-diagnosis, the data acquisition process may be biased towards patients with a rare
-disease by collecting equal numbers of patients with the disease and equal numbers of
-patients without the disease. Therefore, there is a need to correct this bias. In the
-next notebook, we will focus on this issue.</p>
+example, in fraud detection, the event of interest is a fraudulent transaction and is
+much less common than legitimate transactions. A large class imbalance can result in
+degenerate predictive model performance when evaluated naively. In this notebook, we
+first focus on studying this use case that is often not correctly addressed in many
+educational resources.</p>
+<p>The second issue is related to the fact that the data acquisition process itself might
+not reflect the true class balance. This means that the class frequencies in the
+target variable are not representative of the true class balance. As an example, for
+medical diagnosis, the data acquisition process may be biased towards patients with a
+rare disease by collecting equal numbers of patients with the disease and equal
+numbers of patients without the disease. Therefore, there is a need to correct this
+bias. This will be the focus of the next notebook.</p>
 <section id="class-imbalance-representative-data-acquisition-with-rare-events-of-interest">
 <h2>Class imbalance: representative data acquisition with rare events of interest<a class="headerlink" href="#class-imbalance-representative-data-acquisition-with-rare-events-of-interest" title="Link to this heading">#</a></h2>
 <p>In real-world applications, we commonly need to predict rare events, e.g. frauds, rare
 diseases, rare climatic events, etc. Simplifying this problem to a binary outcome, it
-means that the probability for this rare event to happen is rather low in comparison
-to the probability of the rare event not to happen.</p>
+means that the probability for the event of interest is low, typically lower than
+a few percents.</p>
 <p>To cover the implications of class imbalance, we first generate a synthetic dataset
-for which we control the success rate of the positive class. We define the generative
-process below as follows:</p>
+for which we control the rate of the positive class. We define the generative process
+below as follows:</p>
 <ul class="simple">
 <li><p>We generate a vector of coefficients <code class="docutils literal notranslate"><span class="pre">true_coef</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(n_features,)</span></code> where each
 element is a standard normal random variable. In short, it is the true model that we
 would like to learn.</p></li>
 <li><p>We generate a matrix of features <code class="docutils literal notranslate"><span class="pre">X</span></code> of shape <code class="docutils literal notranslate"><span class="pre">(n_samples,</span> <span class="pre">n_features)</span></code> where each
 column is a standard normal random variable.</p></li>
-<li><p>We compute the linear predictor <code class="docutils literal notranslate"><span class="pre">Z</span></code> as the dot product of the features and the
+<li><p>We compute the linear predictor <code class="docutils literal notranslate"><span class="pre">z</span></code> as the dot product of the features and the
 vector of coefficients <code class="docutils literal notranslate"><span class="pre">true_coef</span></code>.</p></li>
-<li><p>We transform the linear predictor <code class="docutils literal notranslate"><span class="pre">Z</span></code> into class probabilities using the sigmoid
+<li><p>We transform the linear predictor <code class="docutils literal notranslate"><span class="pre">z</span></code> into class probabilities using the sigmoid
 function. To create rare positive events, we shift the intercept of the sigmoid
 function.</p></li>
 <li><p>Finally, we generate a binary target variable <code class="docutils literal notranslate"><span class="pre">y</span></code> where we sample each event by
@@ -476,9 +478,9 @@ probability of the positive class we previously computed.</p></li>
 
 <span class="n">true_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_features</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
-<span class="n">Z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
 <span class="n">intercept</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">Z</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">))</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">))</span>
 
 <span class="c1"># create pandas data structures for convenience</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)])</span>
@@ -487,22 +489,32 @@ probability of the positive class we previously computed.</p></li>
 </div>
 </div>
 </div>
-<p>Let’s look at the true target and especially the class frequencies and absolute
-counts.</p>
+<p>Let’s look at the true target and especially the relative class frequencies and
+absolute counts.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class frequencies:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class counts:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative class frequencies:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Class frequencies:
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Relative class frequencies:
  target
 0    97.5037
 1     2.4963
 Name: proportion, dtype: float64
-Class counts:
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class counts:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Class counts:
  target
 0    975037
 1     24963
@@ -514,19 +526,21 @@ Name: count, dtype: int64
 <p>Looking at the true target distribution, we therefore observe that the probability for
 a sample to be the positive class with label 1 is rare (~2.5%). Regarding absolute
 counts, because we generated 1,000,000 samples, the number of events of interest is
-rather high (25,000).</p>
+high enough to train a machine learning model (25,000).</p>
 <p>A particular challenge when dealing with real-world class imbalance is that the number
-of available samples of the rare event can be usually low even with a large number of
+of available samples of the rare event is usually low even with a large number of
 samples. Therefore, it is always important to check the absolute counts of the rare
 event and if the dataset contains less than 1,000 samples of the rare event, then you
-are exactly in the same situation as having a dataset with a low number of samples
-with all related challenges (e.g. large variance of the estimator, weak signal, etc.).</p>
+will face the usual challenges of training a machine learning model on a dataset with
+a small number of data points: large variance of the estimator, weak signal,
+catastrophic overfitting, etc.</p>
 </section>
 <section id="learning-a-predictive-model">
 <h2>Learning a predictive model<a class="headerlink" href="#learning-a-predictive-model" title="Link to this heading">#</a></h2>
-<p>Here, we know that our generative process is a linear relationship between the
-features and the target. Therefore, a linear predictive model is perfectly suited to
-learn the true model. We therefore train a logistic regression model.</p>
+<p>Here, we know that our generative process was intentionally crafted to sample the
+target variable from the prediction function of a logistic regression model.
+Therefore, fitting a logistic regression model on this data might be able to recover
+the true model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
@@ -562,14 +576,24 @@ learn the true model. We therefore train a logistic regression model.</p>
 </div>
 </div>
 <p>We observe that the learned model is able to recover the true model coefficients.
-However, be aware that it is not necessarily the case. Let’s do a small exercise that
-illustrates when one of the assumptions to recover the true model is not met.</p>
+However, be aware that it is not always necessarily the case, as illustrated in the
+following exercise.</p>
 <section id="exercise">
 <h3>Exercise<a class="headerlink" href="#exercise" title="Link to this heading">#</a></h3>
-<p>Below, write a small function that embeds the generative process that we defined
-above. This time only generate 10,000 samples, train a logistic regression model and
-check the learned model coefficients.</p>
+<p>Write a small function that embeds the generative process that we defined above. This
+time only generate 10,000 samples, train a logistic regression model and check the
+learned model coefficients.</p>
 <p>Do you recover the true model coefficients? If not, what is the reason?</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO: write your code here!</span>
+
+
+<span class="c1"># Do not scroll too quickly!</span>
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 <section id="solution">
 <h3>Solution<a class="headerlink" href="#solution" title="Link to this heading">#</a></h3>
@@ -580,9 +604,9 @@ check the learned model coefficients.</p>
 
     <span class="n">true_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_features</span><span class="p">)</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
-    <span class="n">Z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
     <span class="n">intercept</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">Z</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">))</span>
 
     <span class="c1"># create pandas data structures for convenience</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)])</span>
@@ -621,17 +645,19 @@ check the learned model coefficients.</p>
 </div>
 <p>We observe that we have a larger difference between the coefficients of the true
 generative process and the learned model. The reason is that the coefficients of the
-generative process can be recovered under the following assumptions:</p>
+generative process can only be recovered if the following assumptions are met:</p>
 <ul class="simple">
-<li><p>An infinite number of samples is available. Therefore, with a larger number of
-samples, the coefficients of the predictive model will get closer to the true
+<li><p>We have access to an unlimited number of labeled training data points. As the sample
+size increases, the coefficients of the predictive model will get closer to the true
 coefficients.</p></li>
 <li><p>The predictive model should be well specified. In other words, if our predictive
 model is not flexible enough then it will underfit and not recover all the signal of
 the true model.</p></li>
+<li><p>The training process converges to a minimum of a strictly proper scoring rule
+computed on the training set.</p></li>
 </ul>
-<p>We need to study an additional assumption regarding the probabilities estimated by our
-predictive model.</p>
+<p>Let us explain the meaning of this last assumption. We are interested in assessing the
+quality of the probabilistic predictions made by our model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -724,24 +750,6 @@ predictive model.</p>
 <p>1000000 rows × 2 columns</p>
 </div></div></div>
 </div>
-<p>Our predictive model estimates the probabilities of the class of interest (i.e.
-<code class="docutils literal notranslate"><span class="pre">p_hat(y=1)</span></code>). However, we estimate those numbers and they do not necessarily reflect
-the true probabilities. Here, we can compute the mean of the estimated probabilities
-and check if we are close to the true probability of the positive class.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>p_hat(y=0)    97.503089
-p_hat(y=1)     2.496911
-dtype: float64
-</pre></div>
-</div>
-</div>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">y_proba</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
@@ -769,17 +777,54 @@ dtype: float64
 <img alt="../../_images/5ca30ede305665e49deee49fb02ef3c1cdfba5877709a710da15c42138939cf6.png" src="../../_images/5ca30ede305665e49deee49fb02ef3c1cdfba5877709a710da15c42138939cf6.png" />
 </div>
 </div>
-<p>For our example, we are indeed close to the true frequency. The reason is that the
-algorithm used <code class="docutils literal notranslate"><span class="pre">LogisticRegression</span></code> minimizes a “strictly proper” scoring rule. If we
-do not use such a loss function, there are no theoretical guarantees that the
-estimated probabilities will be close to the true probabilities.</p>
-<p>To conclude, the three above conditions work together: the strictly proper scoring
-rule provides the right objective, the well-specified model ensures the true
-coefficients exist within the model’s parameter space, and infinite samples allow the
-optimization to converge to the global optimum that corresponds to these true
-coefficients.</p>
-<p>With these information, we would expect our classifier to be well calibrated. We can
-check that by plotting the calibration curve.</p>
+<p>Our predictive model estimates the probabilities of the class of interest (i.e.
+<code class="docutils literal notranslate"><span class="pre">p_hat(y=1)</span></code>). However, those probabilistic predictions do not necessarily reflect the
+true probabilities.</p>
+<p>First, we can quickly compute the (marginal) mean of the estimated probabilities and
+check if we are close to the true probability of the positive class.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_proba</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>p_hat(y=0)    97.503089
+p_hat(y=1)     2.496911
+dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>target
+0    97.5037
+1     2.4963
+Name: proportion, dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<p>This confirms that the probabilistic predictions of our model are meaningful, at least
+from a marginal point of view.</p>
+<p>The reason is that the learning algorithm used by <code class="docutils literal notranslate"><span class="pre">LogisticRegression</span></code> successfully
+minimized the log-loss on the training set. The log-loss is a “strictly proper”
+scoring rule. A strictly proper scoring rule is minimized if and only if the model
+predictions exactly match the data generating process.</p>
+<p>The three above conditions work together: the strictly proper scoring rule provides
+the right objective from a probabilistic prediction point of view, the well-specified
+model ensures the true coefficients exist within the model’s parameter space, and the
+unbounded sample size prevents overfitting: the optimum reached on the training set
+matches the expected optimum on the test set.</p>
+<p>Since our classifier has successfully converged to the parameters of the data
+generating process, we would expect our classifier to be well calibrated. We can check
+that by plotting the calibration curve.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibrationDisplay</span>
@@ -793,9 +838,9 @@ check that by plotting the calibration curve.</p>
 <img alt="../../_images/5e4121f947238c67c2b9544afe93b95fc8edf9c95f3f7f510a50c5ea6da9ab7d.png" src="../../_images/5e4121f947238c67c2b9544afe93b95fc8edf9c95f3f7f510a50c5ea6da9ab7d.png" />
 </div>
 </div>
-<p>Since we have rare events, only a few samples have high probability and the
-quantile-based strategy will not show a curve on the right side of the plot. Let’s
-zoom in on the plot to see the curve.</p>
+<p>Since we have rare events, most data points have low predicted probabilities for the
+positive class and the quantile-based strategy will not show a curve on the right-hand
+side of the plot. Let’s zoom in on the plot to better see the curve.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
@@ -815,25 +860,26 @@ zoom in on the plot to see the curve.</p>
 <img alt="../../_images/6e690390a496ffeeb67eda21f3b4a8cf17c85aba0d3f3d21a615658fe744d1fb.png" src="../../_images/6e690390a496ffeeb67eda21f3b4a8cf17c85aba0d3f3d21a615658fe744d1fb.png" />
 </div>
 </div>
-<p>We observe that the logistic regression is well calibrated as the curve is close to
-the diagonal line. It therefore means that the probabilities estimated by the model
-are close to the true probabilities.</p>
+<p>We observe that our logistic regression model is well calibrated as the curve is close
+to the diagonal line. This is a direct consequence of the fact that the probabilities
+estimated by the model are close to the true probabilities.</p>
 </section>
 </section>
-<section id="from-probabilities-to-predicted-outcomes-and-to-operational-decisions">
-<h2>From probabilities to predicted outcomes (and to operational decisions)<a class="headerlink" href="#from-probabilities-to-predicted-outcomes-and-to-operational-decisions" title="Link to this heading">#</a></h2>
+<section id="from-predicted-probabilities-to-predicted-outcomes-and-to-operational-decisions">
+<h2>From predicted probabilities to predicted outcomes (and to operational decisions)<a class="headerlink" href="#from-predicted-probabilities-to-predicted-outcomes-and-to-operational-decisions" title="Link to this heading">#</a></h2>
 <p>Up to this point of the notebook, we have not encountered any real issues due to the
-fact that our dataset is imbalanced: with enough samples, a well-specified model
+fact that our dataset is imbalanced: with enough data points, a well-specified model
 minimizing a strictly proper scoring rule, everything seems to be fine.</p>
 <p>However, practitioners have been complaining for many years regarding the above
-setting. Indeed, the issue comes from when one seeks to translate the estimated
+setting. Indeed, practical issue often arise when naively translating the estimated
 probabilities into predicted classification outcomes.</p>
 <p>In classification, the predicted outcomes correspond to the classes of the target. As
-a general rule, the estimated probabilities of the classifier are processed to provide
-a single outcome for each sample. In general the most probable class is selected. For
-binary classification, it means that the probability is thresholded with a decision
-cut-off value set at 0.5. In scikit-learn, it corresponds to the <code class="docutils literal notranslate"><span class="pre">predict</span></code> method.
-Let’s check the link between the <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code> methods.</p>
+a general rule, the estimated probabilities of the classifier are processed to predict
+a single binary outcome for each sample. In general the most probable class is
+selected. For binary classification, it means that the predicted class probability is
+thresholded with a decision cut-off value set at 0.5. In scikit-learn, this happens in
+the <code class="docutils literal notranslate"><span class="pre">predict</span></code> method. Let’s check the link between the <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> and <code class="docutils literal notranslate"><span class="pre">predict</span></code>
+methods.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -849,9 +895,10 @@ Let’s check the link between the <code class="docutils literal notranslate"><s
 </div>
 </div>
 </div>
-<p>Predicted outcomes come with a set of metrics. We derive those metrics from the
-confusion matrix indicating the number of true positives, true negatives, false
-positives and false negatives.</p>
+<p>Discrete binary classification outcomes are typically evaluated with dedicated
+metrics. Those binary classification metrics for discrete prediction outcomes are all
+derived from the confusion matrix: indicating the number of true positives, true
+negatives, false positives and false negatives.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfusionMatrixDisplay</span>
@@ -865,11 +912,9 @@ positives and false negatives.</p>
 <img alt="../../_images/0e46ba1388ed335ef924e26b2f313785aaea8090687346bb9b423cd2354fbc52.png" src="../../_images/0e46ba1388ed335ef924e26b2f313785aaea8090687346bb9b423cd2354fbc52.png" />
 </div>
 </div>
-<p>From the confusion matrix above, we can already understand what bothers practitioners
-in practice: the number of true positives and thus the number of rare events detected
-is zero.</p>
-<p>One could interpret that our model is therefore not able to detect rare events and
-thus useless. In general, instead of using the confusion matrix, practitioners use
+<p>From the confusion matrix above, we can already understand what bothers practitioners:
+the total number of positive predictions is very close to zero.</p>
+<p>One might interpret this to mean that our model is therefore not able to detect rare events and is thus useless. In general, instead of using the confusion matrix, practitioners use
 different metrics such as the precision, recall, etc. Let’s check the classification
 report available in scikit-learn that provides a summary of the metrics.</p>
 <div class="cell docutils container">
@@ -893,19 +938,24 @@ weighted avg       0.95      0.98      0.96   1000000
 </div>
 </div>
 </div>
-<p>As expected, the precision and recall for the class of interest is null.</p>
-<p>In the next section, we present the usual solutions used by practitioners to deal with
-this problem.</p>
+<p>As expected, the precision and recall for the class of interest are degenerate.</p>
+<p>In the next section, we present a popular “solution” implemented by many practitioners
+to deal with this problem.</p>
 </section>
 <section id="what-people-naively-do-and-why-you-should-not-do-it">
 <h2>What people naively do and why you should not do it<a class="headerlink" href="#what-people-naively-do-and-why-you-should-not-do-it" title="Link to this heading">#</a></h2>
-<p>The reason for not having any true positives in the confusion matrix is that the
-estimated probabilities by the model for rare events are low because as previously
-shown, those events are rare!</p>
-<p>One way to counter this issue is to resample the dataset and balance the class
-frequencies. This means that we artificially increase the number of samples of the
-rare event and thus the likelihood of the rare event to be detected is higher. We
-therefore boost the estimated probabilities related to those rare events.</p>
+<p>One of the reasons for not having any true positives in the confusion matrix is that
+the estimated probabilities for rare events are low because, as previously shown,
+those events are rare. The second reason is that the features we have access to are
+not very predictive: a large proportion of the variability of the target is
+unexplained by the features but instead attributed to unobserved and independent
+factors.</p>
+<p>One way to counter the issue of degenerate classification metrics is to resample the
+dataset and balance the class frequencies. This means that we artificially increase
+the number of samples of the rare event and thus the likelihood of the rare event to
+be detected is higher. When fitting a model on such a resampled dataset, we therefore
+artificially boost the estimated probabilities for the positive class (as it became
+less rare in the resampled data).</p>
 <p>Let’s use <code class="docutils literal notranslate"><span class="pre">imbalanced-learn</span></code> to resample the dataset before training a logistic
 regression model. When running this notebook under jupyterlite, it is necessary
 to pip install imbalanced-learn first:</p>
@@ -929,9 +979,9 @@ to pip install imbalanced-learn first:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">imblearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_pipeline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">imblearn.under_sampling</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomUnderSampler</span>
 
-<span class="c1"># keep a 0.7 ratio between the number of samples of the rare event and the number of</span>
-<span class="c1"># samples of the majority event.</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
+<span class="c1"># Enforce a 0.7 ratio between the number of data points of the two positive and negative</span>
+<span class="c1"># classes.</span>
+<span class="n">undersampling_model</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span>
     <span class="n">RandomUnderSampler</span><span class="p">(</span><span class="n">sampling_strategy</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
     <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
 <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -943,7 +993,7 @@ to pip install imbalanced-learn first:</p>
 classification report.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span><span class="n">undersampling_model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Confusion matrix of the under-sampled logistic regression&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -961,12 +1011,12 @@ classification report.</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              precision    recall  f1-score   support
 
-           0       0.98      0.80      0.88    975037
-           1       0.06      0.50      0.11     24963
+           0       0.98      1.00      0.99    975037
+           1       0.00      0.00      0.00     24963
 
-    accuracy                           0.79   1000000
-   macro avg       0.52      0.65      0.50   1000000
-weighted avg       0.96      0.79      0.86   1000000
+    accuracy                           0.98   1000000
+   macro avg       0.49      0.50      0.49   1000000
+weighted avg       0.95      0.98      0.96   1000000
 </pre></div>
 </div>
 </div>
@@ -975,12 +1025,38 @@ weighted avg       0.96      0.79      0.86   1000000
 and recall for the class of interest.</p>
 <p>So we might be tempted to conclude that we did the right thing by resampling the
 dataset. However, here we only looked at the “thresholded” metrics. We should study
-the calibration of the model and we can have a look at the coefficients also.</p>
+the calibration of the model.</p>
+<p>Since we are working with synthetic data and we have access to the true coefficients
+of the data generating process, we can also compare the learned coefficients to the
+true coefficients.</p>
 <section id="id1">
 <h3>Exercise<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>Plot the coefficients of the model and check whether or not the coefficients are close
 to the true coefficients. Then, plot the calibration curve and check whether or not
 the model is well calibrated. What do you observe?</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TODO: write your code here.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># Do not scroll too quickly ;)</span>
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 <section id="id2">
 <h3>Solution<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
@@ -990,7 +1066,10 @@ the model is well calibrated. What do you observe?</p>
     <span class="p">{</span>
         <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
         <span class="s2">&quot;Model trained on under-sampled data&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">model</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+            <span class="p">(</span>
+                <span class="n">undersampling_model</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span>
+                <span class="n">undersampling_model</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+            <span class="p">)</span>
         <span class="p">),</span>
     <span class="p">},</span>
     <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="s2">&quot;intercept&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">feature_names_in_</span><span class="p">]),</span>
@@ -1011,16 +1090,14 @@ the model is well calibrated. What do you observe?</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <span class="n">CalibrationDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span>
+    <span class="n">undersampling_model</span><span class="p">,</span>
     <span class="n">X</span><span class="p">,</span>
     <span class="n">y</span><span class="p">,</span>
     <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
     <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Model trained on under-sampled data&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
-    <span class="s2">&quot;Calibration curve of the under-sampled logistic regression&quot;</span>
-<span class="p">)</span>
+<span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Calibration curve of the under-sampled logistic regression&quot;</span><span class="p">)</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper right&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1030,10 +1107,11 @@ the model is well calibrated. What do you observe?</p>
 </div>
 </div>
 <p>We observe that the coefficients related to the features are close to the true
-coefficients of the generative model. However, the intercept is completely off. It
-translates into an uncalibrated model as seen in the calibration curve: our model
-becomes too confident at predicting the rare event which is not surprising because it
-is exactly what we were seeking for.</p>
+coefficients of the generative model. However, the intercept is completely off. This
+results in an uncalibrated model as seen in the calibration curve: our model becomes
+too confident at predicting the (originally) rare event which is not surprising
+because it is exactly what we intended to do by under-sampling the data points from
+the negative class.</p>
 </section>
 <section id="id3">
 <h3>Exercise<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
@@ -1045,6 +1123,25 @@ set the parameter <code class="docutils literal notranslate"><span class="pre">m
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibratedClassifierCV</span>
+
+
+<span class="c1"># TODO: write your code here.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># Do not scroll too quickly ;)</span>
 </pre></div>
 </div>
 </div>
@@ -1054,7 +1151,7 @@ set the parameter <code class="docutils literal notranslate"><span class="pre">m
 <h3>Solution<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">calibrated_model</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;isotonic&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">calibrated_model</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span><span class="n">undersampling_model</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;isotonic&quot;</span><span class="p">)</span>
 <span class="n">calibrated_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1901,30 +1998,31 @@ weighted avg       0.96      0.98      0.96   1000000
 </div>
 </div>
 <p>So in terms of calibration, we see that the <code class="docutils literal notranslate"><span class="pre">CalibratedClassifierCV</span></code> is able to
-calibrate the model. When looking at the confusion matrix, and the classification
+re-calibrate the model. When looking at the confusion matrix, and the classification
 report, we see that we reverted the effect of the resampling and we are back to square
 one.</p>
 <p>So what is the lesson to learn here?</p>
 <p>Resampling acts by artificially shifting the class distribution such that rare events
 are more likely during the training process. It impacts the predicted outcomes and for
 the simple case where we have a well-defined linear model, it is equivalent to
-shifting the intercept. However, the estimated probabilities are completely off the
-original true probabilities.</p>
+shifting the intercept. However, the class probabilities predicted by the model
+trained on resampled data are completely off compared to the true probabilities.</p>
 <p>Therefore, it tells us that we should be careful with the choice of evaluation metrics
 and how it interacts with the choice of the decision cut-off threshold.</p>
 <p>Ranking metrics (e.g. ROC AUC) and probabilistic metrics (e.g. log loss) that assess
 both ranking and calibration of the predictive model at the same time are good choices
-but do not reflect on the choice of the decision cut-off threshold.</p>
+but they completely ignore the choice of the decision cut-off threshold.</p>
 <p>“Thresholded” metrics (e.g. precision, recall) are impacted by the decision cut-off
-threshold. Therefore, looking such metrics only for a single decision cut-off
-is not informative enough. It is required to look at those metrics by varying the
-decision cut-off threshold.</p>
-<p>The next section focuses on setting the decision cut-off threshold when the evaluation
-metric of interest is a “thresholded” metric.</p>
+threshold. Therefore, looking such metrics only for a single decision cut-off: can be
+misleading: the performance metrics can be bad, not because the underlying model is
+bad but instead because the default choice of the cut-off makes no sense for highly
+imbalanced classification problems. It is recommended to look at how those metrics
+change when varying the decision cut-off threshold.</p>
+<p>Let’s explore this further in the next section.</p>
 </section>
 </section>
-<section id="choosing-the-decision-cut-off-threshold-when-thresholded-metrics-are-used">
-<h2>Choosing the decision cut-off threshold when “thresholded” metrics are used<a class="headerlink" href="#choosing-the-decision-cut-off-threshold-when-thresholded-metrics-are-used" title="Link to this heading">#</a></h2>
+<section id="assessing-the-impact-of-the-decision-cut-off-on-thresholded-metrics">
+<h2>Assessing the impact of the decision cut-off on “thresholded” metrics<a class="headerlink" href="#assessing-the-impact-of-the-decision-cut-off-on-thresholded-metrics" title="Link to this heading">#</a></h2>
 <p>In this section, we show two useful meta-estimators available in scikit-learn to set
 the decision cut-off threshold to change the predicted outcomes of a classifier.</p>
 <p>On the one hand, the <code class="docutils literal notranslate"><span class="pre">FixedThresholdClassifier</span></code> meta-estimator accepts an explicit
@@ -2076,16 +2174,16 @@ the decision cut-off threshold as well as the precision-recall curve.</p>
 </div>
 <p>Using these curves, we now can make a choice regarding a specific trade-off between
 the level of recall and precision for our classifier. Let’s expose a possible use
-case: our model could be used for medical diagnosis and in this particular setting,
-we could imagine that physicians reviewing cases of rare diseases expect a certain
-level of precision of the computer-aided diagnosis system. Otherwise, the system
-will show too many false positive cases, tiring the physicians, leading to potential
-errors. However, while expecting a certain level of precision, we also would like our
-computer-aided diagnosis system to maximize the recall level.</p>
+case: our model could be used for predictive maintenance and in this particular
+setting, we could imagine that operators reviewing cases of rare failures expect a
+certain level of precision of the automated failure detection system. Otherwise, the
+system will show too many false positive cases, tiring the operators, leading to
+potential errors. However, while expecting a certain level of precision, we also would
+like our automated failure detection system to maximize the recall level.</p>
 <p>Thus, by looking at the precision-recall curve above, we could impose a minimum level
-of precision of 10%. It means that it would define an horizontal line at 0.05 on the
-y-axis. We will consider all points above this line and seek for the maximum recall
-and deduce the corresponding threshold that is 0.07.</p>
+of precision of 10%. You can mentally draw an horizontal line at 0.1 on the y-axis and
+then consider all points above this line and seek for the maximum recall and deduce
+the corresponding optimal threshold. In this case we should find 0.07.</p>
 <section id="id5">
 <h3>Exercise<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
 <p>Using the <code class="docutils literal notranslate"><span class="pre">FixedThresholdClassifier</span></code> meta-estimator, set the decision cut-off
@@ -2097,6 +2195,24 @@ recall of the class of interest?</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedThresholdClassifier</span>
+
+<span class="c1"># TODO: write your code here.</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1"># Do not scroll too quickly ;)</span>
 </pre></div>
 </div>
 </div>
@@ -2137,9 +2253,7 @@ recall of the class of interest?</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
-    <span class="s2">&quot;Confusion matrix of the fixed threshold logistic regression&quot;</span>
-<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Confusion matrix of the fixed threshold logistic regression&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2167,13 +2281,17 @@ weighted avg       0.96      0.94      0.95   1000000
 </div>
 </div>
 <p>As expected, we observe that the model is well calibrated because modifying the
-decision cut-off threshold does not impact the calibration of the model.</p>
+decision cut-off threshold does not impact the values returned by the <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code>
+method: the calibration curve remains unchanged.</p>
+<p>However, it does impact the binary values returned by the <code class="docutils literal notranslate"><span class="pre">predict</span></code> method and
+therefore the confusion matrix.</p>
 <p>With the selected threshold, we expect to have a minimum level of precision of 10%
 which is exactly what we observe.</p>
 <p>While it is an interesting exercise, setting the threshold manually is not the best
 practice. It would be better to use the <code class="docutils literal notranslate"><span class="pre">TunedThresholdClassifierCV</span></code> meta-estimator to
 tune the decision cut-off threshold to maximize a specific metric or a specific
-trade-off using cross-validation.</p>
+trade-off using cross-validation to avoid depending too much on a single train/test
+split.</p>
 <p>Below, we show a case where we want to maximize the recall score but such that the
 model reach a minimum precision score. We therefore need to create a custom function
 that can be used by the <code class="docutils literal notranslate"><span class="pre">TunedThresholdClassifierCV</span></code> meta-estimator.</p>
@@ -2183,9 +2301,11 @@ that can be used by the <code class="docutils literal notranslate"><span class="
     <span class="n">precision</span><span class="p">,</span> <span class="n">recall</span> <span class="o">=</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">),</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">precision</span> <span class="o">&lt;</span> <span class="n">precision_level</span><span class="p">:</span>
-        <span class="c1"># under a certain precision level, we cannot accept the model and thus return</span>
-        <span class="c1"># the worst possible score.</span>
+        <span class="c1"># We reject any model that does not meet the required precision level</span>
+        <span class="c1"># by returning the worst possible score.</span>
         <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
+    <span class="c1"># Otherwise, we want to select the cut-off threshold that maximizes the recall.</span>
     <span class="k">return</span> <span class="n">recall</span>
 </pre></div>
 </div>
@@ -2195,7 +2315,8 @@ that can be used by the <code class="docutils literal notranslate"><span class="
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">TunedThresholdClassifierCV</span>
 
-<span class="c1"># create a scorer that maximizes the recall but such that the precision is at least 0.1</span>
+<span class="c1"># Create a scorer that maximizes the recall but such that the precision is at</span>
+<span class="c1"># least 0.1.</span>
 <span class="n">scoring</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">maximize_recall_under_constrained_precision</span><span class="p">,</span> <span class="n">precision_level</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">TunedThresholdClassifierCV</span><span class="p">(</span>
     <span class="n">estimator</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span>
@@ -2207,9 +2328,7 @@ that can be used by the <code class="docutils literal notranslate"><span class="
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">display</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="o">.</span><span class="n">from_estimator</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
-    <span class="s2">&quot;Confusion matrix of the tuned threshold logistic regression&quot;</span>
-<span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">display</span><span class="o">.</span><span class="n">ax_</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Confusion matrix of the tuned threshold logistic regression&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2260,6 +2379,27 @@ with the <code class="docutils literal notranslate"><span class="pre">TunedThres
 notebook entitled “Cost-sensitive learning to optimize a business metrics” from this
 course.</p>
 </section>
+</section>
+<section id="take-away">
+<h2>Take away<a class="headerlink" href="#take-away" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>When working on imbalanced classification problems, using the default decision
+threshold of 0.5 can lead to seemingly disappointing classification performance when
+evaluating the model using metrics derived from the confusion matrix (accuracy,
+precision, recall, F1 score, Matthews correlation coefficient, …).</p></li>
+<li><p>Resampling the training set, can improve those metrics but at the cost of breaking
+the calibration of the predicted probabilities.</p></li>
+<li><p>Instead, we recommend to evaluate and tune the hyper-parameters the models using
+threshold-independent metrics (such as ROC-AUC, log-loss) and then plot the
+thresholded prediction metrics for many choices of the cut-off threshold.</p></li>
+<li><p>Then, we can use the <code class="docutils literal notranslate"><span class="pre">TunedThresholdClassifierCV</span></code> meta-estimator to find the best
+decision threshold for an explicitly defined trade-off between precision and recall.</p></li>
+<li><p>In later notebooks, we will explore how to deal with a prevalence shift between the
+available training data and the target deployment setting, how to incorporate
+business-defined costs into the threshold tuning process and dive deeper into the
+interplay between ranking performance, calibration and various choices of evaluation
+metrics.</p></li>
+</ul>
 </section>
 </section>
 
@@ -2333,7 +2473,7 @@ course.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-probabilities-to-predicted-outcomes-and-to-operational-decisions">From probabilities to predicted outcomes (and to operational decisions)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-predicted-probabilities-to-predicted-outcomes-and-to-operational-decisions">From predicted probabilities to predicted outcomes (and to operational decisions)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-people-naively-do-and-why-you-should-not-do-it">What people naively do and why you should not do it</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Exercise</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Solution</a></li>
@@ -2341,11 +2481,12 @@ course.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Solution</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-the-decision-cut-off-threshold-when-thresholded-metrics-are-used">Choosing the decision cut-off threshold when “thresholded” metrics are used</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assessing-the-impact-of-the-decision-cut-off-on-thresholded-metrics">Assessing the impact of the decision cut-off on “thresholded” metrics</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Exercise</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Solution</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#take-away">Take away</a></li>
 </ul>
   </nav></div>
 
