@@ -14,7 +14,7 @@
 # first focus on studying this use case that is often not correctly addressed in many
 # educational resources.
 #
-# The second issue is related to the fact that the data acquisition itself process might
+# The second issue is related to the fact that the data acquisition process itself might
 # not reflect the true class balance. This means that the class frequencies in the
 # target variable are not representative of the true class balance. As an example, for
 # medical diagnosis, the data acquisition process may be biased towards patients with a
@@ -85,7 +85,7 @@ print(f"Class counts:\n {y.value_counts()}\n")
 # high enough to train a machine learning model (25,000).
 #
 # A particular challenge when dealing with real-world class imbalance is that the number
-# of available samples of the rare event can be usually low even with a large number of
+# of available samples of the rare event is usually low even with a large number of
 # samples. Therefore, it is always important to check the absolute counts of the rare
 # event and if the dataset contains less than 1,000 samples of the rare event, then you
 # will face the usual challenges of training a machine learning model on a dataset with
@@ -201,10 +201,10 @@ _ = ax.set(
 # - The predictive model should be well specified. In other words, if our predictive
 #   model is not flexible enough then it will underfit and not recover all the signal of
 #   the true model.
-# - The training process converges to a minimum of a strictly proper scoring rule on
+# - The training process converges to a minimum of a strictly proper scoring rule
 #   computed on the training set.
 #
-# Let us explain the meaning of that last assumption. We are interested in assessing the
+# Let us explain the meaning of this last assumption. We are interested in assessing the
 # quality of the probabilistic predictions made by our model:
 
 # %%
@@ -332,8 +332,7 @@ _ = display.ax_.set_title("Confusion matrix of the unpenalized logistic regressi
 # From the confusion matrix above, we can already understand what bothers practitioners:
 # the total number of positive predictions is very close to zero.
 #
-# One could interpret that our model is therefore not able to detect rare events and
-# thus useless. In general, instead of using the confusion matrix, practitioners use
+# One might interpret this to mean that our model is therefore not able to detect rare events and is thus useless. In general, instead of using the confusion matrix, practitioners use
 # different metrics such as the precision, recall, etc. Let's check the classification
 # report available in scikit-learn that provides a summary of the metrics.
 
@@ -352,9 +351,9 @@ print(classification_report(y, model.predict(X)))
 # ## What people naively do and why you should not do it
 #
 # One of the reasons for not having any true positives in the confusion matrix is that
-# the estimated probabilities by the model for rare events are low because as previously
-# shown, those events are rare. The second reason is that the features we have access to
-# are not very predictive: a large proportion of the variability of the target is
+# the estimated probabilities for rare events are low because, as previously shown,
+# those events are rare. The second reason is that the features we have access to are
+# not very predictive: a large proportion of the variability of the target is
 # unexplained by the features but instead attributed to unobserved and independent
 # factors.
 #
