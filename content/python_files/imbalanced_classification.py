@@ -143,22 +143,6 @@ _ = ax.set(
 # TODO: write your code here!
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Do not scroll too quickly!
 
 # %% [markdown]
@@ -390,7 +374,7 @@ from imblearn.under_sampling import RandomUnderSampler
 
 # Enforce a 0.7 ratio between the number of data points of the two positive and negative
 # classes.
-model = make_pipeline(
+undersampling_model = make_pipeline(
     RandomUnderSampler(sampling_strategy=0.7, random_state=0),
     LogisticRegression(penalty=None),
 ).fit(X, y)
@@ -401,7 +385,7 @@ model = make_pipeline(
 # classification report.
 
 # %%
-display = ConfusionMatrixDisplay.from_estimator(model, X, y)
+display = ConfusionMatrixDisplay.from_estimator(undersampling_model, X, y)
 _ = display.ax_.set_title("Confusion matrix of the under-sampled logistic regression")
 
 # %%
@@ -414,7 +398,11 @@ print(classification_report(y, model.predict(X)))
 #
 # So we might be tempted to conclude that we did the right thing by resampling the
 # dataset. However, here we only looked at the "thresholded" metrics. We should study
-# the calibration of the model and we can have a look at the coefficients also.
+# the calibration of the model.
+#
+# Since we are working with synthetic data and we have access to the true coefficients
+# of the data generating process, we can also compare the learned coefficients to the
+# true coefficients.
 #
 # ### Exercise
 #
@@ -423,6 +411,23 @@ print(classification_report(y, model.predict(X)))
 # the model is well calibrated. What do you observe?
 
 # %%
+# TODO: write your code here.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not scroll too quickly ;)
 
 
 # %% [markdown]
@@ -434,7 +439,10 @@ comparison_coef = pd.DataFrame(
     {
         "Data generating model": np.hstack((intercept, true_coef)),
         "Model trained on under-sampled data": np.hstack(
-            (model[-1].intercept_, model[-1].coef_.flatten())
+            (
+                undersampling_model[-1].intercept_,
+                undersampling_model[-1].coef_.flatten(),
+            )
         ),
     },
     index=np.hstack(["intercept", model.feature_names_in_]),
@@ -448,16 +456,14 @@ _ = ax.set(
 
 # %%
 display = CalibrationDisplay.from_estimator(
-    model,
+    undersampling_model,
     X,
     y,
     n_bins=20,
     strategy="quantile",
     name="Model trained on under-sampled data",
 )
-display.ax_.set_title(
-    "Calibration curve of the under-sampled logistic regression"
-)
+display.ax_.set_title("Calibration curve of the under-sampled logistic regression")
 _ = display.ax_.legend(loc="upper right")
 
 # %% [markdown]
@@ -482,28 +488,30 @@ _ = display.ax_.legend(loc="upper right")
 from sklearn.calibration import CalibratedClassifierCV
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Write your code above before reading the solution.
+# TODO: write your code here.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not scroll too quickly ;)
 
 # %% [markdown]
 #
 # ### Solution
 
 # %%
-calibrated_model = CalibratedClassifierCV(model, method="isotonic")
+calibrated_model = CalibratedClassifierCV(undersampling_model, method="isotonic")
 calibrated_model.fit(X, y)
 
 # %%
@@ -740,9 +748,7 @@ _ = display.ax_.set(
 
 # %%
 display = ConfusionMatrixDisplay.from_estimator(model, X, y)
-_ = display.ax_.set_title(
-    "Confusion matrix of the fixed threshold logistic regression"
-)
+_ = display.ax_.set_title("Confusion matrix of the fixed threshold logistic regression")
 
 # %%
 print(classification_report(y, model.predict(X)))
@@ -794,9 +800,7 @@ model = TunedThresholdClassifierCV(
 
 # %%
 display = ConfusionMatrixDisplay.from_estimator(model, X, y)
-_ = display.ax_.set_title(
-    "Confusion matrix of the tuned threshold logistic regression"
-)
+_ = display.ax_.set_title("Confusion matrix of the tuned threshold logistic regression")
 
 # %%
 print(classification_report(y, model.predict(X)))
