@@ -698,17 +698,17 @@ fig_plotly.show()
 #
 # Using these curves, we now can make a choice regarding a specific trade-off between
 # the level of recall and precision for our classifier. Let's expose a possible use
-# case: our model could be used for medical diagnosis and in this particular setting,
-# we could imagine that physicians reviewing cases of rare diseases expect a certain
-# level of precision of the computer-aided diagnosis system. Otherwise, the system
-# will show too many false positive cases, tiring the physicians, leading to potential
-# errors. However, while expecting a certain level of precision, we also would like our
-# computer-aided diagnosis system to maximize the recall level.
+# case: our model could be used for predictive maintenance and in this particular
+# setting, we could imagine that operators reviewing cases of rare failures expect a
+# certain level of precision of the automated failure detection system. Otherwise, the
+# system will show too many false positive cases, tiring the operators, leading to
+# potential errors. However, while expecting a certain level of precision, we also would
+# like our automated failure detection system to maximize the recall level.
 #
 # Thus, by looking at the precision-recall curve above, we could impose a minimum level
-# of precision of 10%. It means that it would define an horizontal line at 0.05 on the
-# y-axis. We will consider all points above this line and seek for the maximum recall
-# and deduce the corresponding threshold that is 0.07.
+# of precision of 10%. You can mentally draw an horizontal line at 0.1 on the y-axis and
+# then consider all points above this line and seek for the maximum recall and deduce
+# the corresponding optimal threshold. In this case we should find 0.07.
 #
 # ### Exercise
 #
@@ -722,6 +722,25 @@ fig_plotly.show()
 
 # %%
 from sklearn.model_selection import FixedThresholdClassifier
+
+
+# TODO: write your code here.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not scroll too quickly ;)
 
 # %% [markdown]
 #
@@ -768,7 +787,8 @@ print(classification_report(y, model.predict(X)))
 # While it is an interesting exercise, setting the threshold manually is not the best
 # practice. It would be better to use the `TunedThresholdClassifierCV` meta-estimator to
 # tune the decision cut-off threshold to maximize a specific metric or a specific
-# trade-off using cross-validation.
+# trade-off using cross-validation to avoid depending too much on a single train/test
+# split.
 #
 # Below, we show a case where we want to maximize the recall score but such that the
 # model reach a minimum precision score. We therefore need to create a custom function
@@ -824,3 +844,24 @@ float(model.best_threshold_)
 # with the `TunedThresholdClassifierCV` meta-estimator. To see an example, refer to the
 # notebook entitled "Cost-sensitive learning to optimize a business metrics" from this
 # course.
+
+# %% [markdown]
+#
+# ## Take away
+#
+# - When working on imbalanced classification problems, using the default decision
+#   threshold of 0.5 can lead to seemingly disappointing classification performance when
+#   evaluating the model using metrics derived from the confusion matrix (accuracy,
+#   precision, recall, F1 score, Matthews correlation coefficient, ...).
+# - Resampling the training set, can improve those metrics but at the cost of breaking
+#   the calibration of the predicted probabilities.
+# - Instead, we recommend to evaluate and tune the hyper-parameters the models using
+#   threshold-independent metrics (such as ROC-AUC, log-loss) and then plot the
+#   thresholded prediction metrics for many choices of the cut-off threshold.
+# - Then, we can use the `TunedThresholdClassifierCV` meta-estimator to find the best
+#   decision threshold for an explicitly defined trade-off between precision and recall.
+# - In later notebooks, we will explore how to deal with a prevalence shift between the
+#   available training data and the target deployment setting, how to incorporate
+#   business-defined costs into the threshold tuning process and dive deeper into the
+#   interplay between ranking performance, calibration and various choices of evaluation
+#   metrics.
