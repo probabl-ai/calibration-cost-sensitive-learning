@@ -211,16 +211,17 @@ _ = ax.set(
 # generative process and the learned model. The reason is that the coefficients of the
 # generative process can only be recovered if the following assumptions are met:
 #
-# - We have access to an unlimited number of training data points. As the sample size
-#   increases, the coefficients of the predictive model will get closer to the true
+# - We have access to an unlimited number of labeled training data points. As the sample
+#   size increases, the coefficients of the predictive model will get closer to the true
 #   coefficients.
 # - The predictive model should be well specified. In other words, if our predictive
 #   model is not flexible enough then it will underfit and not recover all the signal of
 #   the true model.
-# - The training process converges to a minimum of a strictly proper scoring rule.
+# - The training process converges to a minimum of a strictly proper scoring rule on
+#   computed on the training set.
 #
-# Let us explain the meaning of that last assumption. We are interested in assessing
-# the quality of the probabilistic predictions made by our model:
+# Let us explain the meaning of that last assumption. We are interested in assessing the
+# quality of the probabilistic predictions made by our model:
 
 # %%
 y_proba = model.predict_proba(X)
@@ -260,10 +261,10 @@ y.value_counts(normalize=True) * 100
 # This confirms that the probabilistic predictions of our model are meaningful, at least
 # from a marginal point of view.
 #
-# The reason is that the training algorithm used by `LogisticRegression` successfully
-# minimized the log-loss which is a "strictly proper" scoring rule. A strictly proper
-# scoring rule is minimized if and only if the predicted probabilities are equal to the
-# probabilities of the data generating process.
+# The reason is that the learning algorithm used by `LogisticRegression` successfully
+# minimized the log-loss on the training set. The log-loss is a "strictly proper"
+# scoring rule. A strictly proper scoring rule is minimized if and only if the model
+# predictions exactly match the data generating process.
 #
 # The three above conditions work together: the strictly proper scoring rule provides
 # the right objective from a probabilistic prediction point of view, the well-specified
@@ -361,21 +362,24 @@ print(classification_report(y, model.predict(X)))
 #
 # As expected, the precision and recall for the class of interest are degenerate.
 #
-# In the next section, we present the solutions promoted by many practitioners to deal
-# with this problem.
+# In the next section, we present a popular "solution" implemented by many practitioners
+# to deal with this problem.
 #
 # ## What people naively do and why you should not do it
 #
-# The reason for not having any true positives in the confusion matrix is that the
-# estimated probabilities by the model for rare events are low because as previously
-# shown, those events are rare!
+# One of the reasons for not having any true positives in the confusion matrix is that
+# the estimated probabilities by the model for rare events are low because as previously
+# shown, those events are rare. The second reason is that the features we have access to
+# are not very predictive: a large proportion of the variability of the target is
+# unexplained by the features but instead attributed to unobserved and independent
+# factors.
 #
-# One way to counter this issue is to resample the dataset and balance the class
-# frequencies. This means that we artificially increase the number of samples of the
-# rare event and thus the likelihood of the rare event to be detected is higher. When
-# fitting a model on such a resampled dataset, we therefore artificially boost the
-# estimated probabilities for the positive class (as it became less rare in the new
-# dataset).
+# One way to counter the issue of degenerate classification metrics is to resample the
+# dataset and balance the class frequencies. This means that we artificially increase
+# the number of samples of the rare event and thus the likelihood of the rare event to
+# be detected is higher. When fitting a model on such a resampled dataset, we therefore
+# artificially boost the estimated probabilities for the positive class (as it became
+# less rare in the resampled data).
 #
 # Let's use `imbalanced-learn` to resample the dataset before training a logistic
 # regression model.
@@ -781,7 +785,8 @@ def maximize_recall_under_constrained_precision(y_true, y_pred, precision_level)
 # %%
 from sklearn.model_selection import TunedThresholdClassifierCV
 
-# create a scorer that maximizes the recall but such that the precision is at least 0.1
+# Create a scorer that maximizes the recall but such that the precision is at
+# least 0.1.
 scoring = make_scorer(maximize_recall_under_constrained_precision, precision_level=0.1)
 model = TunedThresholdClassifierCV(
     estimator=LogisticRegression(penalty=None), scoring=scoring, n_jobs=-1
