@@ -400,7 +400,10 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#answers">Answers:</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prevalence-shift-induced-by-the-data-acquisition-process">Prevalence shift induced by the data acquisition process</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prevalence-shift-induced-by-the-data-acquisition-process">Prevalence shift induced by the data acquisition process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#weight-based-prevalence-correction-for-logistic-regression">Weight-based prevalence correction for Logistic Regression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#post-hoc-prevalence-correction-for-logistic-regression-by-shifting-the-intercept">Post-hoc prevalence correction for logistic regression by shifting the intercept</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generic-post-hoc-prevalence-correction">Generic post-hoc prevalence correction</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Answers:</a></li>
 </ul>
@@ -950,6 +953,23 @@ the observed data.</p>
 </div></div><img alt="../../_images/236e7661430a96d36db3fb17feaa268db83ef692f2c047a6291d427d77dd9ed6.png" src="../../_images/236e7661430a96d36db3fb17feaa268db83ef692f2c047a6291d427d77dd9ed6.png" />
 </div>
 </div>
+<p>The above results show that naively fitting a logistic regression model on
+the observed data yields a model with very good ranking power (as measured by
+ROC-AUC on the target population) and the feature coefficients seem to be
+well aligned with the parameters of the data generating process.</p>
+<p>However, it does not fully recover the true data generating process. In
+particular, the intercept value is not correctly estimated. As a result, the
+value of the log-loss is very poor because the probabilistic predictions are
+not well calibrated.</p>
+<p>In the following, we will explore several ways to correct this problem.</p>
+</section>
+<section id="weight-based-prevalence-correction-for-logistic-regression">
+<h2>Weight-based prevalence correction for Logistic Regression<a class="headerlink" href="#weight-based-prevalence-correction-for-logistic-regression" title="Link to this heading">#</a></h2>
+<p>The first approach we will explore is to use class weights to correct for the
+prevalence shift in the training data.</p>
+<p>In scikit-learn, class weights are passed as constructor parameter to the
+estimator (one weight per possible class). Here we pass the ratios of each
+class prevalence in the target population and the training set:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">class_weight_for_prevalence_correction</span> <span class="o">=</span> <span class="p">{</span>
@@ -1032,8 +1052,16 @@ the observed data.</p>
 </div></div><img alt="../../_images/d0e8f9d2171125c8cb1cb76a5e4e63aadff8d9b43f93f6a1ae75b6e1df893fb4.png" src="../../_images/d0e8f9d2171125c8cb1cb76a5e4e63aadff8d9b43f93f6a1ae75b6e1df893fb4.png" />
 </div>
 </div>
+<p>We can see that passing class-weights to the estimator has the desired effect
+of correcting the prevalence shift in the training data: the ROC-AUC values
+stays roughly the same while the log-loss is significantly reduced and nearly
+matches the expected log-loss of the data generating process when evaluated
+on the target population.</p>
 <p>Let’s check that we can get exactly the same results using <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code> in
-<code class="docutils literal notranslate"><span class="pre">fit</span></code> instead of <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> in the constructor.</p>
+<code class="docutils literal notranslate"><span class="pre">fit</span></code> instead of <code class="docutils literal notranslate"><span class="pre">class_weight</span></code> in the constructor. We just repeat the
+class-weight for each data point in the training set based on their class
+label. If all goes well, this should be strictly equivalent hence should
+converge exactly to the same model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sample_weight_for_prevalence_correction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
@@ -1079,6 +1107,9 @@ the observed data.</p>
 </div>
 </div>
 </div>
+</section>
+<section id="post-hoc-prevalence-correction-for-logistic-regression-by-shifting-the-intercept">
+<h2>Post-hoc prevalence correction for logistic regression by shifting the intercept<a class="headerlink" href="#post-hoc-prevalence-correction-for-logistic-regression-by-shifting-the-intercept" title="Link to this heading">#</a></h2>
 <p>From the above results, it seems that the uncorrected linear model and the
 weight-corrected linear models only significantly differ by the value of the
 intercept parameter.</p>
@@ -1170,6 +1201,9 @@ for any } p \in [0, 1] \]</div>
 </div>
 <p>We recover an intercept value that is very close to the intercept of the
 data generating process.</p>
+</section>
+<section id="generic-post-hoc-prevalence-correction">
+<h2>Generic post-hoc prevalence correction<a class="headerlink" href="#generic-post-hoc-prevalence-correction" title="Link to this heading">#</a></h2>
 <p>Let’s now consider a more generic post-hoc prevalence correction that does
 not require the base model to be a logistic regression model with an explicit
 <code class="docutils literal notranslate"><span class="pre">intercept_</span></code> parameter.</p>
@@ -2313,7 +2347,10 @@ can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expi
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#answers">Answers:</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prevalence-shift-induced-by-the-data-acquisition-process">Prevalence shift induced by the data acquisition process</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prevalence-shift-induced-by-the-data-acquisition-process">Prevalence shift induced by the data acquisition process</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#weight-based-prevalence-correction-for-logistic-regression">Weight-based prevalence correction for Logistic Regression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#post-hoc-prevalence-correction-for-logistic-regression-by-shifting-the-intercept">Post-hoc prevalence correction for logistic regression by shifting the intercept</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generic-post-hoc-prevalence-correction">Generic post-hoc prevalence correction</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Questions:</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Answers:</a></li>
 </ul>

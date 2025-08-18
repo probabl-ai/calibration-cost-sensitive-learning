@@ -375,6 +375,30 @@ population_comparator.register_model("Uncorrected LogReg", logreg_uncorrected)
 population_comparator.plot_linear_model_parameters()
 population_comparator.score_table()
 
+# %% [markdown]
+#
+# The above results show that naively fitting a logistic regression model on
+# the observed data yields a model with very good ranking power (as measured by
+# ROC-AUC on the target population) and the feature coefficients seem to be
+# well aligned with the parameters of the data generating process.
+#
+# However, it does not fully recover the true data generating process. In
+# particular, the intercept value is not correctly estimated. As a result, the
+# value of the log-loss is very poor because the probabilistic predictions are
+# not well calibrated.
+#
+# In the following, we will explore several ways to correct this problem.
+
+# %% [markdown]
+#
+# ## Weight-based prevalence correction for Logistic Regression
+#
+# The first approach we will explore is to use class weights to correct for the
+# prevalence shift in the training data.
+#
+# In scikit-learn, class weights are passed as constructor parameter to the
+# estimator (one weight per possible class). Here we pass the ratios of each
+# class prevalence in the target population and the training set:
 
 # %%
 class_weight_for_prevalence_correction = {
@@ -394,8 +418,19 @@ population_comparator.score_table()
 
 # %% [markdown]
 #
+# We can see that passing class-weights to the estimator has the desired effect
+# of correcting the prevalence shift in the training data: the ROC-AUC values
+# stays roughly the same while the log-loss is significantly reduced and nearly
+# matches the expected log-loss of the data generating process when evaluated
+# on the target population.
+
+# %% [markdown]
+#
 # Let's check that we can get exactly the same results using `sample_weight` in
-# `fit` instead of `class_weight` in the constructor.
+# `fit` instead of `class_weight` in the constructor. We just repeat the
+# class-weight for each data point in the training set based on their class
+# label. If all goes well, this should be strictly equivalent hence should
+# converge exactly to the same model.
 
 # %%
 sample_weight_for_prevalence_correction = np.where(
@@ -415,6 +450,8 @@ np.allclose(logreg_weighted.coef_, logreg_weighted2.coef_)
 np.allclose(logreg_weighted.intercept_, logreg_weighted2.intercept_)
 
 # %% [markdown]
+#
+# ## Post-hoc prevalence correction for logistic regression by shifting the intercept
 #
 # From the above results, it seems that the uncorrected linear model and the
 # weight-corrected linear models only significantly differ by the value of the
@@ -454,6 +491,8 @@ population_comparator.score_table()
 # data generating process.
 
 # %% [markdown]
+#
+# ## Generic post-hoc prevalence correction
 #
 # Let's now consider a more generic post-hoc prevalence correction that does
 # not require the base model to be a logistic regression model with an explicit
