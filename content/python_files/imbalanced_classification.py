@@ -365,7 +365,11 @@ print(classification_report(y, model.predict(X)))
 # less rare in the resampled data).
 #
 # Let's use `imbalanced-learn` to resample the dataset before training a logistic
-# regression model.
+# regression model. When running this notebook under jupyterlite, it is necessary
+# to pip install imbalanced-learn first:
+
+# %%
+# %pip install -q imbalanced-learn
 
 # %%
 from imblearn.pipeline import make_pipeline
@@ -622,6 +626,9 @@ precision_scores, precision_thresholds = precision_curve_scorer(model, X, y)
 recall_scores, recall_thresholds = recall_curve_scorer(model, X, y)
 
 # %%
+# %pip install -q plotly nbformat
+
+# %%
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -721,7 +728,6 @@ fig_plotly.show()
 
 # %%
 from sklearn.model_selection import FixedThresholdClassifier
-
 
 # TODO: write your code here.
 #
