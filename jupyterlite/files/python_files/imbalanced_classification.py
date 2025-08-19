@@ -68,6 +68,26 @@ y = pd.Series(y, name="target")
 
 # %% [markdown]
 #
+# Let's recall what the expit function also called the sigmoid function is.
+
+# %%
+_, ax = plt.subplots()
+x = np.linspace(-10, 10, 100)
+ax.plot(x, expit(x))
+_ = ax.set(
+    title="Sigmoid/Expit function",
+    xlabel="Linear predictor",
+    ylabel="Probability",
+)
+
+# %% [markdown]
+#
+# The expit function allows to transform the linear predictor into probabilities between
+# 0 and 1. The role of the intercept is to shift the sigmoid function to the left or
+# right.
+
+# %% [markdown]
+#
 # Let's look at the true target and especially the relative class frequencies and
 # absolute counts.
 
@@ -135,7 +155,8 @@ _ = ax.set(
 #
 # Write a small function that embeds the generative process that we defined above. This
 # time only generate 10,000 samples, train a logistic regression model and check the
-# learned model coefficients.
+# learned model coefficients. Make sure to pass the same true coefficients than in
+# the previous exercise.
 #
 # Do you recover the true model coefficients? If not, what is the reason?
 
@@ -151,23 +172,23 @@ _ = ax.set(
 
 
 # %%
-def generate_imbalanced_dataset(n_samples=10_000, n_features=5, seed=0):
+def generate_imbalanced_dataset(true_coef, n_samples=10_000, seed=0):
     rng = np.random.default_rng(seed)
 
-    true_coef = rng.normal(size=n_features)
-    X = rng.normal(size=(n_samples, n_features))
+    # we can sample a new design matrix but we need to keep the same true coefficients
+    X = rng.normal(size=(n_samples, true_coef.shape[0]))
     z = X @ true_coef
     intercept = -4
     y = rng.binomial(n=1, p=expit(z + intercept))
 
     # create pandas data structures for convenience
-    X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
+    X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(X.shape[1])])
     y = pd.Series(y, name="target")
 
     return X, y
 
 
-X_exercise, y_exercise = generate_imbalanced_dataset(n_samples=10_000)
+X_exercise, y_exercise = generate_imbalanced_dataset(true_coef, n_samples=10_000)
 model_exercise = LogisticRegression(penalty=None).fit(X_exercise, y_exercise)
 
 comparison_coef_exercise = pd.DataFrame(
@@ -448,7 +469,7 @@ comparison_coef = pd.DataFrame(
             )
         ),
     },
-    index=np.hstack(["intercept", model.feature_names_in_]),
+    index=np.hstack(["intercept", undersampling_model[-1].feature_names_in_]),
 )
 ax = comparison_coef.plot.barh()
 _ = ax.set(
