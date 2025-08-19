@@ -479,22 +479,23 @@ probability of the positive class we previously computed.</p></li>
 <span class="n">true_coef</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_features</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span><span class="p">))</span>
 <span class="n">z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
-<span class="n">intercept</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">))</span>
+<span class="n">true_intercept</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">true_intercept</span><span class="p">))</span>
 
-<span class="c1"># create pandas data structures for convenience</span>
+<span class="c1"># Wrap as pandas data structures for convenience.</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_features</span><span class="p">)])</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Let’s recall what the expit function also called the sigmoid function is.</p>
+<p>Recall that the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function, also known as the logistic sigmoid function,
+is defined as <code class="docutils literal notranslate"><span class="pre">expit(x)</span> <span class="pre">=</span> <span class="pre">1</span> <span class="pre">/</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">np.exp(-x))</span></code> and looks as follows:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">expit</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">expit</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sigmoid/Expit function&quot;</span><span class="p">,</span>
     <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Linear predictor&quot;</span><span class="p">,</span>
@@ -576,7 +577,7 @@ the true model.</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">comparison_coef</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
+        <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">true_intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
         <span class="s2">&quot;Unpenalized logistic regression&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
             <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
         <span class="p">),</span>
@@ -621,28 +622,29 @@ the previous exercise.</p>
 <h3>Solution<a class="headerlink" href="#solution" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_imbalanced_dataset</span><span class="p">(</span><span class="n">true_coef</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_imbalanced_dataset</span><span class="p">(</span><span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
-    <span class="c1"># we can sample a new design matrix but we need to keep the same true coefficients</span>
+    <span class="c1"># We can sample a new design matrix but we need to keep the same true coefficients.</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">true_coef</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">X</span> <span class="o">@</span> <span class="n">true_coef</span>
-    <span class="n">intercept</span> <span class="o">=</span> <span class="o">-</span><span class="mi">4</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">intercept</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">expit</span><span class="p">(</span><span class="n">z</span> <span class="o">+</span> <span class="n">true_intercept</span><span class="p">))</span>
 
-    <span class="c1"># create pandas data structures for convenience</span>
+    <span class="c1"># Wrap as pandas data structures for convenience.</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;feature_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span>
 
 
-<span class="n">X_exercise</span><span class="p">,</span> <span class="n">y_exercise</span> <span class="o">=</span> <span class="n">generate_imbalanced_dataset</span><span class="p">(</span><span class="n">true_coef</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">10_000</span><span class="p">)</span>
+<span class="n">X_exercise</span><span class="p">,</span> <span class="n">y_exercise</span> <span class="o">=</span> <span class="n">generate_imbalanced_dataset</span><span class="p">(</span>
+    <span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
 <span class="n">model_exercise</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_exercise</span><span class="p">,</span> <span class="n">y_exercise</span><span class="p">)</span>
 
 <span class="n">comparison_coef_exercise</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
+        <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">true_intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
         <span class="s2">&quot;Unpenalized logistic regression&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
             <span class="p">(</span><span class="n">model_exercise</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">model_exercise</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
         <span class="p">),</span>
@@ -662,12 +664,15 @@ the previous exercise.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/235bc01afbc27bd378b59825819b2f4dc3e0dd5c34f23736a24ab77efa4725f1.png" src="../../_images/235bc01afbc27bd378b59825819b2f4dc3e0dd5c34f23736a24ab77efa4725f1.png" />
+<img alt="../../_images/73bb405160e19085d86b60e83783b557fdab8f5fb8a973584fddd0e6e41cd68d.png" src="../../_images/73bb405160e19085d86b60e83783b557fdab8f5fb8a973584fddd0e6e41cd68d.png" />
 </div>
 </div>
 <p>We observe that we have a larger difference between the coefficients of the true
-generative process and the learned model. The reason is that the coefficients of the
-generative process can only be recovered if the following assumptions are met:</p>
+generative process and the learned model and that furthermore, the learned model has a
+larger variance (different coefficients when we vary the seed used to sample the
+training set).</p>
+<p>The reason is that the coefficients of the generative process can only be recovered if
+the following assumptions are met:</p>
 <ul class="simple">
 <li><p>We have access to an unlimited number of labeled training data points. As the sample
 size increases, the coefficients of the predictive model will get closer to the true
@@ -1026,19 +1031,19 @@ classification report.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">undersampling_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>              precision    recall  f1-score   support
 
-           0       0.98      1.00      0.99    975037
-           1       0.00      0.00      0.00     24963
+           0       0.98      0.80      0.88    975037
+           1       0.06      0.50      0.11     24963
 
-    accuracy                           0.98   1000000
-   macro avg       0.49      0.50      0.49   1000000
-weighted avg       0.95      0.98      0.96   1000000
+    accuracy                           0.79   1000000
+   macro avg       0.52      0.65      0.50   1000000
+weighted avg       0.96      0.79      0.86   1000000
 </pre></div>
 </div>
 </div>
@@ -1086,7 +1091,7 @@ the model is well calibrated. What do you observe?</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">comparison_coef</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
     <span class="p">{</span>
-        <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
+        <span class="s2">&quot;Data generating model&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">true_intercept</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">)),</span>
         <span class="s2">&quot;Model trained on under-sampled data&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
             <span class="p">(</span>
                 <span class="n">undersampling_model</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span>

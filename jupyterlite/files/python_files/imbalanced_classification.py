@@ -59,21 +59,22 @@ n_samples, n_features = 1_000_000, 5
 true_coef = rng.normal(size=n_features)
 X = rng.normal(size=(n_samples, n_features))
 z = X @ true_coef
-intercept = -4
-y = rng.binomial(n=1, p=expit(z + intercept))
+true_intercept = -4
+y = rng.binomial(n=1, p=expit(z + true_intercept))
 
-# create pandas data structures for convenience
+# Wrap as pandas data structures for convenience.
 X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
 y = pd.Series(y, name="target")
 
 # %% [markdown]
 #
-# Let's recall what the expit function also called the sigmoid function is.
+# Recall that the `expit` function, also known as the logistic sigmoid function,
+# is defined as `expit(x) = 1 / (1 + np.exp(-x))` and looks as follows:
 
 # %%
 _, ax = plt.subplots()
-x = np.linspace(-10, 10, 100)
-ax.plot(x, expit(x))
+z = np.linspace(-10, 10, 100)
+ax.plot(z, expit(z))
 _ = ax.set(
     title="Sigmoid/Expit function",
     xlabel="Linear predictor",
@@ -131,7 +132,7 @@ model = LogisticRegression(penalty=None).fit(X, y)
 # %%
 comparison_coef = pd.DataFrame(
     {
-        "Data generating model": np.hstack((intercept, true_coef)),
+        "Data generating model": np.hstack((true_intercept, true_coef)),
         "Unpenalized logistic regression": np.hstack(
             (model.intercept_, model.coef_.flatten())
         ),
@@ -172,28 +173,29 @@ _ = ax.set(
 
 
 # %%
-def generate_imbalanced_dataset(true_coef, n_samples=10_000, seed=0):
+def generate_imbalanced_dataset(true_coef, true_intercept, n_samples=10_000, seed=0):
     rng = np.random.default_rng(seed)
 
-    # we can sample a new design matrix but we need to keep the same true coefficients
+    # We can sample a new design matrix but we need to keep the same true coefficients.
     X = rng.normal(size=(n_samples, true_coef.shape[0]))
     z = X @ true_coef
-    intercept = -4
-    y = rng.binomial(n=1, p=expit(z + intercept))
+    y = rng.binomial(n=1, p=expit(z + true_intercept))
 
-    # create pandas data structures for convenience
+    # Wrap as pandas data structures for convenience.
     X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(X.shape[1])])
     y = pd.Series(y, name="target")
 
     return X, y
 
 
-X_exercise, y_exercise = generate_imbalanced_dataset(true_coef, n_samples=10_000)
+X_exercise, y_exercise = generate_imbalanced_dataset(
+    true_coef, true_intercept, n_samples=10_000, seed=1
+)
 model_exercise = LogisticRegression(penalty=None).fit(X_exercise, y_exercise)
 
 comparison_coef_exercise = pd.DataFrame(
     {
-        "Data generating model": np.hstack((intercept, true_coef)),
+        "Data generating model": np.hstack((true_intercept, true_coef)),
         "Unpenalized logistic regression": np.hstack(
             (model_exercise.intercept_, model_exercise.coef_.flatten())
         ),
@@ -213,8 +215,12 @@ _ = ax.set(
 # %% [markdown]
 #
 # We observe that we have a larger difference between the coefficients of the true
-# generative process and the learned model. The reason is that the coefficients of the
-# generative process can only be recovered if the following assumptions are met:
+# generative process and the learned model and that furthermore, the learned model has a
+# larger variance (different coefficients when we vary the seed used to sample the
+# training set).
+#
+# The reason is that the coefficients of the generative process can only be recovered if
+# the following assumptions are met:
 #
 # - We have access to an unlimited number of labeled training data points. As the sample
 #   size increases, the coefficients of the predictive model will get closer to the true
@@ -413,7 +419,7 @@ display = ConfusionMatrixDisplay.from_estimator(undersampling_model, X, y)
 _ = display.ax_.set_title("Confusion matrix of the under-sampled logistic regression")
 
 # %%
-print(classification_report(y, model.predict(X)))
+print(classification_report(y, undersampling_model.predict(X)))
 
 # %% [markdown]
 #
@@ -461,7 +467,7 @@ print(classification_report(y, model.predict(X)))
 # %%
 comparison_coef = pd.DataFrame(
     {
-        "Data generating model": np.hstack((intercept, true_coef)),
+        "Data generating model": np.hstack((true_intercept, true_coef)),
         "Model trained on under-sampled data": np.hstack(
             (
                 undersampling_model[-1].intercept_,
