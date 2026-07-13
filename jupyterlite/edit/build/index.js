@@ -17,7 +17,7 @@ const disabled = [
   "@jupyterlab/application-extension:layout",
   "@jupyterlab/application-extension:logo",
   "@jupyterlab/application-extension:main",
-  "@jupyterlab/application-extension:mode-switch",
+  "@jupyterlab/application-extension:move-widget",
   "@jupyterlab/application-extension:notfound",
   "@jupyterlab/application-extension:paths",
   "@jupyterlab/application-extension:property-inspector",
@@ -48,6 +48,7 @@ const disabled = [
   "@jupyterlab/help-extension:about",
   "@jupyterlab/help-extension:open",
   "@jupyterlab/lsp-extension:plugin",
+  "@jupyterlab/notebook-extension:export",
   "@jupyterlab/notebook-extension:execution-indicator",
   "@jupyterlab/notebook-extension:kernel-status",
   "@jupyterlab/services-extension:config-section-manager",
@@ -60,6 +61,7 @@ const disabled = [
   "@jupyterlab/services-extension:session-manager",
   "@jupyterlab/services-extension:setting-manager",
   "@jupyterlab/services-extension:user-manager",
+  "@jupyterlab/services-extension:workspace-manager",
   "@jupyter-notebook/application-extension:logo",
   "@jupyter-notebook/application-extension:opener",
   "@jupyter-notebook/application-extension:path-opener",
@@ -187,17 +189,6 @@ export async function main() {
       console.error(e);
     }
   }
-  if (!federatedExtensionNames.has('@jupyterlite/iframe-extension')) {
-    try {
-      let ext = require('@jupyterlite/iframe-extension');
-      ext.__scope__ = '@jupyterlite/iframe-extension';
-      for (let plugin of activePlugins(ext)) {
-        mimeExtensions.push(plugin);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
 
   // Add the federated mime extensions.
   const federatedMimeExtensions = await Promise.allSettled(federatedMimeExtensionPromises);
@@ -227,6 +218,17 @@ export async function main() {
     try {
       let ext = require('@jupyterlab/apputils-extension');
       ext.__scope__ = '@jupyterlab/apputils-extension';
+      for (let plugin of activePlugins(ext)) {
+        pluginsToRegister.push(plugin);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  if (!federatedExtensionNames.has('@jupyterlab/audio-extension')) {
+    try {
+      let ext = require('@jupyterlab/audio-extension');
+      ext.__scope__ = '@jupyterlab/audio-extension';
       for (let plugin of activePlugins(ext)) {
         pluginsToRegister.push(plugin);
       }
@@ -553,6 +555,17 @@ export async function main() {
       console.error(e);
     }
   }
+  if (!federatedExtensionNames.has('@jupyterlab/video-extension')) {
+    try {
+      let ext = require('@jupyterlab/video-extension');
+      ext.__scope__ = '@jupyterlab/video-extension';
+      for (let plugin of activePlugins(ext)) {
+        pluginsToRegister.push(plugin);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
   if (!federatedExtensionNames.has('@jupyter-notebook/application-extension')) {
     try {
       let ext = require('@jupyter-notebook/application-extension');
@@ -687,6 +700,6 @@ export async function main() {
   }
 
   // 4. Start the application, which will activate the other plugins
-  await app.start();
+  await app.start({ bubblingKeydown: true });
   await app.restored;
 }

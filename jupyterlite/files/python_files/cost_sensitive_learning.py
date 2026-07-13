@@ -28,13 +28,12 @@
 # parquet file and check the data that we have at hand.
 
 # %%
-# Needed by pandas and not installed by default in pyodide.
-%pip install -q fastparquet
-
-# %%
 import pandas as pd
 
-credit_card = pd.read_parquet("../datasets/credit_card.parquet", engine="fastparquet")
+# `pandas` automatically selects a parquet engine: `pyarrow` is bundled with
+# Pyodide for the in-browser JupyterLite build, while `fastparquet` is used in
+# the local/CI environment.
+credit_card = pd.read_parquet("../datasets/credit_card.parquet")
 credit_card.info()
 
 # %% [markdown]

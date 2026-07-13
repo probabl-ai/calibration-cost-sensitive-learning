@@ -134,11 +134,11 @@ X_future, y_future, true_proba_future = sample_from_linear_model(
 X_past.memory_usage().sum() / 1e6  # in MB
 
 # %%
-y_past.sum()
+print(f"Class counts:\n {y_past.value_counts()}")
 
 # %%
+print(f"Relative class frequencies:\n {y_past.value_counts(normalize=True)}")
 true_positive_rate_past = y_past.mean()
-true_positive_rate_past
 
 # %% [markdown]
 #
@@ -147,8 +147,7 @@ true_positive_rate_past
 # feature values.
 
 # %%
-true_positive_rate_future = y_future.mean()
-true_positive_rate_future
+print(f"Relative class frequencies:\n {y_future.value_counts(normalize=True)}")
 
 # %%
 pd.Series(true_proba_future[:, 1]).describe()
@@ -219,7 +218,8 @@ log_loss(y_past, true_proba_past)
 # %%
 from sklearn.linear_model import LogisticRegression
 
-cheating_model = LogisticRegression(penalty=None).fit(X_future, y_future)
+cheating_model = LogisticRegression(C=np.inf).fit(X_future, y_future) 
+# C=np.inf means no regularization 
 
 # %% [markdown]
 #
@@ -350,8 +350,7 @@ y_observed = pd.concat([y_positive, y_past.iloc[negative_indices]])
 
 X_observed.shape
 # %%
-observed_positive_rate = y_observed.sum() / len(y_observed)
-observed_positive_rate
+print(f"Relative class frequencies:\n {y_observed.value_counts(normalize=True)}")
 
 # %% [markdown]
 #
@@ -368,7 +367,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # %%
-logreg_params = dict(penalty=None, tol=1e-8)
+logreg_params = dict(C=np.inf, tol=1e-8)
 logreg_uncorrected = LogisticRegression(**logreg_params).fit(X_train, y_train)
 
 population_comparator.register_model("Uncorrected LogReg", logreg_uncorrected)
@@ -725,6 +724,7 @@ _ = plt.legend()
 # reflect the true class prevalence, hence calibration sensitive losses such as
 # the log-loss will give very inaccurate estimates of the population log-loss:
 
+# %%
 log_loss(y_test, logreg_uncorrected.predict_proba(X_test))
 
 # %%

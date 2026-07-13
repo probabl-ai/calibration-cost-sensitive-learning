@@ -570,25 +570,33 @@ anyway to be able to compute metrics on the future population.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_past</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class counts:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y_past</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.int64(10471)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Class counts:
+ target
+0    2989529
+1      10471
+Name: count, dtype: int64
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">true_positive_rate_past</span> <span class="o">=</span> <span class="n">y_past</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="n">true_positive_rate_past</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative class frequencies:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y_past</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">true_positive_rate_past</span> <span class="o">=</span> <span class="n">y_past</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.003490333333333333)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Relative class frequencies:
+ target
+0    0.99651
+1    0.00349
+Name: proportion, dtype: float64
 </pre></div>
 </div>
 </div>
@@ -598,13 +606,16 @@ true probabilities computed from the data generating process for the future
 feature values.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">true_positive_rate_future</span> <span class="o">=</span> <span class="n">y_future</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-<span class="n">true_positive_rate_future</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative class frequencies:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y_future</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.0035813333333333335)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Relative class frequencies:
+ target
+0    0.996419
+1    0.003581
+Name: proportion, dtype: float64
 </pre></div>
 </div>
 </div>
@@ -638,7 +649,7 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261289909972
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261291466801
 </pre></div>
 </div>
 </div>
@@ -650,7 +661,7 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022418940888123372
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.02241894230246544
 </pre></div>
 </div>
 </div>
@@ -662,7 +673,7 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.021913294606625597
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.02191329374909401
 </pre></div>
 </div>
 </div>
@@ -724,7 +735,8 @@ intercept.</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogisticRegression</span>
 
-<span class="n">cheating_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">)</span>
+<span class="n">cheating_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">)</span> 
+<span class="c1"># C=np.inf means no regularization </span>
 </pre></div>
 </div>
 </div>
@@ -867,13 +879,16 @@ place.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">observed_positive_rate</span> <span class="o">=</span> <span class="n">y_observed</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_observed</span><span class="p">)</span>
-<span class="n">observed_positive_rate</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative class frequencies:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y_observed</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(0.25)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Relative class frequencies:
+ target
+0    0.75
+1    0.25
+Name: proportion, dtype: float64
 </pre></div>
 </div>
 </div>
@@ -895,7 +910,7 @@ the observed data.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logreg_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logreg_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
 <span class="n">logreg_uncorrected</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 
 <span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;Uncorrected LogReg&quot;</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="p">)</span>
@@ -946,7 +961,7 @@ the observed data.</p>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.728478</td>
-      <td>0.267719</td>
+      <td>0.267724</td>
     </tr>
   </tbody>
 </table>
@@ -1040,7 +1055,7 @@ class prevalence in the target population and the training set:</p>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.728478</td>
-      <td>0.267719</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1077,8 +1092,9 @@ converge exactly to the same model.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.11746132, -0.13513052,  0.62930597,  0.11434373, -0.55310262]]),
- array([-6.0258028]))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.1173526 , -0.13517828,  0.629324  ,  0.11449479, -0.55307335]],
+       dtype=float32),
+ array([-6.0257807], dtype=float32))
 </pre></div>
 </div>
 </div>
@@ -1182,7 +1198,7 @@ for any } p \in [0, 1] \]</div>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.728478</td>
-      <td>0.267719</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1370,7 +1386,7 @@ this notebook.</p>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.728478</td>
-      <td>0.267719</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1506,7 +1522,18 @@ than in the target population.</p>
 misleading results: the model will be evaluated on a test set that does not
 reflect the true class prevalence, hence calibration sensitive losses such as
 the log-loss will give very inaccurate estimates of the population log-loss:</p>
-<p>log_loss(y_test, logreg_uncorrected.predict_proba(X_test))</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.4952118992805481
+</pre></div>
+</div>
+</div>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">log_loss</span><span class="p">(</span><span class="n">y_future</span><span class="p">,</span> <span class="n">logreg_uncorrected</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_future</span><span class="p">))</span>
@@ -1514,7 +1541,7 @@ the log-loss will give very inaccurate estimates of the population log-loss:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26771874332772677
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26772359013557434
 </pre></div>
 </div>
 </div>
@@ -1545,7 +1572,7 @@ that same model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2689377943256687
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2689426408503545
 </pre></div>
 </div>
 </div>
@@ -1557,7 +1584,7 @@ that same model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26771874332772677
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26772359013557434
 </pre></div>
 </div>
 </div>
@@ -1578,7 +1605,7 @@ population log-loss.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.021907368827423234
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.02190736952169433
 </pre></div>
 </div>
 </div>
@@ -1590,7 +1617,7 @@ population log-loss.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420456136417546
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420456632971764
 </pre></div>
 </div>
 </div>
@@ -1653,13 +1680,13 @@ this case).</p>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.730392</td>
-      <td>0.268938</td>
+      <td>0.268943</td>
       <td>0.728478</td>
-      <td>0.267719</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
-      <td>0.730320</td>
+      <td>0.730319</td>
       <td>0.021908</td>
       <td>0.728445</td>
       <td>0.022421</td>
@@ -1913,12 +1940,12 @@ after prevalence correction.</p>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.511659</td>
-      <td>0.292577</td>
+      <td>0.511693</td>
+      <td>0.292575</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.511659</td>
+      <td>0.511693</td>
       <td>0.026163</td>
     </tr>
     <tr>
@@ -2095,12 +2122,12 @@ classification problem and analyse the results.</p>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.511659</td>
-      <td>0.292577</td>
+      <td>0.511693</td>
+      <td>0.292575</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.511659</td>
+      <td>0.511693</td>
       <td>0.026163</td>
     </tr>
     <tr>
@@ -2110,18 +2137,18 @@ classification problem and analyse the results.</p>
     </tr>
     <tr>
       <th>Uncorrected GBDT</th>
-      <td>0.750272</td>
-      <td>0.263004</td>
+      <td>0.751713</td>
+      <td>0.262622</td>
     </tr>
     <tr>
       <th>Weight-corrected GBDT</th>
-      <td>0.750700</td>
-      <td>0.035170</td>
+      <td>0.747731</td>
+      <td>0.031822</td>
     </tr>
     <tr>
       <th>Post-hoc corrected GBDT</th>
-      <td>0.750272</td>
-      <td>0.024364</td>
+      <td>0.751713</td>
+      <td>0.024345</td>
     </tr>
   </tbody>
 </table>

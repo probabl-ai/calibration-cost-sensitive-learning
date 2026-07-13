@@ -123,7 +123,7 @@ print(f"Class counts:\n {y.value_counts()}\n")
 # %%
 from sklearn.linear_model import LogisticRegression
 
-model = LogisticRegression(penalty=None).fit(X, y)
+model = LogisticRegression(C=np.inf).fit(X, y) # C=np.inf means no regularization 
 
 # %% [markdown]
 #
@@ -187,11 +187,11 @@ def generate_imbalanced_dataset(true_coef, true_intercept, n_samples=10_000, see
 
     return X, y
 
-
+# %%
 X_exercise, y_exercise = generate_imbalanced_dataset(
     true_coef, true_intercept, n_samples=10_000, seed=1
 )
-model_exercise = LogisticRegression(penalty=None).fit(X_exercise, y_exercise)
+model_exercise = LogisticRegression(C=np.inf).fit(X_exercise, y_exercise)
 
 comparison_coef_exercise = pd.DataFrame(
     {
@@ -249,7 +249,7 @@ bins = np.linspace(0, 1, 300)
 _ = (
     pd.concat([y_proba, y.to_frame()], axis=1)
     .groupby("target")["p_hat(y=1)"]
-    .plot.hist(bins=bins, alpha=0.5, legend=True, density=True)
+    .plot.hist(bins=bins, alpha=0.5, legend=True, density=True, xlabel="p_hat(y=1)")
 )
 
 # %% [markdown]
@@ -290,7 +290,7 @@ y.value_counts(normalize=True) * 100
 # %%
 from sklearn.calibration import CalibrationDisplay
 
-display = CalibrationDisplay.from_estimator(model, X, y, n_bins=10, strategy="quantile")
+display = CalibrationDisplay.from_estimator(model, X, y, n_bins=20, strategy="quantile")
 _ = display.ax_.set_title("Calibration curve of the unpenalized logistic regression")
 
 # %% [markdown]
@@ -396,17 +396,14 @@ print(classification_report(y, model.predict(X)))
 # to pip install imbalanced-learn first:
 
 # %%
-# %pip install -q imbalanced-learn
-
-# %%
 from imblearn.pipeline import make_pipeline
 from imblearn.under_sampling import RandomUnderSampler
 
-# Enforce a 0.7 ratio between the number of data points of the two positive and negative
-# classes.
+# Enforce a 0.7 ratio between the number of data points in the positive and negative
+# class.
 undersampling_model = make_pipeline(
     RandomUnderSampler(sampling_strategy=0.7, random_state=0),
-    LogisticRegression(penalty=None),
+    LogisticRegression(C=np.inf),
 ).fit(X, y)
 
 # %% [markdown]
@@ -494,7 +491,7 @@ display = CalibrationDisplay.from_estimator(
     name="Model trained on under-sampled data",
 )
 display.ax_.set_title("Calibration curve of the under-sampled logistic regression")
-_ = display.ax_.legend(loc="upper right")
+_ = display.ax_.legend(loc="upper left")
 
 # %% [markdown]
 #
@@ -617,8 +614,7 @@ print(classification_report(y, calibrated_model.predict(X)))
 # the resulting model is well calibrated when fitted on the original dataset.
 
 # %%
-model = LogisticRegression(penalty=None).fit(X, y)
-
+model = LogisticRegression(C=np.inf).fit(X, y)
 # %% [markdown]
 #
 # Now, let's say that we would like to get a model with a specific precision-recall
@@ -627,33 +623,13 @@ model = LogisticRegression(penalty=None).fit(X, y)
 
 # %%
 import numpy as np
-from sklearn.metrics import make_scorer, precision_score, recall_score
+from sklearn.metrics import precision_score, recall_score, metric_at_thresholds
 
-# The following functionality is not yet implemented in scikit-learn and we use a bit
-# of private API to easily compute the precision and recall as a function of the
-# decision cut-off threshold. In the future, you can refer to the following PR that
-# implements such functionality:
-# https://github.com/scikit-learn/scikit-learn/pull/31338
-from sklearn.metrics._scorer import _CurveScorer as CurveScorer
-
-thresholds = np.linspace(0, 1, 100)
-precision_curve_scorer = CurveScorer.from_scorer(
-    make_scorer(precision_score, zero_division=0),
-    response_method="predict_proba",
-    thresholds=thresholds,
-)
-recall_curve_scorer = CurveScorer.from_scorer(
-    make_scorer(recall_score, zero_division=0),
-    response_method="predict_proba",
-    thresholds=thresholds,
-)
-
-# %%
-precision_scores, precision_thresholds = precision_curve_scorer(model, X, y)
-recall_scores, recall_thresholds = recall_curve_scorer(model, X, y)
-
-# %%
-# %pip install -q plotly nbformat
+# `metric_at_tresholds` will compute the metric for all possible thresholds in `y_pred``
+# We round the predictions to only look at thresholds with two decimal places.
+y_pred = np.round(model.predict_proba(X)[:,-1],2)
+precision_scores, precision_thresholds = metric_at_thresholds(y, y_pred, precision_score)
+recall_scores, recall_thresholds = metric_at_thresholds(y, y_pred, recall_score)
 
 # %%
 import plotly.graph_objects as go
@@ -739,15 +715,21 @@ fig_plotly.show()
 # like our automated failure detection system to maximize the recall level.
 #
 # Thus, by looking at the precision-recall curve above, we could impose a minimum level
-# of precision of 10%. You can mentally draw an horizontal line at 0.1 on the y-axis and
-# then consider all points above this line and seek for the maximum recall and deduce
-# the corresponding optimal threshold. In this case we should find 0.07.
+# of precision of 10%. We can illustrate this by drawing a horizontal line at 0.1 on the
+# y-axis. Considering all points above this line, seek for the maximum recall and deduce
+# the corresponding optimal threshold. In this case we should find 0.08.
 #
+
+# %%
+fig_plotly.add_hline(y=0.1, line_dash="dash", row=1, col=2)
+fig_plotly.show()
+
+# %%
 # ### Exercise
 #
 # Using the `FixedThresholdClassifier` meta-estimator, set the decision cut-off
 # threshold to the value for which the precision and recall curve intersect (i.e.
-# ~0.07). Check the calibration curve, the confusion matrix, and the classification
+# ~0.08). Check the calibration curve, the confusion matrix, and the classification
 # report.
 #
 # Is the model the resulting model well calibrated? What are the level of precision and
@@ -779,9 +761,9 @@ from sklearn.model_selection import FixedThresholdClassifier
 # ### Solution
 
 # %%
-threshold = 0.07
+threshold = 0.08
 model = FixedThresholdClassifier(
-    LogisticRegression(penalty=None), threshold=threshold
+    LogisticRegression(C=np.inf), threshold=threshold
 ).fit(X, y)
 
 # %%
@@ -823,7 +805,7 @@ print(classification_report(y, model.predict(X)))
 # split.
 #
 # Below, we show a case where we want to maximize the recall score but such that the
-# model reach a minimum precision score. We therefore need to create a custom function
+# model reaches a minimum precision score. We therefore need to create a custom function
 # that can be used by the `TunedThresholdClassifierCV` meta-estimator.
 
 
@@ -841,13 +823,14 @@ def maximize_recall_under_constrained_precision(y_true, y_pred, precision_level)
 
 
 # %%
+from sklearn.metrics import make_scorer
 from sklearn.model_selection import TunedThresholdClassifierCV
 
 # Create a scorer that maximizes the recall but such that the precision is at
 # least 0.1.
 scoring = make_scorer(maximize_recall_under_constrained_precision, precision_level=0.1)
 model = TunedThresholdClassifierCV(
-    estimator=LogisticRegression(penalty=None), scoring=scoring, n_jobs=-1
+    estimator=LogisticRegression(C=np.inf), scoring=scoring, n_jobs=-1
 ).fit(X, y)
 
 # %%
@@ -885,9 +868,9 @@ float(model.best_threshold_)
 #   threshold of 0.5 can lead to seemingly disappointing classification performance when
 #   evaluating the model using metrics derived from the confusion matrix (accuracy,
 #   precision, recall, F1 score, Matthews correlation coefficient, ...).
-# - Resampling the training set, can improve those metrics but at the cost of breaking
+# - Resampling the training set can improve those metrics, but at the cost of breaking
 #   the calibration of the predicted probabilities.
-# - Instead, we recommend to evaluate and tune the hyper-parameters the models using
+# - Instead, we recommend to evaluate and tune the hyper-parameters of the model using
 #   threshold-independent metrics (such as ROC-AUC, log-loss) and then plot the
 #   thresholded prediction metrics for many choices of the cut-off threshold.
 # - Then, we can use the `TunedThresholdClassifierCV` meta-estimator to find the best

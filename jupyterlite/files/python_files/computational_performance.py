@@ -19,15 +19,15 @@ X, y = make_imbalance(
 y.value_counts()
 
 # %%
-from skrub import tabular_learner
+from skrub import tabular_pipeline
 from sklearn.ensemble import RandomForestClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier
 
-random_forest = tabular_learner(
-    RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0)
+random_forest = tabular_pipeline(
+    RandomForestClassifier(n_estimators=80, n_jobs=-1, random_state=0)
 )
-balanced_random_forest = tabular_learner(
-    BalancedRandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=0)
+balanced_random_forest = tabular_pipeline(
+    BalancedRandomForestClassifier(n_estimators=80, n_jobs=-1, random_state=0)
 )
 
 # %%
@@ -51,17 +51,15 @@ balanced_random_forest_gs = GridSearchCV(
     scoring="neg_log_loss",
 )
 
-# # %%
+# %%
 # from skore import CrossValidationReport
-
-# report_rf = CrossValidationReport(random_forest_gs, X, y)
-# report_brf = CrossValidationReport(balanced_random_forest_gs, X, y)
-
-
-# # %%
 # import joblib
 
+# report_rf = CrossValidationReport(random_forest_gs, X, y)
 # joblib.dump(report_rf, "report_rf.joblib")
+
+# %%
+# report_brf = CrossValidationReport(balanced_random_forest_gs, X, y)
 # joblib.dump(report_brf, "report_brf.joblib")
 
 # %%
@@ -79,25 +77,22 @@ comparison_report = ComparisonReport(
 
 # %%
 summary = comparison_report.metrics.summarize(
-    scoring=["roc_auc", "log_loss", "brier_score", "fit_time", "predict_time"]
+    metric=["roc_auc", "log_loss", "brier_score", "fit_time", "predict_time"]
 )
 summary.frame()
 
 # %%
-import matplotlib.pyplot as plt
-
-colors = ["tab:blue", "tab:orange"]
-for idx, report in enumerate(comparison_report.reports_):
-    report.metrics.roc(pos_label=">50K").plot(
-        roc_curve_kwargs={"color": colors[idx], "alpha": 0.5}
-    )
+plot_kwargs = {
+    "palette": {"Random Forest":"tab:blue", "Balanced Random Forest":"tab:orange"}
+    }
+display = comparison_report.metrics.roc()
+display.set_style(relplot_kwargs=plot_kwargs)
+display.plot(label=">50K", subplot_by=None)
 
 # %%
-colors = ["tab:blue", "tab:orange"]
-for idx, report in enumerate(comparison_report.reports_):
-    report.metrics.precision_recall(pos_label=">50K").plot(
-        pr_curve_kwargs={"color": colors[idx], "alpha": 0.5}
-    )
+display = comparison_report.metrics.precision_recall()
+display.set_style(relplot_kwargs=plot_kwargs)
+display.plot(label=">50K", subplot_by=None)
 
 # %%
 # TODO: Recalibrate using the close form based on the true target
