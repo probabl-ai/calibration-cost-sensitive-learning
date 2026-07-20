@@ -407,7 +407,8 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assessing-the-impact-of-the-decision-cut-off-on-thresholded-metrics">Assessing the impact of the decision cut-off on “thresholded” metrics</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Solution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Exercise</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Solution</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#take-away">Take away</a></li>
@@ -2004,7 +2005,7 @@ a.param-doc-link::before {
         </a>
     </td>
            <td class="fitted-att-type">list</td>
-           <td>[&lt;sklearn.cali...x7f6f0892d010&gt;, &lt;sklearn.cali...x7f6f05eb47d0&gt;, &lt;sklearn.cali...x7f6f05eb5450&gt;, &lt;sklearn.cali...x7f6f05ee49d0&gt;, ...]</td>
+           <td>[&lt;sklearn.cali...x7f586d915010&gt;, &lt;sklearn.cali...x7f5863090a50&gt;, &lt;sklearn.cali...x7f5863090f50&gt;, &lt;sklearn.cali...x7f5862ec48a0&gt;, ...]</td>
 
 
        </tr>
@@ -2995,21 +2996,14 @@ the corresponding optimal threshold. In this case we should find 0.08.</p>
 <div class="cell_output docutils container">
 </div>
 </div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ### Exercise</span>
-<span class="c1">#</span>
-<span class="c1"># Using the `FixedThresholdClassifier` meta-estimator, set the decision cut-off</span>
-<span class="c1"># threshold to the value for which the precision and recall curve intersect (i.e.</span>
-<span class="c1"># ~0.08). Check the calibration curve, the confusion matrix, and the classification</span>
-<span class="c1"># report.</span>
-<span class="c1">#</span>
-<span class="c1"># Is the model the resulting model well calibrated? What are the level of precision and</span>
-<span class="c1"># recall of the class of interest?</span>
-</pre></div>
-</div>
-</div>
-</div>
+<section id="id5">
+<h3>Exercise<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">FixedThresholdClassifier</span></code> meta-estimator, set the decision cut-off
+threshold to the value for which the precision and recall curve intersect (i.e.
+~0.08). Check the calibration curve, the confusion matrix, and the classification
+report.</p>
+<p>Is the model the resulting model well calibrated? What are the level of precision and
+recall of the class of interest?</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedThresholdClassifier</span>
@@ -3035,8 +3029,9 @@ the corresponding optimal threshold. In this case we should find 0.08.</p>
 </div>
 </div>
 </div>
-<section id="id5">
-<h3>Solution<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+</section>
+<section id="id6">
+<h3>Solution<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.08</span>
@@ -3185,7 +3180,7 @@ was found during the cross-validation procedure.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.07943894606514565
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.07943894606514569
 </pre></div>
 </div>
 </div>
@@ -3300,7 +3295,8 @@ metrics.</p></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#assessing-the-impact-of-the-decision-cut-off-on-thresholded-metrics">Assessing the impact of the decision cut-off on “thresholded” metrics</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Solution</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Exercise</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Solution</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#take-away">Take away</a></li>
