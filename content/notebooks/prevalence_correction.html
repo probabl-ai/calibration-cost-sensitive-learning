@@ -485,6 +485,85 @@ the probabilistic classifier estimated from the observed data to be aligned
 with the target population. We will use synthetic data generated from a known
 data generating process so as to make it possible to check that our proposed
 training and evaluation methods can achieve that objective.</p>
+<p>For evaluating different models side by side, we’ll define a utility class that we
+will reuse throughout this notebook. Feel free to skip over the details of the
+implementation, the method names and their outputs should be self-explanatory.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ModelComparator</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">context_name</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span> <span class="o">=</span> <span class="n">sample_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context_name</span> <span class="o">=</span> <span class="n">context_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">score_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">predicted_proba</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Model&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;ROC AUC (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">predicted_proba</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;log-loss (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">log_loss</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                <span class="n">predicted_proba</span><span class="p">,</span>
+                <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_linear_data_generating_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span> <span class="o">=</span> <span class="n">true_coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span> <span class="o">=</span> <span class="n">true_intercept</span>
+        <span class="n">oracle_proba</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">oracle_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+            <span class="p">[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">oracle_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">oracle_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="s2">&quot;Data generating model&quot;</span><span class="p">,</span> <span class="n">oracle_proba</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">score_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_linear_model_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">column_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;true_coef&quot;</span><span class="p">):</span>
+            <span class="n">column_data</span><span class="p">[</span><span class="s2">&quot;Data generating model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">column_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">model_name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span>
+                <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">column_data</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="s2">&quot;intercept&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">]),</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Comparison of the true and learned model parameters&quot;</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Parameter value&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Parameter name&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
 </section>
 <section id="data-generating-process">
 <h2>Data generating process<a class="headerlink" href="#data-generating-process" title="Link to this heading">#</a></h2>
@@ -558,18 +637,6 @@ anyway to be able to compute metrics on the future population.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_past</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="mf">1e6</span>  <span class="c1"># in MB</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>np.float64(60.000132)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Class counts:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y_past</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -587,7 +654,6 @@ Name: count, dtype: int64
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative class frequencies:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">y_past</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">true_positive_rate_past</span> <span class="o">=</span> <span class="n">y_past</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -597,6 +663,13 @@ Name: count, dtype: int64
 0    0.99651
 1    0.00349
 Name: proportion, dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">true_prevalence_past</span> <span class="o">=</span> <span class="n">y_past</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -616,26 +689,6 @@ feature values.</p>
 0    0.996419
 1    0.003581
 Name: proportion, dtype: float64
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">true_proba_future</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>count    3.000000e+06
-mean     3.563308e-03
-std      3.685873e-03
-min      3.868309e-05
-25%      1.385324e-03
-50%      2.470968e-03
-75%      4.405791e-03
-max      1.577512e-01
-dtype: float64
 </pre></div>
 </div>
 </div>
@@ -683,7 +736,7 @@ dtype: float64
 <ul class="simple">
 <li><p>What is the best possible value for the ROC AUC score (in general)?</p></li>
 <li><p>What is the best possible value for the log-loss (in general)?</p></li>
-<li><p>Why cannot we reach these values even when using the true probabilities?</p></li>
+<li><p>Why can’t we reach these values even when using the true probabilities?</p></li>
 <li><p>What is the name of the error rate obtained when computed from the
 true probabilities?</p></li>
 </ul>
@@ -741,85 +794,10 @@ intercept.</p>
 </div>
 </div>
 </div>
-<p>Now let’s compare the true and learned model parameters with the help of a
-utility class that we will reuse throughout this notebook. Feel free to skip
-over the details of the implementation, the method names and their outputs
-should be self-explanatory.</p>
+<p>Now let’s compare the true and learned model parameters.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ModelComparator</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">context_name</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span> <span class="o">=</span> <span class="n">sample_weight</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">context_name</span> <span class="o">=</span> <span class="n">context_name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">score_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">predicted_proba</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;Model&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;ROC AUC (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="n">predicted_proba</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-                <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="sa">f</span><span class="s2">&quot;log-loss (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">log_loss</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="n">predicted_proba</span><span class="p">,</span>
-                <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
-            <span class="p">),</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">register_linear_data_generating_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span> <span class="o">=</span> <span class="n">true_coef</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span> <span class="o">=</span> <span class="n">true_intercept</span>
-        <span class="n">oracle_proba</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
-        <span class="n">oracle_proba</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
-            <span class="p">[</span><span class="mi">1</span> <span class="o">-</span> <span class="n">oracle_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">oracle_proba</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]]</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="s2">&quot;Data generating model&quot;</span><span class="p">,</span> <span class="n">oracle_proba</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">register_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">register_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">score_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
-        <span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_linear_model_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">column_data</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;true_coef&quot;</span><span class="p">):</span>
-            <span class="n">column_data</span><span class="p">[</span><span class="s2">&quot;Data generating model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">true_intercept</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_coef</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="n">column_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="n">model_name</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">intercept_</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">coef_</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span>
-                <span class="k">for</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="n">column_data</span><span class="p">,</span>
-            <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="s2">&quot;intercept&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">]),</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">barh</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
-            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Comparison of the true and learned model parameters&quot;</span><span class="p">,</span>
-            <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Parameter value&quot;</span><span class="p">,</span>
-            <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Parameter name&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-
-
-<span class="n">population_comparator</span> <span class="o">=</span> <span class="n">ModelComparator</span><span class="p">(</span><span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">,</span> <span class="n">context_name</span><span class="o">=</span><span class="s2">&quot;population&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">population_comparator</span> <span class="o">=</span> <span class="n">ModelComparator</span><span class="p">(</span><span class="n">X_future</span><span class="p">,</span> <span class="n">y_future</span><span class="p">,</span> <span class="n">context_name</span><span class="o">=</span><span class="s2">&quot;population&quot;</span><span class="p">)</span>
 <span class="n">population_comparator</span><span class="o">.</span><span class="n">register_linear_data_generating_model</span><span class="p">(</span><span class="n">true_coef</span><span class="p">,</span> <span class="n">true_intercept</span><span class="p">)</span>
 <span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="s2">&quot;LogReg fit on future data&quot;</span><span class="p">,</span> <span class="n">cheating_model</span><span class="p">)</span>
 <span class="n">population_comparator</span><span class="o">.</span><span class="n">plot_linear_model_parameters</span><span class="p">()</span>
@@ -988,8 +966,8 @@ class prevalence in the target population and the training set:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">class_weight_for_prevalence_correction</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_positive_rate_past</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
-    <span class="mi">1</span><span class="p">:</span> <span class="n">true_positive_rate_past</span> <span class="o">/</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_prevalence_past</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="n">true_prevalence_past</span> <span class="o">/</span> <span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
 <span class="p">}</span>
 <span class="n">class_weight_for_prevalence_correction</span>
 </pre></div>
@@ -1142,10 +1120,9 @@ for any } p \in [0, 1] \]</div>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit</span>
 
-
 <span class="n">logreg_intercept_corrected</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 
-<span class="n">intercept_shift</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">true_positive_rate_past</span><span class="p">)</span> <span class="o">-</span> <span class="n">logit</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="n">intercept_shift</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">true_prevalence_past</span><span class="p">)</span> <span class="o">-</span> <span class="n">logit</span><span class="p">(</span><span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
 <span class="n">logreg_intercept_corrected</span><span class="o">.</span><span class="n">intercept_</span> <span class="o">+=</span> <span class="n">intercept_shift</span>
 
 <span class="n">population_comparator</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span>
@@ -1237,7 +1214,7 @@ probabilities of any binary classifier:</p>
 <span class="sd">    population, estimate the conditional probability of the positive class for</span>
 <span class="sd">    each data point in the test set.</span>
 
-<span class="sd">    This meta-estimator implements the formula of Theorem 2 of [Elkan 2001]:</span>
+<span class="sd">    This implements the formula of Theorem 2 of [Elkan 2001]:</span>
 
 <span class="sd">    The Foundations of Cost-Sensitive Learning, Charles Elkan, IJCAI 2001</span>
 <span class="sd">    https://cseweb.ucsd.edu/~elkan/rescale.pdf</span>
@@ -1310,7 +1287,7 @@ with the scikit-learn API:</p>
 
 <span class="n">logreg_post_hoc</span> <span class="o">=</span> <span class="n">PostHocPrevalenceCorrection</span><span class="p">(</span>
     <span class="n">estimator</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="o">**</span><span class="n">logreg_params</span><span class="p">),</span>
-    <span class="n">target_positive_rate</span><span class="o">=</span><span class="n">true_positive_rate_past</span><span class="p">,</span>
+    <span class="n">target_positive_rate</span><span class="o">=</span><span class="n">true_prevalence_past</span><span class="p">,</span>
 <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1411,11 +1388,11 @@ this notebook.</p>
 <h3>Questions:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>Consider the two kinds of post-hoc prevalence correction presented above:</p>
 <ul class="simple">
-<li><p>what happens when we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>?</p></li>
-<li><p>is it possible to get <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> values that are not in <span class="math notranslate nohighlight">\([0, 1]\)</span> by
-setting extreme values for <code class="docutils literal notranslate"><span class="pre">target_positive_rate</span></code>?</p></li>
-<li><p>why is the ROC-AUC score not affected by any of the post-hoc correction
+<li><p>What happens when we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>?</p></li>
+<li><p>Why is the ROC-AUC score not affected by any of the post-hoc correction
 methods?</p></li>
+<li><p>Is it possible to get <code class="docutils literal notranslate"><span class="pre">predict_proba</span></code> values that are not in <span class="math notranslate nohighlight">\([0, 1]\)</span> by
+setting extreme values for <code class="docutils literal notranslate"><span class="pre">target_positive_rate</span></code>?</p></li>
 </ul>
 <p>Recall that the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function is takes any real number as input and
 returns a value in [0, 1]:</p>
@@ -1456,22 +1433,22 @@ returns a value in [0, 1]:</p>
 <ul class="simple">
 <li><p>When we pass <code class="docutils literal notranslate"><span class="pre">target_positive_rate=y_train.mean()</span></code>, the intercept
 correction <code class="docutils literal notranslate"><span class="pre">logit(target_positive_rate)</span> <span class="pre">-</span> <span class="pre">logit(y_train.mean())</span></code> will be
-zero, hence no correction is applied.</p></li>
-<li><p>Similarly, setting <span class="math notranslate nohighlight">\(b = b'\)</span> in the formula of the docstring of
+zero, hence no correction is applied.
+Similarly, setting <span class="math notranslate nohighlight">\(b = b'\)</span> in the formula of the docstring of
 <code class="docutils literal notranslate"><span class="pre">elkan_prevalence_correction</span></code> will cause the expression to simplify to <span class="math notranslate nohighlight">\(p =
 p'\)</span>.</p></li>
-<li><p>Shifting the intercept of a logistic regression model can never make its
-predictions go outside of the [0, 1] interval since is prediction function
-is <code class="docutils literal notranslate"><span class="pre">expit(X</span> <span class="pre">&#64;</span> <span class="pre">coef</span> <span class="pre">+</span> <span class="pre">intercept)</span></code>: the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function is defined for all
-real numbers and maps them to the [0, 1] interval.</p></li>
-<li><p>For <code class="docutils literal notranslate"><span class="pre">elkan_prevalence_correction</span></code>, the result is less obvious but we can
-check empirically that the corrected probabilities are also in [0, 1] by
-tweaking the inputs of the plotting snippet below.</p></li>
 <li><p>Both correction methods are monotonic transformations of the predicted
 probabilities, hence they preserve the order of the predictions. As a
 result, the relative ranking of the instances remains unchanged and
 therefore the ROC-AUC score is not affected by any of the post-hoc
 correction methods.</p></li>
+<li><p>Shifting the intercept of a logistic regression model can never make its
+predictions go outside of the [0, 1] interval since is prediction function
+is <code class="docutils literal notranslate"><span class="pre">expit(X</span> <span class="pre">&#64;</span> <span class="pre">coef</span> <span class="pre">+</span> <span class="pre">intercept)</span></code>: the <code class="docutils literal notranslate"><span class="pre">expit</span></code> function is defined for all
+real numbers and maps them to the [0, 1] interval.
+For <code class="docutils literal notranslate"><span class="pre">elkan_prevalence_correction</span></code>, the result is less obvious but we can
+check empirically that the corrected probabilities are also in [0, 1] by
+tweaking the inputs of the plotting snippet below.</p></li>
 </ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1556,8 +1533,8 @@ that same model:</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sample_weight_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
     <span class="n">y_test</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_positive_rate_past</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
-    <span class="n">true_positive_rate_past</span> <span class="o">/</span> <span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">true_prevalence_past</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span>
+    <span class="n">true_prevalence_past</span> <span class="o">/</span> <span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
 <span class="p">)</span>
 </pre></div>
 </div>

@@ -59,174 +59,9 @@
 # training and evaluation methods can achieve that objective.
 
 # %% [markdown]
-# ## Data generating process
-#
-# Let's define a "true" data generating process that represents some
-# fundamental mechanism about the world. The true data generating process is
-# generally unknown, and the goal of machine learning is to approximate it as
-# closely as possible from a finite sample of data points.
-#
-# Here, we want to simulate a binary classification problem where the target
-# variable is a binary variable with a positive class that is very rare.
-#
-# The typical application domain could be medical diagnosis where the feature
-# values are physiological measurements and the target variable is a binary
-# indicator for the presence of a rare disease of interest. Other application
-# domains with extreme imbalance are fraud detection, credit scoring,
-# predictive maintenance, etc.
-#
-# For the sake of simplicity, we start this study by assuming that the data
-# generating process is a linear model with a logistic link function: the
-# features influence the probability of developing the disease but we expect
-# them to provide only partial information about the true risk as other
-# unobserved factors may also influence disease development. We assume the
-# unobserved factors to be independent of the observed features and all
-# distributions to be stationary over time.
-#
-# We will later relax the linearity assumption but other assumptions will still
-# apply.
-
-# %%
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.special import expit, logit
-
-rng = np.random.default_rng(0)
-dtype = np.float32  # use float32 to save memory
-n_features = 5
-true_coef = rng.normal(size=n_features).astype(dtype)
-true_intercept = -6  # This will make the positive class very rare.
-
-
-def sample_from_linear_model(true_coef, true_intercept, n_samples, seed):
-    rng = np.random.default_rng(seed)
-    X = rng.normal(size=(n_samples, n_features)).astype(dtype)
-    z = X @ true_coef
-    true_positive_proba = expit(z + true_intercept)
-    y = rng.binomial(n=1, p=true_positive_proba)
-    true_proba = np.hstack(
-        [1 - true_positive_proba[:, np.newaxis], true_positive_proba[:, np.newaxis]]
-    )
-
-    # create pandas data structures for convenience
-    X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
-    y = pd.Series(y, name="target")
-    return X, y, true_proba
-
-
-# %% [markdown]
-#
-# The world can generate a lot of data from a fixed stationary process. Some of
-# that data cannot be accessed at the time of the study but we generate it
-# anyway to be able to compute metrics on the future population.
-
-# %%
-n_samples = 3_000_000
-X_past, y_past, true_proba_past = sample_from_linear_model(
-    true_coef, true_intercept, n_samples, seed=0
-)
-X_future, y_future, true_proba_future = sample_from_linear_model(
-    true_coef, true_intercept, n_samples, seed=1
-)
-
-# %%
-X_past.memory_usage().sum() / 1e6  # in MB
-
-# %%
-print(f"Class counts:\n {y_past.value_counts()}")
-
-# %%
-print(f"Relative class frequencies:\n {y_past.value_counts(normalize=True)}")
-true_positive_rate_past = y_past.mean()
-
-# %% [markdown]
-#
-# Let us start this study by cheating and compute the metrics obtained from the
-# true probabilities computed from the data generating process for the future
-# feature values.
-
-# %%
-print(f"Relative class frequencies:\n {y_future.value_counts(normalize=True)}")
-
-# %%
-pd.Series(true_proba_future[:, 1]).describe()
-
-# %%
-from sklearn.metrics import roc_auc_score, log_loss
-
-roc_auc_score(y_future, true_proba_future[:, 1])
-
-# %%
-log_loss(y_future, true_proba_future)
-
-# %%
-log_loss(y_past, true_proba_past)
-
-# %% [markdown]
-#
-# ### Questions:
-# - What is the best possible value for the ROC AUC score (in general)?
-# - What is the best possible value for the log-loss (in general)?
-# - Why cannot we reach these values even when using the true probabilities?
-# - What is the name of the error rate obtained when computed from the
-#   true probabilities?
-
-# %%
-# Write your answers below before scrolling down.
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# Do not read the answers before thinking by yourself!
-
-# %% [markdown]
-#
-# ### Answers:
-# - The best possible value for the ROC AUC score is 1.0.
-# - The best possible value for the log-loss is 0.0.
-# - We cannot reach these values because the true probabilities reflect some
-#   inherent uncertainty in the data: the value of the target variable is not
-#   deterministic given the available features. The outcome can also be
-#   influenced by unobserved factors that are not captured by the features.
-# - The error rate obtained from the true probabilities is called the "Bayes
-#   error rate" or "irreducible error rate".
-
-
-# %% [markdown]
-#
-# Because we are curious, let's continue with the cheating and check that a fit
-# of logistic regression on the full population (with nearly unlimited data
-# points) would be able to approximately recover the true coefficients and
-# intercept.
-
-# %%
-from sklearn.linear_model import LogisticRegression
-
-cheating_model = LogisticRegression(C=np.inf).fit(X_future, y_future) 
-# C=np.inf means no regularization 
-
-# %% [markdown]
-#
-# Now let's compare the true and learned model parameters with the help of a
-# utility class that we will reuse throughout this notebook. Feel free to skip
-# over the details of the implementation, the method names and their outputs
-# should be self-explanatory.
+# For evaluating different models side by side, we'll define a utility class that we
+# will reuse throughout this notebook. Feel free to skip over the details of the
+# implementation, the method names and their outputs should be self-explanatory.
 
 # %%
 class ModelComparator:
@@ -300,7 +135,169 @@ class ModelComparator:
             ylabel="Parameter name",
         )
 
+# %% [markdown]
+# ## Data generating process
+#
+# Let's define a "true" data generating process that represents some
+# fundamental mechanism about the world. The true data generating process is
+# generally unknown, and the goal of machine learning is to approximate it as
+# closely as possible from a finite sample of data points.
+#
+# Here, we want to simulate a binary classification problem where the target
+# variable is a binary variable with a positive class that is very rare.
+#
+# The typical application domain could be medical diagnosis where the feature
+# values are physiological measurements and the target variable is a binary
+# indicator for the presence of a rare disease of interest. Other application
+# domains with extreme imbalance are fraud detection, credit scoring,
+# predictive maintenance, etc.
+#
+# For the sake of simplicity, we start this study by assuming that the data
+# generating process is a linear model with a logistic link function: the
+# features influence the probability of developing the disease but we expect
+# them to provide only partial information about the true risk as other
+# unobserved factors may also influence disease development. We assume the
+# unobserved factors to be independent of the observed features and all
+# distributions to be stationary over time.
+#
+# We will later relax the linearity assumption but other assumptions will still
+# apply.
 
+# %%
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.special import expit, logit
+
+rng = np.random.default_rng(0)
+dtype = np.float32  # use float32 to save memory
+n_features = 5
+true_coef = rng.normal(size=n_features).astype(dtype)
+true_intercept = -6  # This will make the positive class very rare.
+
+
+def sample_from_linear_model(true_coef, true_intercept, n_samples, seed):
+    rng = np.random.default_rng(seed)
+    X = rng.normal(size=(n_samples, n_features)).astype(dtype)
+    z = X @ true_coef
+    true_positive_proba = expit(z + true_intercept)
+    y = rng.binomial(n=1, p=true_positive_proba)
+    true_proba = np.hstack(
+        [1 - true_positive_proba[:, np.newaxis], true_positive_proba[:, np.newaxis]]
+    )
+
+    # create pandas data structures for convenience
+    X = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(n_features)])
+    y = pd.Series(y, name="target")
+    return X, y, true_proba
+
+
+# %% [markdown]
+#
+# The world can generate a lot of data from a fixed stationary process. Some of
+# that data cannot be accessed at the time of the study but we generate it
+# anyway to be able to compute metrics on the future population.
+
+# %%
+n_samples = 3_000_000
+X_past, y_past, true_proba_past = sample_from_linear_model(
+    true_coef, true_intercept, n_samples, seed=0
+)
+X_future, y_future, true_proba_future = sample_from_linear_model(
+    true_coef, true_intercept, n_samples, seed=1
+)
+
+# %%
+print(f"Class counts:\n {y_past.value_counts()}")
+
+# %%
+print(f"Relative class frequencies:\n {y_past.value_counts(normalize=True)}")
+
+# %%
+true_prevalence_past = y_past.mean()
+
+# %% [markdown]
+#
+# Let us start this study by cheating and compute the metrics obtained from the
+# true probabilities computed from the data generating process for the future
+# feature values.
+
+# %%
+print(f"Relative class frequencies:\n {y_future.value_counts(normalize=True)}")
+
+# %%
+from sklearn.metrics import roc_auc_score, log_loss
+
+roc_auc_score(y_future, true_proba_future[:, 1])
+
+# %%
+log_loss(y_future, true_proba_future)
+
+# %%
+log_loss(y_past, true_proba_past)
+
+# %% [markdown]
+#
+# ### Questions:
+# - What is the best possible value for the ROC AUC score (in general)?
+# - What is the best possible value for the log-loss (in general)?
+# - Why can't we reach these values even when using the true probabilities?
+# - What is the name of the error rate obtained when computed from the
+#   true probabilities?
+
+# %%
+# Write your answers below before scrolling down.
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Do not read the answers before thinking by yourself!
+
+# %% [markdown]
+#
+# ### Answers:
+# - The best possible value for the ROC AUC score is 1.0.
+# - The best possible value for the log-loss is 0.0.
+# - We cannot reach these values because the true probabilities reflect some
+#   inherent uncertainty in the data: the value of the target variable is not
+#   deterministic given the available features. The outcome can also be
+#   influenced by unobserved factors that are not captured by the features.
+# - The error rate obtained from the true probabilities is called the "Bayes
+#   error rate" or "irreducible error rate".
+
+
+# %% [markdown]
+#
+# Because we are curious, let's continue with the cheating and check that a fit
+# of logistic regression on the full population (with nearly unlimited data
+# points) would be able to approximately recover the true coefficients and
+# intercept.
+
+# %%
+from sklearn.linear_model import LogisticRegression
+
+cheating_model = LogisticRegression(C=np.inf).fit(X_future, y_future) 
+# C=np.inf means no regularization 
+
+# %% [markdown]
+#
+# Now let's compare the true and learned model parameters.
+# %%
 population_comparator = ModelComparator(X_future, y_future, context_name="population")
 population_comparator.register_linear_data_generating_model(true_coef, true_intercept)
 population_comparator.register_model("LogReg fit on future data", cheating_model)
@@ -401,8 +398,8 @@ population_comparator.score_table()
 
 # %%
 class_weight_for_prevalence_correction = {
-    0: (1 - true_positive_rate_past) / (1 - y_train.mean()),
-    1: true_positive_rate_past / y_train.mean(),
+    0: (1 - true_prevalence_past) / (1 - y_train.mean()),
+    1: true_prevalence_past / y_train.mean(),
 }
 class_weight_for_prevalence_correction
 
@@ -472,10 +469,9 @@ np.allclose(logreg_weighted.intercept_, logreg_weighted2.intercept_)
 # %%
 from scipy.special import logit
 
-
 logreg_intercept_corrected = LogisticRegression(**logreg_params).fit(X_train, y_train)
 
-intercept_shift = logit(true_positive_rate_past) - logit(y_train.mean())
+intercept_shift = logit(true_prevalence_past) - logit(y_train.mean())
 logreg_intercept_corrected.intercept_ += intercept_shift
 
 population_comparator.register_model(
@@ -512,7 +508,7 @@ def elkan_prevalence_correction(
     population, estimate the conditional probability of the positive class for
     each data point in the test set.
 
-    This meta-estimator implements the formula of Theorem 2 of [Elkan 2001]:
+    This implements the formula of Theorem 2 of [Elkan 2001]:
 
     The Foundations of Cost-Sensitive Learning, Charles Elkan, IJCAI 2001
     https://cseweb.ucsd.edu/~elkan/rescale.pdf
@@ -585,7 +581,7 @@ class PostHocPrevalenceCorrection(ClassifierMixin, BaseEstimator):
 
 logreg_post_hoc = PostHocPrevalenceCorrection(
     estimator=LogisticRegression(**logreg_params),
-    target_positive_rate=true_positive_rate_past,
+    target_positive_rate=true_prevalence_past,
 ).fit(X_train, y_train)
 
 # %% [markdown]
@@ -618,11 +614,11 @@ population_comparator.score_table()
 # ### Questions:
 #
 # Consider the two kinds of post-hoc prevalence correction presented above:
-# - what happens when we pass `target_positive_rate=y_train.mean()`?
-# - is it possible to get `predict_proba` values that are not in $[0, 1]$ by
-#   setting extreme values for `target_positive_rate`?
-# - why is the ROC-AUC score not affected by any of the post-hoc correction
+# - What happens when we pass `target_positive_rate=y_train.mean()`?
+# - Why is the ROC-AUC score not affected by any of the post-hoc correction
 #   methods?
+# - Is it possible to get `predict_proba` values that are not in $[0, 1]$ by
+#   setting extreme values for `target_positive_rate`?
 #
 # Recall that the `expit` function is takes any real number as input and
 # returns a value in [0, 1]:
@@ -662,21 +658,21 @@ population_comparator.score_table()
 # - When we pass `target_positive_rate=y_train.mean()`, the intercept
 #   correction `logit(target_positive_rate) - logit(y_train.mean())` will be
 #   zero, hence no correction is applied.
-# - Similarly, setting $b = b'$ in the formula of the docstring of
+#   Similarly, setting $b = b'$ in the formula of the docstring of
 #   `elkan_prevalence_correction` will cause the expression to simplify to $p =
 #   p'$.
-# - Shifting the intercept of a logistic regression model can never make its
-#   predictions go outside of the [0, 1] interval since is prediction function
-#   is `expit(X @ coef + intercept)`: the `expit` function is defined for all
-#   real numbers and maps them to the [0, 1] interval.
-# - For `elkan_prevalence_correction`, the result is less obvious but we can
-#   check empirically that the corrected probabilities are also in [0, 1] by
-#   tweaking the inputs of the plotting snippet below.
 # - Both correction methods are monotonic transformations of the predicted
 #   probabilities, hence they preserve the order of the predictions. As a
 #   result, the relative ranking of the instances remains unchanged and
 #   therefore the ROC-AUC score is not affected by any of the post-hoc
 #   correction methods.
+# - Shifting the intercept of a logistic regression model can never make its
+#   predictions go outside of the [0, 1] interval since is prediction function
+#   is `expit(X @ coef + intercept)`: the `expit` function is defined for all
+#   real numbers and maps them to the [0, 1] interval.
+#   For `elkan_prevalence_correction`, the result is less obvious but we can
+#   check empirically that the corrected probabilities are also in [0, 1] by
+#   tweaking the inputs of the plotting snippet below.
 
 # %%
 p = np.linspace(0, 1, 100)
@@ -744,8 +740,8 @@ log_loss(y_future, logreg_uncorrected.predict_proba(X_future))
 # %%
 sample_weight_test = np.where(
     y_test == 0,
-    (1 - true_positive_rate_past) / (1 - y_test.mean()),
-    true_positive_rate_past / y_test.mean(),
+    (1 - true_prevalence_past) / (1 - y_test.mean()),
+    true_prevalence_past / y_test.mean(),
 )
 
 # %%
