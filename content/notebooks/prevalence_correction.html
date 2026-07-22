@@ -16,37 +16,40 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -66,6 +69,7 @@
     <link rel="prev" title="Imbalanced classification: pitfalls and solutions" href="imbalanced_classification.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -81,19 +85,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -101,7 +94,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -109,8 +101,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -126,7 +118,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -156,21 +149,17 @@
     
     
     <img src="../../_static/logo.svg" class="logo__image only-light" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
-    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Probabilistic calibration of cost-sensitive learning - Home"/>`);</script>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -207,9 +196,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -339,7 +333,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -353,25 +347,17 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -702,7 +688,7 @@ Name: proportion, dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261289909972
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261291466801
 </pre></div>
 </div>
 </div>
@@ -805,7 +791,7 @@ intercept.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/e743c34b8cee7ff58113cfd3859f4bf4949e6ca7e047080b1d3f002de37594ee.png" src="../../_images/e743c34b8cee7ff58113cfd3859f4bf4949e6ca7e047080b1d3f002de37594ee.png" />
+<img alt="../../_images/f84a068a1d835265bf9e7322e3c50de8e431d06d77d6a7eeb194b17190e05d8c.png" src="../../_images/f84a068a1d835265bf9e7322e3c50de8e431d06d77d6a7eeb194b17190e05d8c.png" />
 </div>
 </div>
 <p>We can see that the learned model parameters nearly recover the data
@@ -938,12 +924,12 @@ the observed data.</p>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728479</td>
-      <td>0.267782</td>
+      <td>0.728478</td>
+      <td>0.267724</td>
     </tr>
   </tbody>
 </table>
-</div></div><img alt="../../_images/236e7661430a96d36db3fb17feaa268db83ef692f2c047a6291d427d77dd9ed6.png" src="../../_images/236e7661430a96d36db3fb17feaa268db83ef692f2c047a6291d427d77dd9ed6.png" />
+</div></div><img alt="../../_images/85d24bafa22e0b3b3ebf92016ae2bab23c9b44b5fc9a1a7227f59bdcdbd5c0f4.png" src="../../_images/85d24bafa22e0b3b3ebf92016ae2bab23c9b44b5fc9a1a7227f59bdcdbd5c0f4.png" />
 </div>
 </div>
 <p>The above results show that naively fitting a logistic regression model on
@@ -1032,8 +1018,8 @@ class prevalence in the target population and the training set:</p>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728479</td>
-      <td>0.267782</td>
+      <td>0.728478</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1042,7 +1028,7 @@ class prevalence in the target population and the training set:</p>
     </tr>
   </tbody>
 </table>
-</div></div><img alt="../../_images/d86eb46d9de2b80e58273c79f06af072138d83c06d7b0e54c56b14719d93a915.png" src="../../_images/d86eb46d9de2b80e58273c79f06af072138d83c06d7b0e54c56b14719d93a915.png" />
+</div></div><img alt="../../_images/4f2d542501d5747666fb4a32e6ca720d644a65a156d57cb92f107d35a813006c.png" src="../../_images/4f2d542501d5747666fb4a32e6ca720d644a65a156d57cb92f107d35a813006c.png" />
 </div>
 </div>
 <p>We can see that passing class-weights to the estimator has the desired effect
@@ -1070,7 +1056,7 @@ converge exactly to the same model.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.11735261, -0.13517831,  0.629324  ,  0.11449478, -0.55307335]],
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.1173526 , -0.13517828,  0.629324  ,  0.11449479, -0.55307335]],
        dtype=float32),
  array([-6.0257807], dtype=float32))
 </pre></div>
@@ -1174,8 +1160,8 @@ for any } p \in [0, 1] \]</div>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728479</td>
-      <td>0.267782</td>
+      <td>0.728478</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1184,12 +1170,12 @@ for any } p \in [0, 1] \]</div>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.728479</td>
+      <td>0.728478</td>
       <td>0.022420</td>
     </tr>
   </tbody>
 </table>
-</div></div><img alt="../../_images/968c3e4d17067de7562cb99ae5ead47d33f442398245a4749bfd7d265493609e.png" src="../../_images/968c3e4d17067de7562cb99ae5ead47d33f442398245a4749bfd7d265493609e.png" />
+</div></div><img alt="../../_images/a1de5e560bbb9db85063d866e303e236d3de2957687ffb849e74238458a544eb.png" src="../../_images/a1de5e560bbb9db85063d866e303e236d3de2957687ffb849e74238458a544eb.png" />
 </div>
 </div>
 <p>We recover an intercept value that is very close to the intercept of the
@@ -1362,8 +1348,8 @@ this notebook.</p>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728479</td>
-      <td>0.267782</td>
+      <td>0.728478</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1372,12 +1358,12 @@ this notebook.</p>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.728479</td>
+      <td>0.728478</td>
       <td>0.022420</td>
     </tr>
     <tr>
       <th>Post-hoc corrected LogReg</th>
-      <td>0.728479</td>
+      <td>0.728478</td>
       <td>0.022420</td>
     </tr>
   </tbody>
@@ -1479,7 +1465,7 @@ tweaking the inputs of the plotting snippet below.</p></li>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/717875079ff810c2ad3518b2e6fafc3bbeed92b514a5168dd639dc5b163b4f92.png" src="../../_images/717875079ff810c2ad3518b2e6fafc3bbeed92b514a5168dd639dc5b163b4f92.png" />
+<img alt="../../_images/b03aef238793c4ef45cda75c6b7995eac3f41dc6995531ed4e9170f342ec99aa.png" src="../../_images/b03aef238793c4ef45cda75c6b7995eac3f41dc6995531ed4e9170f342ec99aa.png" />
 </div>
 </div>
 </section>
@@ -1506,7 +1492,7 @@ the log-loss will give very inaccurate estimates of the population log-loss:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.49521249532699585
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.4952118992805481
 </pre></div>
 </div>
 </div>
@@ -1518,7 +1504,7 @@ the log-loss will give very inaccurate estimates of the population log-loss:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2677820026874542
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26772359013557434
 </pre></div>
 </div>
 </div>
@@ -1549,7 +1535,7 @@ that same model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2690008232667797
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2689426408503545
 </pre></div>
 </div>
 </div>
@@ -1561,7 +1547,7 @@ that same model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2677820026874542
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26772359013557434
 </pre></div>
 </div>
 </div>
@@ -1582,7 +1568,7 @@ population log-loss.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.021907364254013253
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.02190736952169433
 </pre></div>
 </div>
 </div>
@@ -1594,7 +1580,7 @@ population log-loss.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420411929488182
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420456632971764
 </pre></div>
 </div>
 </div>
@@ -1656,10 +1642,10 @@ this case).</p>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.730391</td>
-      <td>0.269001</td>
-      <td>0.728479</td>
-      <td>0.267782</td>
+      <td>0.730392</td>
+      <td>0.268943</td>
+      <td>0.728478</td>
+      <td>0.267724</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
@@ -1670,16 +1656,16 @@ this case).</p>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.730391</td>
+      <td>0.730392</td>
       <td>0.021907</td>
-      <td>0.728479</td>
+      <td>0.728478</td>
       <td>0.022420</td>
     </tr>
     <tr>
       <th>Post-hoc corrected LogReg</th>
-      <td>0.730391</td>
+      <td>0.730392</td>
       <td>0.021907</td>
-      <td>0.728479</td>
+      <td>0.728478</td>
       <td>0.022420</td>
     </tr>
   </tbody>
@@ -2224,7 +2210,7 @@ equivalent to the Elkan’s formula.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/e9d6cff40922c98827a2bd82c70153ff2fc8d5420abaa56bb75adcce76df2fba.png" src="../../_images/e9d6cff40922c98827a2bd82c70153ff2fc8d5420abaa56bb75adcce76df2fba.png" />
+<img alt="../../_images/274540b2678afcef39c852589ccdd574c1f9e2997083c41dd2807ad9ceca7dc2.png" src="../../_images/274540b2678afcef39c852589ccdd574c1f9e2997083c41dd2807ad9ceca7dc2.png" />
 </div>
 </div>
 <p>Let’s ask Claude to check that <span class="math notranslate nohighlight">\(p' = \frac{b'(p - pb)}{b - pb + b'p - b'b}\)</span>
@@ -2336,14 +2322,16 @@ can be rewritten as <span class="math notranslate nohighlight">\(p' = \text{expi
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-setting">Problem setting</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-generating-process">Data generating process</a><ul class="nav section-nav flex-column">
@@ -2422,8 +2410,8 @@ By Guillaume Lemaitre & Olivier Grisel
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

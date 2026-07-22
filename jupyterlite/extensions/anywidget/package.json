@@ -1,11 +1,11 @@
 {
   "name": "anywidget",
-  "version": "0.9.18",
+  "version": "0.11.0",
   "author": "Trevor Manz",
-  "lisence": "MIT",
+  "license": "MIT",
   "jupyterlab": {
     "_build": {
-      "load": "./static/remoteEntry.041f0a68.js",
+      "load": "./static/remoteEntry.698dcaf7.js",
       "extension": "./extension"
     }
   }

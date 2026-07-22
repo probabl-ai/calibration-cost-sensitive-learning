@@ -16,37 +16,40 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -64,6 +67,7 @@
     <link rel="prev" title="Probabilistic classification and cost-sensitive learning" href="../../intro.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -79,19 +83,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -99,7 +92,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -107,8 +99,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -124,7 +116,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -154,21 +147,17 @@
     
     
     <img src="../../_static/logo.svg" class="logo__image only-light" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
-    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Probabilistic calibration of cost-sensitive learning - Home"/>`);</script>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -205,9 +194,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -337,7 +331,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -351,25 +345,17 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -505,7 +491,7 @@ is defined as <code class="docutils literal notranslate"><span class="pre">expit
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/d74e9e0c20eaf1a010a96ef17d0db88d7694e8fd3dff6a41f375187143f666a4.png" src="../../_images/d74e9e0c20eaf1a010a96ef17d0db88d7694e8fd3dff6a41f375187143f666a4.png" />
+<img alt="../../_images/94c475acf322af1766bede8f5b4de21488077430a431c6eb8c0ca4c887b80afc.png" src="../../_images/94c475acf322af1766bede8f5b4de21488077430a431c6eb8c0ca4c887b80afc.png" />
 </div>
 </div>
 <p>The expit function allows to transform the linear predictor into probabilities between
@@ -594,7 +580,7 @@ the true model.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/9a1c7d84e3a071c270a9c186bf61e331ae6caccf0ba2c9620166b140dd75ebb6.png" src="../../_images/9a1c7d84e3a071c270a9c186bf61e331ae6caccf0ba2c9620166b140dd75ebb6.png" />
+<img alt="../../_images/4086ccc198ba897fc3fe00b23daf4d236062ed3c3a36ec7dab8322c06833645b.png" src="../../_images/4086ccc198ba897fc3fe00b23daf4d236062ed3c3a36ec7dab8322c06833645b.png" />
 </div>
 </div>
 <p>We observe that the learned model is able to recover the true model coefficients.
@@ -668,7 +654,7 @@ the previous exercise.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/73bb405160e19085d86b60e83783b557fdab8f5fb8a973584fddd0e6e41cd68d.png" src="../../_images/73bb405160e19085d86b60e83783b557fdab8f5fb8a973584fddd0e6e41cd68d.png" />
+<img alt="../../_images/6cb389a3f4e7044509c642158264f240cfef3c4fdd2e0a10ee37b915ce05d494.png" src="../../_images/6cb389a3f4e7044509c642158264f240cfef3c4fdd2e0a10ee37b915ce05d494.png" />
 </div>
 </div>
 <p>We observe that we have a larger difference between the coefficients of the true
@@ -790,7 +776,7 @@ quality of the probabilistic predictions made by our model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/6d4192113235a6ddec37c999c3bedcc3b386d683476e32f9f5234dec2723af2d.png" src="../../_images/6d4192113235a6ddec37c999c3bedcc3b386d683476e32f9f5234dec2723af2d.png" />
+<img alt="../../_images/cdbb7bd0517ac43bf658055046599ba144e5ea7c420f186cf5db23d4b9b833c6.png" src="../../_images/cdbb7bd0517ac43bf658055046599ba144e5ea7c420f186cf5db23d4b9b833c6.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -805,7 +791,7 @@ quality of the probabilistic predictions made by our model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/f7bba36ca3092789af2312e036c27c49b10e2b2c55ccf2d0fb24959706e6f1d7.png" src="../../_images/f7bba36ca3092789af2312e036c27c49b10e2b2c55ccf2d0fb24959706e6f1d7.png" />
+<img alt="../../_images/1cdcda646cd3c7e7586d1733f9a60a8415a9a72eca1d0b6c0bffa41df6a51068.png" src="../../_images/1cdcda646cd3c7e7586d1733f9a60a8415a9a72eca1d0b6c0bffa41df6a51068.png" />
 </div>
 </div>
 <p>Our predictive model estimates the probabilities of the class of interest (i.e.
@@ -866,7 +852,7 @@ that by plotting the calibration curve.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/11b933814b33a8e3fb87e8543865d8937fb7786dc015f9a2edb5c4726eb61b57.png" src="../../_images/11b933814b33a8e3fb87e8543865d8937fb7786dc015f9a2edb5c4726eb61b57.png" />
+<img alt="../../_images/13a05276a0abffa8e50976d77c18013c7b4aabcfcddfea41355aaa1d53086aec.png" src="../../_images/13a05276a0abffa8e50976d77c18013c7b4aabcfcddfea41355aaa1d53086aec.png" />
 </div>
 </div>
 <p>Since we have rare events, most data points have low predicted probabilities for the
@@ -888,7 +874,7 @@ side of the plot. Let’s zoom in on the plot to better see the curve.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/6acbcca2e28fc130894f6b4cbde4ad515cb3d3e8b6b065b1b8501a8bc7f928c8.png" src="../../_images/6acbcca2e28fc130894f6b4cbde4ad515cb3d3e8b6b065b1b8501a8bc7f928c8.png" />
+<img alt="../../_images/6896217adad2c957d8b5b998ca839eb1569b769e69aecfb65a75c3c76f21a3bb.png" src="../../_images/6896217adad2c957d8b5b998ca839eb1569b769e69aecfb65a75c3c76f21a3bb.png" />
 </div>
 </div>
 <p>We observe that our logistic regression model is well calibrated as the curve is close
@@ -940,7 +926,7 @@ negatives, false positives and false negatives.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/0e46ba1388ed335ef924e26b2f313785aaea8090687346bb9b423cd2354fbc52.png" src="../../_images/0e46ba1388ed335ef924e26b2f313785aaea8090687346bb9b423cd2354fbc52.png" />
+<img alt="../../_images/5483d885da390c453df532dc7718d8cfe3f67f4070e3f5e6162cee6792fa0ffd.png" src="../../_images/5483d885da390c453df532dc7718d8cfe3f67f4070e3f5e6162cee6792fa0ffd.png" />
 </div>
 </div>
 <p>From the confusion matrix above, we can already understand what bothers practitioners:
@@ -1015,7 +1001,7 @@ classification report.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/8360958c0893774637e33d3569ebd0d53b899a77b79b7650eb6d5a218ad8573a.png" src="../../_images/8360958c0893774637e33d3569ebd0d53b899a77b79b7650eb6d5a218ad8573a.png" />
+<img alt="../../_images/9e143ff6b7d088fbeee1a8f6b463fc0d992d9fc472240edca6745cf331f99d81.png" src="../../_images/9e143ff6b7d088fbeee1a8f6b463fc0d992d9fc472240edca6745cf331f99d81.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1100,7 +1086,7 @@ the model is well calibrated. What do you observe?</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/0ba03f10006e483f0a167204d381f9d743c9b2989b98e38890de7ffa9b46670a.png" src="../../_images/0ba03f10006e483f0a167204d381f9d743c9b2989b98e38890de7ffa9b46670a.png" />
+<img alt="../../_images/6098fa17a9232f6e8c73e77de93302028853d80680f9aac0746912deea69d6e3.png" src="../../_images/6098fa17a9232f6e8c73e77de93302028853d80680f9aac0746912deea69d6e3.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1119,7 +1105,7 @@ the model is well calibrated. What do you observe?</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/1121538b21d909340e4abde7996161c80bf181dfa10050e76ef1a5c0e073d816.png" src="../../_images/1121538b21d909340e4abde7996161c80bf181dfa10050e76ef1a5c0e073d816.png" />
+<img alt="../../_images/8e051157f7c233a6d4b6c4cb5d658e2f89b9ef593f335a0977da8b30ca851875.png" src="../../_images/8e051157f7c233a6d4b6c4cb5d658e2f89b9ef593f335a0977da8b30ca851875.png" />
 </div>
 </div>
 <p>We observe that the coefficients related to the features are close to the true
@@ -2005,7 +1991,7 @@ a.param-doc-link::before {
         </a>
     </td>
            <td class="fitted-att-type">list</td>
-           <td>[&lt;sklearn.cali...x7fd97c2a9010&gt;, &lt;sklearn.cali...x7fd96a5f8a50&gt;, &lt;sklearn.cali...x7fd96a5f8f50&gt;, &lt;sklearn.cali...x7fd96a6308a0&gt;, ...]</td>
+           <td>[&lt;sklearn.cali...x7fc395d62cf0&gt;, &lt;sklearn.cali...x7fc395d52d50&gt;, &lt;sklearn.cali...x7fc395d52fd0&gt;, &lt;sklearn.cali...x7fc3984849d0&gt;, ...]</td>
 
 
        </tr>
@@ -2800,7 +2786,7 @@ forceTheme('sk-container-id-1');</script></body></div></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/f4d356a36896d13bec828d34d037458f49698fcf8216908f8b4748c0fc26344c.png" src="../../_images/f4d356a36896d13bec828d34d037458f49698fcf8216908f8b4748c0fc26344c.png" />
+<img alt="../../_images/f78c652317471ff1143d583675c5c659d44c91e662821cc3cca902be17ba6d17.png" src="../../_images/f78c652317471ff1143d583675c5c659d44c91e662821cc3cca902be17ba6d17.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -2813,7 +2799,7 @@ forceTheme('sk-container-id-1');</script></body></div></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c35159d1f3366a824e15f226227b6f121084fca0e8f1beea186e0cc9c58919e3.png" src="../../_images/c35159d1f3366a824e15f226227b6f121084fca0e8f1beea186e0cc9c58919e3.png" />
+<img alt="../../_images/41feab63c6a0e10293926450158eae24e122152954c6e34228d7bf2835a0707b.png" src="../../_images/41feab63c6a0e10293926450158eae24e122152954c6e34228d7bf2835a0707b.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -3059,7 +3045,7 @@ recall of the class of interest?</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/1bb7b3e0ebf71e35cb722434849c45258f3629dd73a59effd385446f0676c456.png" src="../../_images/1bb7b3e0ebf71e35cb722434849c45258f3629dd73a59effd385446f0676c456.png" />
+<img alt="../../_images/effd6488ef4d9e0c965609a8f18857ccd2b559e37828b3b57ebc8154a374dfc0.png" src="../../_images/effd6488ef4d9e0c965609a8f18857ccd2b559e37828b3b57ebc8154a374dfc0.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -3070,7 +3056,7 @@ recall of the class of interest?</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/6ee215a215d29eb502495ef77d4977356317fd3ee25c4da4049b3457e65460c7.png" src="../../_images/6ee215a215d29eb502495ef77d4977356317fd3ee25c4da4049b3457e65460c7.png" />
+<img alt="../../_images/8cecfcb103f3becb407fa9455248ca7479f7778f0f54390c1f078c668813f14e.png" src="../../_images/8cecfcb103f3becb407fa9455248ca7479f7778f0f54390c1f078c668813f14e.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -3146,7 +3132,7 @@ that can be used by the <code class="docutils literal notranslate"><span class="
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/58ec3e5b1a563c07121903dfcec8e411af4c29781e338578d1ec4a8a8def5e00.png" src="../../_images/58ec3e5b1a563c07121903dfcec8e411af4c29781e338578d1ec4a8a8def5e00.png" />
+<img alt="../../_images/ccf249d6f26520baeb75ccd071f27bda86afe1b04429ad4c591547bdfb2a176e.png" src="../../_images/ccf249d6f26520baeb75ccd071f27bda86afe1b04429ad4c591547bdfb2a176e.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -3180,7 +3166,7 @@ was found during the cross-validation procedure.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.07943894606514569
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.07943894606514565
 </pre></div>
 </div>
 </div>
@@ -3271,14 +3257,16 @@ metrics.</p></li>
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#class-imbalance-representative-data-acquisition-with-rare-events-of-interest">Class imbalance: representative data acquisition with rare events of interest</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-a-predictive-model">Learning a predictive model</a><ul class="nav section-nav flex-column">
@@ -3348,8 +3336,8 @@ By Guillaume Lemaitre & Olivier Grisel
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

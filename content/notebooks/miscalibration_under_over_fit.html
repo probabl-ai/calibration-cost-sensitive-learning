@@ -16,37 +16,40 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -63,6 +66,7 @@
     <link rel="prev" title="Reading calibration curves" href="different_calibration_curves.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -78,19 +82,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -98,7 +91,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -106,8 +98,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -123,7 +115,8 @@
       
       
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -153,21 +146,17 @@
     
     
     <img src="../../_static/logo.svg" class="logo__image only-light" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
-    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Probabilistic calibration of cost-sensitive learning - Home"/>`);</script>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -204,9 +193,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -336,7 +330,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -350,25 +344,17 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -470,7 +456,7 @@ applications of machine learning.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/645392556b20be914864b116a057c4e13ba571c43f7e774f511d8c1db9da19b5.png" src="../../_images/645392556b20be914864b116a057c4e13ba571c43f7e774f511d8c1db9da19b5.png" />
+<img alt="../../_images/cac79e19ae0d59c88a18092ee615d0f9385a79c12e5859f02df13ac5e7fe7e9d.png" src="../../_images/cac79e19ae0d59c88a18092ee615d0f9385a79c12e5859f02df13ac5e7fe7e9d.png" />
 </div>
 </div>
 <p>The XOR problem exhibits a non-linear decision link between the features and
@@ -1768,7 +1754,7 @@ forceTheme('sk-container-id-1');</script></body></div></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/cef9b469b121a8419c5bb917f04baacb2ad40cf4208c5311f24b21bfe430f199.png" src="../../_images/cef9b469b121a8419c5bb917f04baacb2ad40cf4208c5311f24b21bfe430f199.png" />
+<img alt="../../_images/e02ec586d3305d966b568912659d097eaf92b792f7e52d8341c457d96e84e848.png" src="../../_images/e02ec586d3305d966b568912659d097eaf92b792f7e52d8341c457d96e84e848.png" />
 </div>
 </div>
 <p>We see that the probability estimate is almost constant (near 0.5) everywhere
@@ -2825,7 +2811,7 @@ a.param-doc-link::before {
         </a>
     </td>
            <td class="fitted-att-type">list</td>
-           <td>[&lt;scipy.interp...x7fa55a785940&gt;, &lt;scipy.interp...x7fa55a5bcf50&gt;]</td>
+           <td>[&lt;scipy.interp...x7f0a0c96ae40&gt;, &lt;scipy.interp...x7f0a0c966c10&gt;]</td>
 
 
        </tr>
@@ -4255,7 +4241,7 @@ forceTheme('sk-container-id-2');</script></body></div></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/d881225b0c239d67408d3bf643ebf4ff6b98bbea95a289bd7f4b0d887cffc82f.png" src="../../_images/d881225b0c239d67408d3bf643ebf4ff6b98bbea95a289bd7f4b0d887cffc82f.png" />
+<img alt="../../_images/813e400ed3893ede8b11d3ea8d93d5207fb84780b88a83face27bb5ff7213b51.png" src="../../_images/813e400ed3893ede8b11d3ea8d93d5207fb84780b88a83face27bb5ff7213b51.png" />
 </div>
 </div>
 <p>We see that our refined pipeline is capable of capturing the non-linear
@@ -4291,7 +4277,7 @@ here to keep the notebook simple.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c864a26d4390919512bffcec5fbcf0ccf6d4e186d50612dbe54a2d4c61f41049.png" src="../../_images/c864a26d4390919512bffcec5fbcf0ccf6d4e186d50612dbe54a2d4c61f41049.png" />
+<img alt="../../_images/bbad391e7f8598228f6e2a69053090b479eede6544c22b91646b5dbb48a67ff6.png" src="../../_images/bbad391e7f8598228f6e2a69053090b479eede6544c22b91646b5dbb48a67ff6.png" />
 </div>
 </div>
 <p>We observe that the calibration of the model is far from ideal. Is there a
@@ -4371,9 +4357,9 @@ What can you observe in terms of under-/over-fitting and calibration?</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/0b024cca8f59c61405721c3c2dc67f98b596582097c4b66262ed8e0dd8b1080c.png" src="../../_images/0b024cca8f59c61405721c3c2dc67f98b596582097c4b66262ed8e0dd8b1080c.png" />
-<img alt="../../_images/eb578f79b33bcf534aa1cf410f22413172c3c90cf7389d92efbf39dc547d972d.png" src="../../_images/eb578f79b33bcf534aa1cf410f22413172c3c90cf7389d92efbf39dc547d972d.png" />
-<img alt="../../_images/664c661b2cd2235368055bd6e4413088e7730b3d90f3d51469c41e9cb998c041.png" src="../../_images/664c661b2cd2235368055bd6e4413088e7730b3d90f3d51469c41e9cb998c041.png" />
+<img alt="../../_images/1d083b94b249419f3326a7eb0da4d66de11019cb27ad95b815ce45bdcd4dc7f6.png" src="../../_images/1d083b94b249419f3326a7eb0da4d66de11019cb27ad95b815ce45bdcd4dc7f6.png" />
+<img alt="../../_images/35b910e417ffdd1d72d59890aeac99a372b31f7063606105b4706fe81df9932e.png" src="../../_images/35b910e417ffdd1d72d59890aeac99a372b31f7063606105b4706fe81df9932e.png" />
+<img alt="../../_images/9e87c1748d7b9d6449d6fcdae12650f6421b09c8536477faf860c6a124e7a521.png" src="../../_images/9e87c1748d7b9d6449d6fcdae12650f6421b09c8536477faf860c6a124e7a521.png" />
 </div>
 </div>
 <p>From the previous exercise, we observe that whether we have an under-fitting
@@ -4465,8 +4451,8 @@ decision boundary and the calibration curve.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/2d4d567884640c55059ccdd221af2690a74c2195e2c70a573848d2f2012de408.png" src="../../_images/2d4d567884640c55059ccdd221af2690a74c2195e2c70a573848d2f2012de408.png" />
-<img alt="../../_images/c729da97c7ad5f21425edfe0c96325928b5a66faf6d1ca422cd60657f6e01d6b.png" src="../../_images/c729da97c7ad5f21425edfe0c96325928b5a66faf6d1ca422cd60657f6e01d6b.png" />
+<img alt="../../_images/7051abc605d00438001892b97fd37126be6f9e43a7432577da83b345f08681f0.png" src="../../_images/7051abc605d00438001892b97fd37126be6f9e43a7432577da83b345f08681f0.png" />
+<img alt="../../_images/bd42c3b711f878eb98189aaf06862ef83526ee10c39747029cd4aeef4fa0507c.png" src="../../_images/bd42c3b711f878eb98189aaf06862ef83526ee10c39747029cd4aeef4fa0507c.png" />
 </div>
 </div>
 <p>An obvious observation is that without explicitly creating the interaction
@@ -4559,8 +4545,8 @@ complexity and therefore the under-fitting/over-fitting trade-off.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/ce616df96956e136158eb26bf29161b3a97c3959bf5cc9c0a8af7f06f6647942.png" src="../../_images/ce616df96956e136158eb26bf29161b3a97c3959bf5cc9c0a8af7f06f6647942.png" />
-<img alt="../../_images/99b5146b1b8eb4316228bacdf5d2e549829821357eed4118c9246181a54441b2.png" src="../../_images/99b5146b1b8eb4316228bacdf5d2e549829821357eed4118c9246181a54441b2.png" />
+<img alt="../../_images/d85c0ff1edef3cbe23e1f9ca3bd037c55ada1c9634edc311578f8fc6fab57f28.png" src="../../_images/d85c0ff1edef3cbe23e1f9ca3bd037c55ada1c9634edc311578f8fc6fab57f28.png" />
+<img alt="../../_images/d07a352611299beb1bf9c8f5ce2a33eba9e5a476a6393a40e0f605ffaf30aedc.png" src="../../_images/d07a352611299beb1bf9c8f5ce2a33eba9e5a476a6393a40e0f605ffaf30aedc.png" />
 </div>
 </div>
 <p>From the boundary decision plots, we observe that all the explored models are
@@ -4747,8 +4733,8 @@ Loading validation curve for gbrt with accuracy from disk.
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/26fcd1dab21245c519281d813f5ae4a8b9f07961f82507f77a305c881401f084.png" src="../../_images/26fcd1dab21245c519281d813f5ae4a8b9f07961f82507f77a305c881401f084.png" />
-<img alt="../../_images/b748c10b5030a71edf31cff91d13c7e225d864a07a6cfd513a5b61fca9b82a65.png" src="../../_images/b748c10b5030a71edf31cff91d13c7e225d864a07a6cfd513a5b61fca9b82a65.png" />
+<img alt="../../_images/946bb5545afd558fd5fe175232bc38488f971a10a084cc7cf29a574087574508.png" src="../../_images/946bb5545afd558fd5fe175232bc38488f971a10a084cc7cf29a574087574508.png" />
+<img alt="../../_images/5e6dc08a95b1f3c208271179fa26f718c93b1aa83b031c511cd8d46bb1b6a199.png" src="../../_images/5e6dc08a95b1f3c208271179fa26f718c93b1aa83b031c511cd8d46bb1b6a199.png" />
 </div>
 </div>
 <p>From the previous plots, there are three important observations.</p>
@@ -5500,7 +5486,7 @@ a.param-doc-link::before {
                                              (&#x27;logisticregression&#x27;,
                                               LogisticRegression(max_iter=10000))]),
                    n_iter=25,
-                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7fa56a93e7b0&gt;,
+                   param_distributions={&#x27;logisticregression__C&#x27;: &lt;scipy.stats._distn_infrastructure.rv_continuous_frozen object at 0x7f0a0749d2b0&gt;,
                                         &#x27;splinetransformer__n_knots&#x27;: [5, 10,
                                                                        15]},
                    random_state=0, scoring=&#x27;neg_log_loss&#x27;)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually sk-global" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RandomizedSearchCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.9/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted" data-param-prefix="">
@@ -5544,7 +5530,7 @@ a.param-doc-link::before {
             param_distributions: dict or list of dicts<br><br>Dictionary with parameters names (`str`) as keys and distributions<br>or lists of parameters to try. Distributions must provide a ``rvs``<br>method for sampling (such as those from scipy.stats.distributions).<br>If a list is given, it is sampled uniformly.<br>If a list of dicts is given, first a dict is sampled uniformly, and<br>then a parameter is sampled using that dict as above.</span>
         </a>
     </td>
-            <td class="value">{&#x27;logisticregression__C&#x27;: &lt;scipy.stats....x7fa56a93e7b0&gt;, &#x27;splinetransformer__n_knots&#x27;: [5, 10, ...]}</td>
+            <td class="value">{&#x27;logisticregression__C&#x27;: &lt;scipy.stats....x7f0a0749d2b0&gt;, &#x27;splinetransformer__n_knots&#x27;: [5, 10, ...]}</td>
         </tr>
     
 
@@ -5855,7 +5841,7 @@ a.param-doc-link::before {
         </a>
     </td>
            <td class="fitted-att-type">dict</td>
-           <td>{&#x27;me...me&#x27;: array([0.0105..., 0.03238099]), &#x27;me...me&#x27;: array([0.0028..., 0.00337987]), &#x27;me...re&#x27;: array([-0.318... -0.34457419]), &#x27;pa..._C&#x27;: masked_array(...l_value=1e+20), ...}</td>
+           <td>{&#x27;me...me&#x27;: array([0.0101..., 0.03272979]), &#x27;me...me&#x27;: array([0.0028..., 0.00312195]), &#x27;me...re&#x27;: array([-0.318... -0.34457426]), &#x27;pa..._C&#x27;: masked_array(...l_value=1e+20), ...}</td>
 
 
        </tr>
@@ -5927,7 +5913,7 @@ a.param-doc-link::before {
         </a>
     </td>
            <td class="fitted-att-type">float</td>
-           <td>0.01381</td>
+           <td>0.0111</td>
 
 
        </tr>
@@ -6140,7 +6126,7 @@ a.param-doc-link::before {
         </a>
     </td>
            <td class="fitted-att-type">list</td>
-           <td>[&lt;scipy.interp...x7fa554f40130&gt;, &lt;scipy.interp...x7fa554f43bd0&gt;]</td>
+           <td>[&lt;scipy.interp...x7f0a0794f290&gt;, &lt;scipy.interp...x7f0a0794ccb0&gt;]</td>
 
 
        </tr>
@@ -7587,7 +7573,7 @@ test set.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/90c642ce69b5491d852bd6904127ec523071e274ae0d67c1a34fcc5bdd7e3396.png" src="../../_images/90c642ce69b5491d852bd6904127ec523071e274ae0d67c1a34fcc5bdd7e3396.png" />
+<img alt="../../_images/ba23666bca620d1392f7e083bb0e24c37f464ba58e051c7ad2e78fba9fe5bf44.png" src="../../_images/ba23666bca620d1392f7e083bb0e24c37f464ba58e051c7ad2e78fba9fe5bf44.png" />
 </div>
 </div>
 <p>We see that our procedure leads to a well-calibrated model since we used a
@@ -7641,14 +7627,16 @@ cross-validated as expected.</p>
             
             
               
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
   </div>
-  <nav class="bd-toc-nav page-toc">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exercise">Exercise:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#solution">Solution:</a></li>
@@ -7702,8 +7690,8 @@ By Guillaume Lemaitre & Olivier Grisel
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

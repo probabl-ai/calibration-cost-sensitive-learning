@@ -16,37 +16,40 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-
-  
-  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
-  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -62,6 +65,7 @@
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
   </head>
   
   
@@ -77,19 +81,8 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-primary-sidebar-checkbox"/>
-  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
-  <input type="checkbox"
-          class="sidebar-toggle"
-          id="pst-secondary-sidebar-checkbox"/>
-  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
-  <div class="search-button__wrapper">
-    <div class="search-button__overlay"></div>
-    <div class="search-button__search-container">
+  <dialog id="pst-search-dialog">
+    
 <form class="bd-search d-flex align-items-center"
       action="../../search.html"
       method="get">
@@ -97,7 +90,6 @@
   <input type="search"
          class="form-control"
          name="q"
-         id="search-input"
          placeholder="Search this book..."
          aria-label="Search this book..."
          autocomplete="off"
@@ -105,8 +97,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form></div>
-  </div>
+</form>
+  </dialog>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -124,7 +116,8 @@
       
         
       
-      <div class="bd-sidebar-primary bd-sidebar">
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -154,21 +147,17 @@
     
     
     <img src="../../_static/logo.svg" class="logo__image only-light" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
-    <script>document.write(`<img src="../../_static/logo.svg" class="logo__image only-dark" alt="Probabilistic calibration of cost-sensitive learning - Home"/>`);</script>
+    <img src="../../_static/logo.svg" class="logo__image only-dark pst-js-only" alt="Probabilistic calibration of cost-sensitive learning - Home"/>
   
   
 </a></div>
         <div class="sidebar-primary-item">
 
- <script>
- document.write(`
-   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <span class="search-button__default-text">Search</span>
-    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-   </button>
- `);
- </script></div>
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -205,9 +194,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -337,7 +331,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -351,24 +345,16 @@
 
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
-  </button>
-`);
-</script>
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
 
 
-<script>
-document.write(`
-  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-  </button>
-`);
-</script>
+</button>
 
 </div></div>
       
@@ -485,7 +471,7 @@ the recall metric that is too low for their taste.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/55d4ad18f99bd49ef9dc93402d2a2286faec5b6ce52903f7602292c36efc2c06.png" src="../../_images/55d4ad18f99bd49ef9dc93402d2a2286faec5b6ce52903f7602292c36efc2c06.png" />
+<img alt="../../_images/2e1aff471234bed96ebf5896c78e5fec8565330dceeda0172d40ea07ed2231c8.png" src="../../_images/2e1aff471234bed96ebf5896c78e5fec8565330dceeda0172d40ea07ed2231c8.png" />
 </div>
 </div>
 <p>So we see that our model is conservative by wrongly classifying sample from the
@@ -536,7 +522,7 @@ weighted avg       0.98      0.85      0.90     45000
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/007338fbfcb8dea942ff25dd7a873a9151c2cf61423aff4da7bf5e531945e4a1.png" src="../../_images/007338fbfcb8dea942ff25dd7a873a9151c2cf61423aff4da7bf5e531945e4a1.png" />
+<img alt="../../_images/b4136c014c9630cd5d772c12e4bc476fd0dc5a91e4fc34194bfc7e63af709671.png" src="../../_images/b4136c014c9630cd5d772c12e4bc476fd0dc5a91e4fc34194bfc7e63af709671.png" />
 </div>
 </div>
 <p>So we see that the recall increases at the cost of lowering the precision. This
@@ -563,7 +549,7 @@ based on the probability estimates.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/3101d2cba27ce5bb35fd1796ad9179ba19d6b8ad564854d78aa983293d127a63.png" src="../../_images/3101d2cba27ce5bb35fd1796ad9179ba19d6b8ad564854d78aa983293d127a63.png" />
+<img alt="../../_images/72fda4fdb42ba81df512c114fbe0a4b76cfd36568dc556f4ec707f0777a85268.png" src="../../_images/72fda4fdb42ba81df512c114fbe0a4b76cfd36568dc556f4ec707f0777a85268.png" />
 </div>
 </div>
 <p>We see that the two models have a very different probability estimates. We should
@@ -590,7 +576,7 @@ calibrated than the other.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/c58b79df1e40dd9602c579a4bf082fcab5eefd088bea8a147d6d8c5028994b88.png" src="../../_images/c58b79df1e40dd9602c579a4bf082fcab5eefd088bea8a147d6d8c5028994b88.png" />
+<img alt="../../_images/f39ec00c7608e411913b641946f63b49fef0302a9d3011497353845d53404ae7.png" src="../../_images/f39ec00c7608e411913b641946f63b49fef0302a9d3011497353845d53404ae7.png" />
 </div>
 </div>
 <p>We clearly see that the balanced logistic regression model is completely
@@ -616,10 +602,10 @@ ROC curves of the two models to check if the predictions ranking changed.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;sklearn.metrics._plot.roc_curve.RocCurveDisplay at 0x7f19e027ce10&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;sklearn.metrics._plot.roc_curve.RocCurveDisplay at 0x7f5a68b02990&gt;
 </pre></div>
 </div>
-<img alt="../../_images/5c3e52406808b1eec60e77e233d028b0f7b68ae95a3486c4a78a7df6b5650135.png" src="../../_images/5c3e52406808b1eec60e77e233d028b0f7b68ae95a3486c4a78a7df6b5650135.png" />
+<img alt="../../_images/d05d1b3aa34db75dc4dc9efe37c08630c6cd4c9a2ce1592766d4c237157f90fa.png" src="../../_images/d05d1b3aa34db75dc4dc9efe37c08630c6cd4c9a2ce1592766d4c237157f90fa.png" />
 </div>
 </div>
 <p>We see that the two models have the same ROC curve. So it means, that the ranking of
@@ -666,7 +652,7 @@ to transform the probability estimates into hard predictions.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/6c741321e7ce0c8069252ecca80c21e9bf3d9f44dd5e9aad4345c21a6912d377.png" src="../../_images/6c741321e7ce0c8069252ecca80c21e9bf3d9f44dd5e9aad4345c21a6912d377.png" />
+<img alt="../../_images/8a373baf10ffd0b1e1fc0de647a240695ad1d1ed7e884923deb368ae414bfbe8.png" src="../../_images/8a373baf10ffd0b1e1fc0de647a240695ad1d1ed7e884923deb368ae414bfbe8.png" />
 </div>
 </div>
 <p>We see that the decision boundary similarly to the balanced logistic regression model.
@@ -705,7 +691,7 @@ same way.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/1aa62af8fccbe9ca2b353444ff2525873d4df528a35fef3f8ed0af77fb612196.png" src="../../_images/1aa62af8fccbe9ca2b353444ff2525873d4df528a35fef3f8ed0af77fb612196.png" />
+<img alt="../../_images/e9f6882a00f626e5dac38b71742aeb9b7d8626a04233369499688be023ec34b1.png" src="../../_images/e9f6882a00f626e5dac38b71742aeb9b7d8626a04233369499688be023ec34b1.png" />
 </div>
 </div>
 <p>This is not a surprise since the thresholding is a post-processing that threshold the
@@ -792,8 +778,8 @@ By Guillaume Lemaitre & Olivier Grisel
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>

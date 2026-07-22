@@ -2,7 +2,7 @@
   "jupyter-config-data": {
     "appName": "JupyterLite",
     "appUrl": "./lab",
-    "appVersion": "0.8.0",
+    "appVersion": "0.8.1",
     "baseUrl": "./",
     "contentsAllJsonFile": "all.json",
     "defaultKernelName": "python",
@@ -16,7 +16,7 @@
       },
       {
         "extension": "./extension",
-        "load": "static/remoteEntry.35b6c65bd99dab37b910.js",
+        "load": "static/remoteEntry.c72939064c854c98a34f.js",
         "name": "@jupyter-widgets/jupyterlab-manager"
       },
       {
@@ -26,16 +26,16 @@
       },
       {
         "extension": "./extension",
-        "load": "./static/remoteEntry.041f0a68.js",
+        "load": "./static/remoteEntry.698dcaf7.js",
         "name": "anywidget"
       },
       {
         "extension": "./extension",
-        "load": "static/remoteEntry.81bd703f793b75fda8b9.js",
+        "load": "static/remoteEntry.4e3e87029586a924.js",
         "name": "jupyterlab-jupytext"
       },
       {
-        "load": "static/remoteEntry.38ea05461c254e327731.js",
+        "load": "static/remoteEntry.58c394332ed33325ffe5.js",
         "mimeExtension": "./mimeExtension",
         "name": "jupyterlab-plotly"
       },
