@@ -32,7 +32,7 @@ ruff = "*"
 black = "*"
 
 [feature.doc.dependencies]
-jupyter-book = "*"
+jupyter-book = ">=1.0.0,<2"
 jupyterlite = "==0.8.1"
 jupyterlite-pyodide-kernel = "==0.8.1"
 python-libarchive-c = "*"
