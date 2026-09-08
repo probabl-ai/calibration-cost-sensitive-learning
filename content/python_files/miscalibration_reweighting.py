@@ -158,14 +158,14 @@ from sklearn.metrics import RocCurveDisplay
 
 fig, ax = plt.subplots()
 RocCurveDisplay.from_estimator(
-    logistic_regression, X_test, y_test, ax=ax, linestyle="-.", name="Unbalanced LR"
+    logistic_regression, X_test, y_test, ax=ax, curve_kwargs={"linestyle":"--"}, name="Unbalanced LR"
 )
 RocCurveDisplay.from_estimator(
     logistic_regression_balanced,
     X_test,
     y_test,
     ax=ax,
-    linestyle="--",
+    curve_kwargs={"linestyle":"--"},
     name="Balanced LR",
 )
 

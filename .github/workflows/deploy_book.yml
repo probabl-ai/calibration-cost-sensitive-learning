@@ -11,12 +11,12 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: prefix-dev/setup-pixi@v0.8.2
+      - uses: prefix-dev/setup-pixi@v0.10.0
         with:
-          pixi-version: v0.41.1
+          pixi-version: v0.72.0
           environments: doc
 
       - name: Convert Python file to notebooks for JupyterLite
@@ -39,7 +39,7 @@ jobs:
 
       - name: Update the main gh-page website
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./book/_build/html
