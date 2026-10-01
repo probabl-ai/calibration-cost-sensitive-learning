@@ -485,7 +485,7 @@ implementation, the method names and their outputs should be self-explanatory.</
         <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">score_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">predicted_proba</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">score_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">predicted_proba</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">evaluation_records</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;Model&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
             <span class="sa">f</span><span class="s2">&quot;ROC AUC (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">context_name</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span>
@@ -498,6 +498,7 @@ implementation, the method names and their outputs should be self-explanatory.</
                 <span class="n">predicted_proba</span><span class="p">,</span>
                 <span class="n">sample_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
             <span class="p">),</span>
+            <span class="s2">&quot;num iterations&quot;</span><span class="p">:</span> <span class="n">n_iter</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span>
 
@@ -513,7 +514,12 @@ implementation, the method names and their outputs should be self-explanatory.</
 
     <span class="k">def</span><span class="w"> </span><span class="nf">register_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;estimator_&quot;</span><span class="p">):</span>
+            <span class="n">n_iter</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">estimator_</span><span class="p">,</span> <span class="s2">&quot;n_iter_&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_iter</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;n_iter_&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">score_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">),</span> <span class="n">n_iter</span><span class="o">=</span><span class="n">n_iter</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">register_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">):</span>
@@ -688,7 +694,7 @@ Name: proportion, dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261291466801
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.7285261289909972
 </pre></div>
 </div>
 </div>
@@ -904,9 +910,11 @@ the observed data.</p>
       <th></th>
       <th>ROC AUC (population)</th>
       <th>log-loss (population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -916,16 +924,19 @@ the observed data.</p>
       <th>Data generating model</th>
       <td>0.728526</td>
       <td>0.022419</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>LogReg fit on future data</th>
       <td>0.728519</td>
       <td>0.022419</td>
+      <td>[11]</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728478</td>
-      <td>0.267724</td>
+      <td>0.728479</td>
+      <td>0.267782</td>
+      <td>[6]</td>
     </tr>
   </tbody>
 </table>
@@ -998,9 +1009,11 @@ class prevalence in the target population and the training set:</p>
       <th></th>
       <th>ROC AUC (population)</th>
       <th>log-loss (population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -1010,25 +1023,29 @@ class prevalence in the target population and the training set:</p>
       <th>Data generating model</th>
       <td>0.728526</td>
       <td>0.022419</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>LogReg fit on future data</th>
       <td>0.728519</td>
       <td>0.022419</td>
+      <td>[11]</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728478</td>
-      <td>0.267724</td>
+      <td>0.728479</td>
+      <td>0.267782</td>
+      <td>[6]</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
       <td>0.728445</td>
       <td>0.022421</td>
+      <td>[14]</td>
     </tr>
   </tbody>
 </table>
-</div></div><img alt="../../_images/4f2d542501d5747666fb4a32e6ca720d644a65a156d57cb92f107d35a813006c.png" src="../../_images/4f2d542501d5747666fb4a32e6ca720d644a65a156d57cb92f107d35a813006c.png" />
+</div></div><img alt="../../_images/545d4a8aa49ad798a6658fb2cf1c11b933cb1f78ffcc26074a8465f181bfba29.png" src="../../_images/545d4a8aa49ad798a6658fb2cf1c11b933cb1f78ffcc26074a8465f181bfba29.png" />
 </div>
 </div>
 <p>We can see that passing class-weights to the estimator has the desired effect
@@ -1056,7 +1073,7 @@ converge exactly to the same model.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.1173526 , -0.13517828,  0.629324  ,  0.11449479, -0.55307335]],
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(array([[ 0.11735261, -0.13517831,  0.629324  ,  0.11449478, -0.55307335]],
        dtype=float32),
  array([-6.0257807], dtype=float32))
 </pre></div>
@@ -1140,9 +1157,11 @@ for any } p \in [0, 1] \]</div>
       <th></th>
       <th>ROC AUC (population)</th>
       <th>log-loss (population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -1152,30 +1171,35 @@ for any } p \in [0, 1] \]</div>
       <th>Data generating model</th>
       <td>0.728526</td>
       <td>0.022419</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>LogReg fit on future data</th>
       <td>0.728519</td>
       <td>0.022419</td>
+      <td>[11]</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728478</td>
-      <td>0.267724</td>
+      <td>0.728479</td>
+      <td>0.267782</td>
+      <td>[6]</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
       <td>0.728445</td>
       <td>0.022421</td>
+      <td>[14]</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.728478</td>
+      <td>0.728479</td>
       <td>0.022420</td>
+      <td>[6]</td>
     </tr>
   </tbody>
 </table>
-</div></div><img alt="../../_images/a1de5e560bbb9db85063d866e303e236d3de2957687ffb849e74238458a544eb.png" src="../../_images/a1de5e560bbb9db85063d866e303e236d3de2957687ffb849e74238458a544eb.png" />
+</div></div><img alt="../../_images/20401c6c45b2c7cbb8ac0859b4a0d9ab1590076ac521a7d63620958a95b5f186.png" src="../../_images/20401c6c45b2c7cbb8ac0859b4a0d9ab1590076ac521a7d63620958a95b5f186.png" />
 </div>
 </div>
 <p>We recover an intercept value that is very close to the intercept of the
@@ -1239,7 +1263,6 @@ with the scikit-learn API:</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">PostHocPrevalenceCorrection</span><span class="p">(</span><span class="n">ClassifierMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
-
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_positive_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_positive_rate</span> <span class="o">=</span> <span class="n">target_positive_rate</span>
@@ -1328,9 +1351,11 @@ this notebook.</p>
       <th></th>
       <th>ROC AUC (population)</th>
       <th>log-loss (population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -1340,31 +1365,37 @@ this notebook.</p>
       <th>Data generating model</th>
       <td>0.728526</td>
       <td>0.022419</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>LogReg fit on future data</th>
       <td>0.728519</td>
       <td>0.022419</td>
+      <td>[11]</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.728478</td>
-      <td>0.267724</td>
+      <td>0.728479</td>
+      <td>0.267782</td>
+      <td>[6]</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
       <td>0.728445</td>
       <td>0.022421</td>
+      <td>[14]</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.728478</td>
+      <td>0.728479</td>
       <td>0.022420</td>
+      <td>[6]</td>
     </tr>
     <tr>
       <th>Post-hoc corrected LogReg</th>
-      <td>0.728478</td>
+      <td>0.728479</td>
       <td>0.022420</td>
+      <td>[6]</td>
     </tr>
   </tbody>
 </table>
@@ -1492,7 +1523,7 @@ the log-loss will give very inaccurate estimates of the population log-loss:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.4952118992805481
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.49521249532699585
 </pre></div>
 </div>
 </div>
@@ -1504,7 +1535,7 @@ the log-loss will give very inaccurate estimates of the population log-loss:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26772359013557434
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2677820026874542
 </pre></div>
 </div>
 </div>
@@ -1535,7 +1566,7 @@ that same model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2689426408503545
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2690008232667797
 </pre></div>
 </div>
 </div>
@@ -1547,7 +1578,7 @@ that same model:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.26772359013557434
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.2677820026874542
 </pre></div>
 </div>
 </div>
@@ -1568,7 +1599,7 @@ population log-loss.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.02190736952169433
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.021907364254013253
 </pre></div>
 </div>
 </div>
@@ -1580,7 +1611,7 @@ population log-loss.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420456632971764
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0.022420411929488182
 </pre></div>
 </div>
 </div>
@@ -1621,11 +1652,15 @@ this case).</p>
       <th></th>
       <th>ROC AUC (weighted test set)</th>
       <th>log-loss (weighted test set)</th>
+      <th>num iterations_x</th>
       <th>ROC AUC (population)</th>
       <th>log-loss (population)</th>
+      <th>num iterations_y</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
+      <th></th>
       <th></th>
       <th></th>
       <th></th>
@@ -1637,36 +1672,46 @@ this case).</p>
       <th>LogReg fit on future data</th>
       <td>0.730438</td>
       <td>0.021908</td>
+      <td>[11]</td>
       <td>0.728519</td>
       <td>0.022419</td>
+      <td>[11]</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
-      <td>0.730392</td>
-      <td>0.268943</td>
-      <td>0.728478</td>
-      <td>0.267724</td>
+      <td>0.730391</td>
+      <td>0.269001</td>
+      <td>[6]</td>
+      <td>0.728479</td>
+      <td>0.267782</td>
+      <td>[6]</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
       <td>0.730319</td>
       <td>0.021908</td>
+      <td>[14]</td>
       <td>0.728445</td>
       <td>0.022421</td>
+      <td>[14]</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
-      <td>0.730392</td>
+      <td>0.730391</td>
       <td>0.021907</td>
-      <td>0.728478</td>
+      <td>[6]</td>
+      <td>0.728479</td>
       <td>0.022420</td>
+      <td>[6]</td>
     </tr>
     <tr>
       <th>Post-hoc corrected LogReg</th>
-      <td>0.730392</td>
+      <td>0.730391</td>
       <td>0.021907</td>
-      <td>0.728478</td>
+      <td>[6]</td>
+      <td>0.728479</td>
       <td>0.022420</td>
+      <td>[6]</td>
     </tr>
   </tbody>
 </table>
@@ -1753,9 +1798,11 @@ prevalence of the positive class.</p>
       <th></th>
       <th>ROC AUC (nonlinear population)</th>
       <th>log-loss (nonlinear population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -1765,6 +1812,7 @@ prevalence of the positive class.</p>
       <th>Data generating model</th>
       <td>0.760236</td>
       <td>0.024175</td>
+      <td>None</td>
     </tr>
   </tbody>
 </table>
@@ -1888,9 +1936,11 @@ after prevalence correction.</p>
       <th></th>
       <th>ROC AUC (nonlinear population)</th>
       <th>log-loss (nonlinear population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -1900,21 +1950,25 @@ after prevalence correction.</p>
       <th>Data generating model</th>
       <td>0.760236</td>
       <td>0.024175</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.511693</td>
       <td>0.292575</td>
+      <td>[5]</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
       <td>0.511693</td>
       <td>0.026163</td>
+      <td>[5]</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
       <td>0.512821</td>
       <td>0.026162</td>
+      <td>[12]</td>
     </tr>
   </tbody>
 </table>
@@ -2019,17 +2073,25 @@ classification problem and analyse the results.</p>
 <h3>Solution<a class="headerlink" href="#solution" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gbdt_uncorrected</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-    <span class="n">X_train_nonlinear</span><span class="p">,</span> <span class="n">y_train_nonlinear</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">shared_hgb_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># disable row-count weight-unaware training</span>
+    <span class="c1"># l2_regularization avoids extreme leaf values, in particular for weighted training</span>
+    <span class="n">l2_regularization</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">gbdt_uncorrected</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">shared_hgb_params</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_train_nonlinear</span><span class="p">,</span>
+    <span class="n">y_train_nonlinear</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">gbdt_weighted</span> <span class="o">=</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight_for_prevalence_correction_nonlinear</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">shared_hgb_params</span><span class="p">,</span>
 <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_nonlinear</span><span class="p">,</span> <span class="n">y_train_nonlinear</span><span class="p">)</span>
 
 <span class="n">gbdt_post_hoc</span> <span class="o">=</span> <span class="n">PostHocPrevalenceCorrection</span><span class="p">(</span>
-    <span class="n">estimator</span><span class="o">=</span><span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">shared_hgb_params</span><span class="p">),</span>
     <span class="n">target_positive_rate</span><span class="o">=</span><span class="n">y_past_nonlinear</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
 <span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train_nonlinear</span><span class="p">,</span> <span class="n">y_train_nonlinear</span><span class="p">)</span>
 </pre></div>
@@ -2070,9 +2132,11 @@ classification problem and analyse the results.</p>
       <th></th>
       <th>ROC AUC (nonlinear population)</th>
       <th>log-loss (nonlinear population)</th>
+      <th>num iterations</th>
     </tr>
     <tr>
       <th>Model</th>
+      <th></th>
       <th></th>
       <th></th>
     </tr>
@@ -2082,36 +2146,43 @@ classification problem and analyse the results.</p>
       <th>Data generating model</th>
       <td>0.760236</td>
       <td>0.024175</td>
+      <td>None</td>
     </tr>
     <tr>
       <th>Uncorrected LogReg</th>
       <td>0.511693</td>
       <td>0.292575</td>
+      <td>[5]</td>
     </tr>
     <tr>
       <th>Intercept-corrected LogReg</th>
       <td>0.511693</td>
       <td>0.026163</td>
+      <td>[5]</td>
     </tr>
     <tr>
       <th>Weight-corrected LogReg</th>
       <td>0.512821</td>
       <td>0.026162</td>
+      <td>[12]</td>
     </tr>
     <tr>
       <th>Uncorrected GBDT</th>
-      <td>0.751713</td>
-      <td>0.262622</td>
+      <td>0.752336</td>
+      <td>0.262478</td>
+      <td>47</td>
     </tr>
     <tr>
       <th>Weight-corrected GBDT</th>
-      <td>0.747731</td>
-      <td>0.031822</td>
+      <td>0.751593</td>
+      <td>0.024399</td>
+      <td>42</td>
     </tr>
     <tr>
       <th>Post-hoc corrected GBDT</th>
-      <td>0.751713</td>
-      <td>0.024345</td>
+      <td>0.752336</td>
+      <td>0.024333</td>
+      <td>47</td>
     </tr>
   </tbody>
 </table>
@@ -2128,11 +2199,11 @@ population and as a result, the log-loss is poor.</p></li>
 <li><p>The post-hoc corrected GBDT model achieves near-perfect overall performance
 (both in terms of ROC-AUC and log-loss): it effectively approximates the
 optimal (Bayes) classifier very well.</p></li>
-<li><p>The weight-corrected GBDT model shows similar ranking power and its
-log-loss is also improved compared to the uncorrected model. However, its
-log-loss is slightly lower than that of the post-hoc corrected model. This
-is not expected and might be caused by <a class="reference external" href="https://github.com/scikit-learn/scikit-learn/pull/29641#issuecomment-3154174234">bugs in the implementation of
-weight-based fitting in scikit-learn</a>.</p></li>
+<li><p>The weight-corrected GBDT model shows similar ranking power and log-loss.
+Note however that weight-based fitting is more sensitive to the choice of
+the regularization parameter and the number of iterations before early
+stopping differ: tuning hyperparameters would better be done independently
+for each model variant but this is skipped for brevity.</p></li>
 </ul>
 </section>
 </section>
