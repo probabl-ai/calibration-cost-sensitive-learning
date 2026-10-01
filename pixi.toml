@@ -47,7 +47,18 @@ build-book = { cmd = "jupyter-book build book", depends-on = ["convert-to-notebo
 build-jupyterlite = { cmd = "jupyter lite build --contents content --output-dir dist", cwd = "jupyterlite" }
 serve-jupyterlite = { cmd = "python -m http.server", cwd = "jupyterlite/dist", depends-on = ["build-jupyterlite"] }
 
+# TabICL + PyTorch: no wheels for CPython 3.14 or Intel macOS (osx-64).
+[feature.tabicl]
+platforms = ["linux-64", "osx-arm64", "win-64"]
+
+[feature.tabicl.dependencies]
+python = "3.13.*"
+
+[feature.tabicl.pypi-dependencies]
+tabicl = "*"
+
 [environments]
 lint = ["lint"]
 doc = ["doc"]
 dev = ["dev", "doc", "lint"]
+tabicl = { features = ["tabicl"], solve-group = "tabicl" }

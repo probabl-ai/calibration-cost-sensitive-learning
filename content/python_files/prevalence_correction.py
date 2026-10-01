@@ -228,6 +228,7 @@ cheating_model = LogisticRegression(penalty=None).fit(X_future, y_future)
 # over the details of the implementation, the method names and their outputs
 # should be self-explanatory.
 
+
 # %%
 class ModelComparator:
     def __init__(self, X, y, context_name, sample_weight=None):
@@ -471,9 +472,6 @@ np.allclose(logreg_weighted.intercept_, logreg_weighted2.intercept_)
 # Let's implement this intercept correction as follows:
 
 # %%
-from scipy.special import logit
-
-
 logreg_intercept_corrected = LogisticRegression(**logreg_params).fit(X_train, y_train)
 
 intercept_shift = logit(true_positive_rate_past) - logit(y_train.mean())
@@ -552,7 +550,6 @@ from sklearn.base import BaseEstimator, ClassifierMixin, clone
 
 
 class PostHocPrevalenceCorrection(ClassifierMixin, BaseEstimator):
-
     def __init__(self, estimator=None, target_positive_rate=0.5):
         self.estimator = estimator
         self.target_positive_rate = target_positive_rate
@@ -1053,6 +1050,197 @@ population_comparator_nonlinear.score_table()
 
 # %% [markdown]
 #
+# ## TabICL as a pretrained nonlinear classifier
+#
+# Gradient boosting had to *learn* the nonlinear decision boundary from the
+# observed training set. A tabular foundation model such as
+# [`TabICLClassifier`](https://github.com/soda-inria/tabicl) takes a different
+# route: the transformer is pretrained on many synthetic classification tasks,
+# `fit` only stores the training table as in-context examples, and the mapping
+# from features to labels is inferred at `predict` / `predict_proba` time.
+#
+# That is useful here for two reasons:
+#
+# - the data generating process is nonlinear, so a misspecified logistic
+#   regression cannot reach the Bayes log-loss even after prevalence
+#   correction;
+# - TabICL does not expose `class_weight` or `sample_weight` in `fit`, so
+#   **weight-based prevalence correction is not available**. The generic
+#   Elkan post-hoc map still applies, because it only transforms predicted
+#   probabilities.
+#
+# In-context attention is quadratic in the number of context plus query rows,
+# so we cannot call `predict_proba` on the full 3 million future points (and
+# even the 24k-row training table is too long for a single MPS / GPU
+# attention buffer). TabICL's own `n_estimators` ensemble only permutes
+# features and labels of **one** context table; it does not resample the
+# majority class.
+#
+# We therefore build a manual bagging ensemble in the spirit of EasyEnsemble:
+# eight `TabICLClassifier(n_estimators=1)` members that share the same
+# minority (positive) rows and each get a **different subsample of the
+# majority (negative) class** of equal size, so every bag is class-balanced.
+# Putting all ~6k positives into every bag would make the context ~12k rows
+# and attention too slow on a laptop GPU, so the shared positive pool is
+# capped at 1024 rows. Member **logits** are averaged (as TabICL does
+# internally with `average_logits=True`), then a **single** Elkan map is
+# applied to that ensemble probability. We still:
+#
+# - score a **subsample of the future population** in small query batches;
+# - compare the ensemble to the already-fitted GBDT models on that subsample.
+#
+# This section needs the optional pixi environment `tabicl` (`pixi install -e
+# tabicl`), which pulls in PyTorch. It is skipped when `tabicl` is not
+# installed so the rest of the notebook still runs in the default / JupyterLite
+# environments.
+
+# %%
+import os
+
+# Mixing conda-forge OpenMP (numpy / scikit-learn) with the PyPI PyTorch wheel
+# can abort on macOS unless this workaround is set before importing torch.
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+
+try:
+    import torch
+    from tabicl import TabICLClassifier
+except ImportError:
+    torch = None
+    TabICLClassifier = None
+
+if TabICLClassifier is None:
+    print(
+        "Skipping TabICL: install the optional environment with "
+        "`pixi install -e tabicl` and re-run this section "
+        "(for example `pixi run -e tabicl jupyter lab`)."
+    )
+    tabicl_score_table = None
+else:
+    n_tabicl_members = 8
+    n_tabicl_eval = 20_000
+    tabicl_predict_batch_size = 256
+    n_pos_per_bag = 1_024
+
+    tabicl_eval_rng = np.random.default_rng(1)
+    tabicl_eval_idx = tabicl_eval_rng.choice(
+        len(X_future_nonlinear), size=n_tabicl_eval, replace=False
+    )
+    X_tabicl_eval = X_future_nonlinear.iloc[tabicl_eval_idx]
+    y_tabicl_eval = y_future_nonlinear.iloc[tabicl_eval_idx]
+    true_proba_tabicl_eval = true_proba_future_nonlinear[tabicl_eval_idx]
+
+    if torch.backends.mps.is_available():
+        tabicl_device = "mps"
+    elif torch.cuda.is_available():
+        tabicl_device = "cuda"
+    else:
+        tabicl_device = "cpu"
+
+    is_positive = y_train_nonlinear.to_numpy() == 1
+    X_tabicl_pos = X_train_nonlinear.iloc[is_positive]
+    y_tabicl_pos = y_train_nonlinear.iloc[is_positive]
+    X_tabicl_neg = X_train_nonlinear.iloc[~is_positive]
+    y_tabicl_neg = y_train_nonlinear.iloc[~is_positive]
+    bag_rng = np.random.default_rng(0)
+    n_pos_per_bag = min(n_pos_per_bag, len(y_tabicl_pos))
+    shared_pos_idx = bag_rng.choice(
+        len(X_tabicl_pos), size=n_pos_per_bag, replace=False
+    )
+    X_shared_pos = X_tabicl_pos.iloc[shared_pos_idx]
+    y_shared_pos = y_tabicl_pos.iloc[shared_pos_idx]
+
+    def batched_predict_proba(model, X, batch_size):
+        chunks = []
+        for start in range(0, len(X), batch_size):
+            chunks.append(model.predict_proba(X.iloc[start : start + batch_size]))
+        return np.vstack(chunks)
+
+    tabicl_member_logits = []
+    tabicl_observed_prevalence = []
+    for member_idx in range(n_tabicl_members):
+        neg_idx = bag_rng.choice(len(X_tabicl_neg), size=n_pos_per_bag, replace=False)
+        X_member = pd.concat([X_shared_pos, X_tabicl_neg.iloc[neg_idx]])
+        y_member = pd.concat([y_shared_pos, y_tabicl_neg.iloc[neg_idx]])
+        member = TabICLClassifier(
+            n_estimators=1,
+            random_state=member_idx,
+            device=tabicl_device,
+            kv_cache=False,
+        ).fit(X_member, y_member)
+        member_proba = batched_predict_proba(
+            member, X_tabicl_eval, tabicl_predict_batch_size
+        )
+        member_pos = np.clip(member_proba[:, 1], 1e-15, 1 - 1e-15)
+        tabicl_member_logits.append(logit(member_pos))
+        tabicl_observed_prevalence.append(y_member.mean())
+
+    tabicl_uncorrected_pos = expit(np.mean(tabicl_member_logits, axis=0))
+    tabicl_uncorrected_proba = np.column_stack(
+        [1 - tabicl_uncorrected_pos, tabicl_uncorrected_pos]
+    )
+    tabicl_corrected_pos = elkan_prevalence_correction(
+        tabicl_uncorrected_pos,
+        target_prevalence=y_past_nonlinear.mean(),
+        observed_prevalence=np.mean(tabicl_observed_prevalence),
+    )
+    tabicl_corrected_proba = np.column_stack(
+        [1 - tabicl_corrected_pos, tabicl_corrected_pos]
+    )
+
+    tabicl_eval_comparator = ModelComparator(
+        X_tabicl_eval,
+        y_tabicl_eval,
+        context_name="nonlinear population subsample",
+    )
+    tabicl_eval_comparator.score_model("Data generating model", true_proba_tabicl_eval)
+    tabicl_eval_comparator.score_model(
+        "Uncorrected GBDT", gbdt_uncorrected.predict_proba(X_tabicl_eval)
+    )
+    tabicl_eval_comparator.score_model(
+        "Post-hoc corrected GBDT", gbdt_post_hoc.predict_proba(X_tabicl_eval)
+    )
+    tabicl_eval_comparator.score_model(
+        "Uncorrected TabICL ensemble", tabicl_uncorrected_proba
+    )
+    tabicl_eval_comparator.score_model(
+        "Post-hoc corrected TabICL ensemble", tabicl_corrected_proba
+    )
+    tabicl_score_table = tabicl_eval_comparator.score_table()
+
+tabicl_score_table
+
+# %% [markdown]
+#
+# ### Analysis of the TabICL results
+#
+# Typical numbers on a 20,000-row future subsample (about 80–100 positives)
+# with eight class-balanced bags (a shared 1024-row positive pool plus a
+# different 1024-row majority subsample, `n_estimators=1` each):
+#
+# - **Ranking.** The majority-bag ensemble (logits averaged) reaches ROC AUC
+#   about 0.778, close to GBDT (~0.781) and to the data generating process
+#   (~0.784), and a bit above a single TabICL fit on one 2k-row stratified
+#   draw (~0.76). Logistic regression on this XOR-like boundary stayed near
+#   0.5. Diversity over negatives helps; each forward pass still uses only
+#   ~2k context rows.
+# - **Calibration without correction.** Each bag is balanced, so the
+#   uncorrected ensemble predicts a mean positive probability around 0.41
+#   instead of the ~0.4% population prevalence. Log-loss is worse than for a
+#   25%-prevalence context (about 0.60 vs 0.24): bagging is not a prevalence
+#   correction.
+# - **Elkan post-hoc correction.** Applied **once** to the ensemble after
+#   averaging logits, using the common bag prevalence (50%). That map is
+#   monotone, so ROC AUC is identical for the uncorrected and corrected
+#   ensembles (0.778). Mean predicted probability falls to ~0.4% and log-loss
+#   matches the Bayes value (~0.0275), as for post-hoc GBDT.
+#
+# Majority-class bagging is a way to use more of the abundant negatives under
+# a context-size cap. It is **not** a prevalence correction: bags are even
+# more balanced than the already-shifted training set, so Elkan remains
+# necessary.
+
+# %% [markdown]
+#
 # ## Take away messages
 #
 # - It is possible to correct a binary classifier trained on observed data to
@@ -1074,6 +1262,11 @@ population_comparator_nonlinear.score_table()
 # - It is possible to estimate the expected performance of the model on the
 #   target population only from the finite, prevalence-shifted sample by
 #   applying the same weight-based correction to the evaluation metrics.
+# - Estimators that cannot be reweighted at training time (for instance
+#   pretrained in-context models such as TabICL) can still be prevalence-
+#   corrected with the same post-hoc Elkan map. Bagging different majority-
+#   class subsets uses more negatives under a context-size cap; it does not
+#   by itself fix a prevalence shift.
 #
 # Open question: the weight-based training prevalence correction and the
 # post-training closed-form prevalence correction methods can yield slightly
