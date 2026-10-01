@@ -73,7 +73,7 @@ class ModelComparator:
         self.models = {}
         self.evaluation_records = {}
 
-    def score_model(self, model_name, predicted_proba):
+    def score_model(self, model_name, predicted_proba, n_iter=None):
         self.evaluation_records[model_name] = {
             "Model": model_name,
             f"ROC AUC ({self.context_name})": roc_auc_score(
@@ -86,6 +86,7 @@ class ModelComparator:
                 predicted_proba,
                 sample_weight=self.sample_weight,
             ),
+            "num iterations": n_iter,
         }
         return self
 
@@ -101,7 +102,12 @@ class ModelComparator:
 
     def register_model(self, model_name, model):
         self.models[model_name] = model
-        self.score_model(model_name, model.predict_proba(self.X))
+        if hasattr(model, "estimator_"):
+            n_iter = getattr(model.estimator_, "n_iter_", None)
+        else:
+            n_iter = getattr(model, "n_iter_", None)
+
+        self.score_model(model_name, model.predict_proba(self.X), n_iter=n_iter)
         return self
 
     def register_models(self, models):
@@ -547,7 +553,6 @@ from sklearn.base import BaseEstimator, ClassifierMixin, clone
 
 
 class PostHocPrevalenceCorrection(ClassifierMixin, BaseEstimator):
-
     def __init__(self, estimator=None, target_positive_rate=0.5):
         self.estimator = estimator
         self.target_positive_rate = target_positive_rate
@@ -1005,17 +1010,25 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 # ### Solution
 
 # %%
-gbdt_uncorrected = HistGradientBoostingClassifier(random_state=0).fit(
-    X_train_nonlinear, y_train_nonlinear
+shared_hgb_params = dict(
+    random_state=0,
+    min_samples_leaf=1,  # disable row-count weight-unaware training
+    # l2_regularization avoids extreme leaf values, in particular for weighted training
+    l2_regularization=1.0,
+    max_iter=1000,
+)
+gbdt_uncorrected = HistGradientBoostingClassifier(**shared_hgb_params).fit(
+    X_train_nonlinear,
+    y_train_nonlinear,
 )
 
 gbdt_weighted = HistGradientBoostingClassifier(
-    random_state=0,
     class_weight=class_weight_for_prevalence_correction_nonlinear,
+    **shared_hgb_params,
 ).fit(X_train_nonlinear, y_train_nonlinear)
 
 gbdt_post_hoc = PostHocPrevalenceCorrection(
-    estimator=HistGradientBoostingClassifier(random_state=0),
+    estimator=HistGradientBoostingClassifier(**shared_hgb_params),
     target_positive_rate=y_past_nonlinear.mean(),
 ).fit(X_train_nonlinear, y_train_nonlinear)
 
@@ -1040,12 +1053,11 @@ population_comparator_nonlinear.score_table()
 # - The post-hoc corrected GBDT model achieves near-perfect overall performance
 #   (both in terms of ROC-AUC and log-loss): it effectively approximates the
 #   optimal (Bayes) classifier very well.
-# - The weight-corrected GBDT model shows similar ranking power and its
-#   log-loss is also improved compared to the uncorrected model. However, its
-#   log-loss is slightly lower than that of the post-hoc corrected model. This
-#   is not expected and might be caused by [bugs in the implementation of
-#   weight-based fitting in scikit-learn](
-#   https://github.com/scikit-learn/scikit-learn/pull/29641#issuecomment-3154174234).
+# - The weight-corrected GBDT model shows similar ranking power and log-loss.
+#   Note however that weight-based fitting is more sensitive to the choice of
+#   the regularization parameter and the number of iterations before early
+#   stopping differ: tuning hyperparameters would better be done independently
+#   for each model variant but this is skipped for brevity.
 
 # %% [markdown]
 #
